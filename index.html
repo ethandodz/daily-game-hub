@@ -383,6 +383,58 @@
   word-break: break-word;
 }
 
+.friend-results {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.friend-results.visible {
+  display: block;
+}
+
+.friend-results-title {
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.friend-result-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 8px 0;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.friend-result-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.friend-result-name {
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+.friend-result-score {
+  width: 100%;
+  color: white;
+  font-weight: 900;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
+  line-height: 1.4;
+}
+
 
     .empty-message {
       display: none;
@@ -4347,6 +4399,7 @@ document
             }
           );
 
+
         const profileCache =
           new Map();
 
@@ -4355,7 +4408,9 @@ document
           userId
         ) {
           if (
-            profileCache.has(userId)
+            profileCache.has(
+              userId
+            )
           ) {
             return profileCache.get(
               userId
@@ -4363,7 +4418,9 @@ document
           }
 
           const profile =
-            await getProfile(userId);
+            await getProfile(
+              userId
+            );
 
           profileCache.set(
             userId,
@@ -4374,6 +4431,11 @@ document
         }
 
 
+        /*
+         * First reset every game card.
+         * This also displays your own result.
+         */
+
         cards().forEach(card => {
           const gameId =
             card.dataset.id;
@@ -4382,6 +4444,7 @@ document
             card.querySelector(
               ".result-summary"
             );
+
 
           const myScore =
             scoreRows?.find(
@@ -4392,13 +4455,16 @@ document
                   gameId
             );
 
+
           if (myScore) {
             resultSummary.style.display =
               "block";
 
             resultSummary.textContent =
-              "Your result: " +
-              formatScore(myScore);
+              "Your result:\n" +
+              formatScore(
+                myScore
+              );
           } else {
             resultSummary.style.display =
               "none";
@@ -4408,10 +4474,16 @@ document
           }
 
 
+          /*
+           * Create the Friends Today box
+           * if this card doesn't have one yet.
+           */
+
           let friendResults =
             card.querySelector(
               ".friend-results"
             );
+
 
           if (!friendResults) {
             friendResults =
@@ -4427,19 +4499,29 @@ document
             );
           }
 
+
+          /*
+           * Clear yesterday/old data before
+           * rebuilding the card.
+           */
+
           friendResults.innerHTML =
             "";
 
-          friendResults.classList.remove(
-            "visible"
-          );
+          friendResults
+            .classList
+            .remove(
+              "visible"
+            );
         });
 
 
-        const friendsByGame =
-          new Map();
+        /*
+         * Separate other people's scores
+         * from your own.
+         */
 
-        const friendsOnly =
+        const friendScores =
           (scoreRows || []).filter(
             score =>
               score.user_id !==
@@ -4447,34 +4529,55 @@ document
           );
 
 
+        /*
+         * Group scores by game.
+         */
+
+        const scoresByGame =
+          new Map();
+
+
         for (
           const friendScore
-          of friendsOnly
+          of friendScores
         ) {
+          const gameId =
+            friendScore.game_id;
+
+
           if (
-            !friendsByGame.has(
-              friendScore.game_id
+            !scoresByGame.has(
+              gameId
             )
           ) {
-            friendsByGame.set(
-              friendScore.game_id,
+            scoresByGame.set(
+              gameId,
               []
             );
           }
 
-          friendsByGame
-            .get(friendScore.game_id)
-            .push(friendScore);
+
+          scoresByGame
+            .get(gameId)
+            .push(
+              friendScore
+            );
         }
 
+
+        /*
+         * Put each group directly underneath
+         * the correct game.
+         */
 
         for (
           const [
             gameId,
             gameScores
           ]
-          of friendsByGame
+          of scoresByGame
         ) {
+
           const gameCard =
             document.querySelector(
               '[data-id="' +
@@ -4482,14 +4585,17 @@ document
               '"]'
             );
 
+
           if (!gameCard) {
             continue;
           }
+
 
           const friendResults =
             gameCard.querySelector(
               ".friend-results"
             );
+
 
           const title =
             document.createElement(
@@ -4507,19 +4613,26 @@ document
           );
 
 
+          /*
+           * Add each friend's score.
+           */
+
           for (
             const friendScore
             of gameScores
           ) {
+
             const friendProfile =
               await getCachedProfile(
                 friendScore.user_id
               );
 
+
             const displayName =
               friendProfile.display_name ||
               "@" +
               friendProfile.username;
+
 
             const resultRow =
               document.createElement(
@@ -4532,7 +4645,7 @@ document
 
             const nameElement =
               document.createElement(
-                "span"
+                "div"
               );
 
             nameElement.className =
@@ -4544,7 +4657,7 @@ document
 
             const scoreElement =
               document.createElement(
-                "strong"
+                "div"
               );
 
             scoreElement.className =
@@ -4561,29 +4674,34 @@ document
               scoreElement
             );
 
+
             friendResults.appendChild(
               resultRow
             );
           }
 
 
-          friendResults.classList.add(
-            "visible"
-          );
+          friendResults
+            .classList
+            .add(
+              "visible"
+            );
         }
 
+
+        /*
+         * The bottom Friends section no longer
+         * needs to duplicate every score.
+         */
 
         const friendScoreList =
           document.getElementById(
             "friendScores"
           );
 
-        friendScoreList.innerHTML =
-          "";
-
 
         if (
-          friendsOnly.length === 0
+          friendScores.length === 0
         ) {
           friendScoreList.innerHTML =
             '<p class="status">' +
@@ -4592,9 +4710,10 @@ document
         } else {
           friendScoreList.innerHTML =
             '<p class="status">' +
-            "Friend results are displayed under each game above." +
+            "Today’s friend results are shown under each game above." +
             "</p>";
         }
+
       } catch (error) {
         console.error(
           "Score loading failed:",
@@ -4612,6 +4731,7 @@ document
           "</p>";
       }
     }
+
 
 
 
