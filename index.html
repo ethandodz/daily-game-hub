@@ -3608,13 +3608,48 @@ async function loadProfile() {
 
             await loadProfile();
             await loadFriends();
-          } catch (error) {
-            setStatus(
-              authStatus,
-              error.message,
-              "error"
-            );
+ } catch (error) {
+            const errorMessage =
+              String(
+                error.message || ""
+              );
+
+            if (
+              errorMessage.includes(
+                "profiles_username_unique"
+              ) ||
+              errorMessage.includes(
+                "duplicate key"
+              ) ||
+              errorMessage.includes(
+                "23505"
+              )
+            ) {
+              setStatus(
+                authStatus,
+                "That username is already taken.",
+                "error"
+              );
+            } else if (
+              errorMessage.includes(
+                "profiles_username_format"
+              )
+            ) {
+              setStatus(
+                authStatus,
+                "Username must be 3–24 characters using only lowercase letters, numbers, or underscores.",
+                "error"
+              );
+            } else {
+              setStatus(
+                authStatus,
+                errorMessage ||
+                  "Could not save username.",
+                "error"
+              );
+            }
           }
+
         }
       );
 
