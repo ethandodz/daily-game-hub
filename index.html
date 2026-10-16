@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <meta name="theme-color" content="#080c18">
 
   <title>Daily Game Hub</title>
@@ -30,10 +35,24 @@
       margin: 0;
       min-height: 100vh;
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
       background:
-        radial-gradient(circle at 10% 0%, rgba(124, 58, 237, 0.28), transparent 30%),
-        radial-gradient(circle at 100% 35%, rgba(14, 165, 233, 0.17), transparent 28%),
+        radial-gradient(
+          circle at 10% 0%,
+          rgba(124, 58, 237, 0.28),
+          transparent 30%
+        ),
+        radial-gradient(
+          circle at 100% 35%,
+          rgba(14, 165, 233, 0.17),
+          transparent 28%
+        ),
         var(--background);
     }
 
@@ -73,14 +92,38 @@
       font-size: 14px;
     }
 
-    .random-button {
-      flex: 0 0 auto;
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .button {
       padding: 11px 15px;
       color: white;
       font-weight: 800;
       border: 0;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--purple),
+          var(--blue)
+        );
+    }
+
+    .button.secondary {
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+
+    .button.danger {
+      background: #991b1b;
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
     }
 
     .progress-card {
@@ -88,8 +131,16 @@
       margin-bottom: 24px;
       border: 1px solid var(--border);
       border-radius: 24px;
-      background: linear-gradient(135deg, #0f172a, #312e81);
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+
+      background:
+        linear-gradient(
+          135deg,
+          #0f172a,
+          #312e81
+        );
+
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.24);
     }
 
     .progress-top {
@@ -134,12 +185,15 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(90deg, #34d399, #22d3ee);
-      transition: width 0.3s ease;
-    }
 
-    .controls {
-      margin-bottom: 18px;
+      background:
+        linear-gradient(
+          90deg,
+          #34d399,
+          #22d3ee
+        );
+
+      transition: width 0.3s ease;
     }
 
     .search {
@@ -161,7 +215,8 @@
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding-bottom: 5px;
+      padding-bottom: 6px;
+      margin-bottom: 18px;
       scrollbar-width: none;
     }
 
@@ -188,15 +243,19 @@
 
     .games {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
       gap: 14px;
     }
 
     .game-card {
       --game-color: #7c3aed;
+
       position: relative;
       display: flex;
-      min-height: 215px;
+      min-height: 255px;
       flex-direction: column;
       padding: 17px;
       border: 1px solid var(--border);
@@ -214,10 +273,10 @@
       content: "✓";
       position: absolute;
       top: 12px;
-      right: 12px;
+      right: 45px;
       display: grid;
-      width: 26px;
-      height: 26px;
+      width: 25px;
+      height: 25px;
       place-items: center;
       color: white;
       font-weight: 900;
@@ -276,35 +335,49 @@
     }
 
     .card-buttons {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto;
       gap: 8px;
     }
 
-    .play-button {
-      flex: 1;
-      display: block;
+    .play-button,
+    .complete-button,
+    .result-button {
       padding: 10px;
       color: white;
       font-weight: 900;
       text-align: center;
       text-decoration: none;
+      border: 0;
       border-radius: 11px;
+    }
+
+    .play-button {
       background: var(--game-color);
     }
 
     .complete-button {
       width: 43px;
-      padding: 10px;
-      color: white;
-      font-size: 17px;
-      font-weight: 900;
-      border: 0;
-      border-radius: 11px;
       background: var(--panel-light);
     }
 
     .completed .complete-button {
       background: var(--green);
+    }
+
+    .result-button {
+      grid-column: 1 / -1;
+      background: #334155;
+    }
+
+    .result-summary {
+      display: none;
+      margin-top: 10px;
+      padding: 9px;
+      color: #cbd5e1;
+      font-size: 12px;
+      border-radius: 10px;
+      background: var(--panel-light);
     }
 
     .empty-message {
@@ -316,145 +389,191 @@
       border-radius: 20px;
     }
 
-    .feedback-section {
+    .section {
       padding: 24px;
-      margin-top: 42px;
+      margin-top: 38px;
       border: 1px solid var(--border);
       border-radius: 24px;
       background: var(--panel);
     }
 
-    .feedback-heading {
-      margin: 0;
-      font-size: 23px;
+    .section h2 {
+      margin: 0 0 7px;
     }
 
-    .feedback-intro {
-      margin: 7px 0 22px;
+    .section h3 {
+      margin-top: 24px;
+    }
+
+    .intro {
+      margin: 0 0 20px;
       color: var(--muted);
       line-height: 1.5;
     }
 
-    .feedback-types {
+    .form {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 9px;
-      margin-bottom: 20px;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 12px;
     }
 
-    .feedback-type {
-      padding: 13px 10px;
-      color: var(--muted);
-      font-weight: 800;
-      border: 1px solid var(--border);
-      border-radius: 13px;
-      background: var(--panel-light);
-    }
-
-    .feedback-type.selected {
-      color: white;
-      border-color: #8b5cf6;
-      background: linear-gradient(135deg, var(--purple), var(--blue));
-    }
-
-    .feedback-form {
+    .field {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      gap: 6px;
     }
 
-    .form-field {
-      display: grid;
-      gap: 7px;
-    }
-
-    .form-field.full-width {
+    .field.full {
       grid-column: 1 / -1;
     }
 
-    .form-field label {
+    .field label {
       color: var(--muted);
       font-size: 12px;
       font-weight: 800;
     }
 
-    .form-field input,
-    .form-field select,
-    .form-field textarea {
+    .field input,
+    .field select,
+    .field textarea {
       width: 100%;
-      padding: 12px 13px;
+      padding: 12px;
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 11px;
       outline: none;
       background: var(--background);
     }
 
-    .form-field textarea {
-      min-height: 130px;
+    .field textarea {
+      min-height: 110px;
       resize: vertical;
     }
 
-    .form-field input:focus,
-    .form-field select:focus,
-    .form-field textarea:focus {
-      border-color: #8b5cf6;
-    }
-
-    .form-field select option {
-      color: var(--text);
-      background: var(--panel);
-    }
-
-    .character-count {
-      color: var(--muted);
-      font-size: 11px;
-      text-align: right;
-    }
-
-    .honeypot {
-      position: absolute;
-      left: -10000px;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-    }
-
-    .submit-row {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-top: 4px;
-    }
-
-    .submit-feedback {
-      padding: 12px 18px;
-      color: white;
-      font-weight: 900;
-      border: 0;
-      border-radius: 13px;
-      background: linear-gradient(135deg, var(--purple), var(--blue));
-    }
-
-    .submit-feedback:disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
-
-    .feedback-status {
-      margin: 0;
+    .status {
+      margin: 9px 0 0;
       color: var(--muted);
       font-size: 13px;
       line-height: 1.4;
     }
 
-    .feedback-status.success {
+    .status.success {
       color: #34d399;
     }
 
-    .feedback-status.error {
+    .status.error {
       color: var(--red);
+    }
+
+    .friend-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .friend-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 13px;
+      background: var(--panel-light);
+    }
+
+    .friend-actions {
+      display: flex;
+      gap: 7px;
+    }
+
+    .small-button {
+      padding: 7px 10px;
+      color: white;
+      border: 0;
+      border-radius: 9px;
+      background: #334155;
+    }
+
+    .feedback-types {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 9px;
+      margin-bottom: 18px;
+    }
+
+    .feedback-type {
+      padding: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .feedback-type.selected {
+      color: white;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--purple),
+          var(--blue)
+        );
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      place-items: center;
+      padding: 16px;
+      background: rgba(2, 6, 23, 0.82);
+    }
+
+    .modal.open {
+      display: grid;
+    }
+
+    .modal-card {
+      width: min(540px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--panel);
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .close-button {
+      width: 36px;
+      height: 36px;
+      color: white;
+      border: 0;
+      border-radius: 10px;
+      background: var(--panel-light);
+    }
+
+    .account-state {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .footer {
@@ -466,21 +585,27 @@
 
     @media (max-width: 950px) {
       .games {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns:
+          repeat(3, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 700px) {
       .games {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .form {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
       }
 
       .percentage {
         font-size: 32px;
-      }
-
-      .progress-card h2 {
-        font-size: 24px;
       }
     }
 
@@ -493,37 +618,23 @@
         font-size: 21px;
       }
 
-      .progress-card,
-      .feedback-section {
-        padding: 19px;
-      }
-
-      .progress-top {
-        align-items: start;
-      }
-
-      .games,
-      .feedback-types,
-      .feedback-form {
-        grid-template-columns: 1fr;
-      }
-
-      .game-card {
-        min-height: 195px;
-      }
-
-      .form-field.full-width,
-      .submit-row {
-        grid-column: auto;
-      }
-
-      .submit-row {
-        align-items: stretch;
+      .header-actions {
         flex-direction: column;
       }
 
-      .submit-feedback {
-        width: 100%;
+      .games,
+      .feedback-types {
+        grid-template-columns: 1fr;
+      }
+
+      .progress-card,
+      .section {
+        padding: 18px;
+      }
+
+      .account-state {
+        align-items: flex-start;
+        flex-direction: column;
       }
     }
   </style>
@@ -535,73 +646,142 @@
     <header>
       <div>
         <h1 class="logo">◆ Daily Game Hub</h1>
-        <p class="date" id="currentDate">Your daily games</p>
+        <p class="date" id="currentDate"></p>
       </div>
 
-      <button class="random-button" id="randomButton" type="button">
-        🎲 Random
-      </button>
+      <div class="header-actions">
+        <button
+          class="button secondary"
+          id="friendsButton"
+          type="button"
+        >
+          Friends
+        </button>
+
+        <button
+          class="button secondary"
+          id="accountButton"
+          type="button"
+        >
+          Account
+        </button>
+
+        <button
+          class="button"
+          id="randomButton"
+          type="button"
+        >
+          🎲 Random
+        </button>
+      </div>
     </header>
 
     <section class="progress-card">
       <div class="progress-top">
         <div>
           <div class="eyebrow">TODAY'S PROGRESS</div>
-          <h2 id="progressCount">0 of 19 completed</h2>
+
+          <h2 id="progressCount">
+            0 of 19 completed
+          </h2>
 
           <p class="progress-message">
-            Pick a game and start today's run.
+            Play, track, and compare daily games.
           </p>
         </div>
 
-        <div class="percentage" id="percentage">0%</div>
+        <div class="percentage" id="percentage">
+          0%
+        </div>
       </div>
 
       <div class="progress-track">
-        <span class="progress-fill" id="progressFill"></span>
+        <span
+          class="progress-fill"
+          id="progressFill"
+        ></span>
       </div>
     </section>
 
-    <section class="controls">
-      <input
-        class="search"
-        id="searchInput"
-        type="search"
-        placeholder="Search games..."
-        autocomplete="off"
-      >
+    <input
+      class="search"
+      id="searchInput"
+      type="search"
+      placeholder="Search games..."
+      autocomplete="off"
+    >
 
-      <div class="filter-scroll">
-        <button class="filter-button active" data-filter="all">All</button>
-        <button class="filter-button" data-filter="word">🔤 Word & Logic</button>
-        <button class="filter-button" data-filter="geography">🌎 Geography</button>
-        <button class="filter-button" data-filter="movies">🎬 Movies</button>
-        <button class="filter-button" data-filter="sports">🏆 Sports</button>
-        <button class="filter-button" data-filter="trivia">🧠 Trivia</button>
-        <button class="filter-button" data-filter="favorites">★ Favorites</button>
-        <button class="filter-button" data-filter="unfinished">Not Played</button>
-        <button class="filter-button" data-filter="completed">✓ Completed</button>
-      </div>
-    </section>
+    <div class="filter-scroll">
+      <button class="filter-button active" data-filter="all">
+        All
+      </button>
+
+      <button class="filter-button" data-filter="word">
+        🔤 Word & Logic
+      </button>
+
+      <button class="filter-button" data-filter="geography">
+        🌎 Geography
+      </button>
+
+      <button class="filter-button" data-filter="movies">
+        🎬 Movies
+      </button>
+
+      <button class="filter-button" data-filter="sports">
+        🏆 Sports
+      </button>
+
+      <button class="filter-button" data-filter="trivia">
+        🧠 Trivia
+      </button>
+
+      <button class="filter-button" data-filter="favorites">
+        ★ Favorites
+      </button>
+
+      <button class="filter-button" data-filter="unfinished">
+        Not Played
+      </button>
+
+      <button class="filter-button" data-filter="completed">
+        ✓ Completed
+      </button>
+    </div>
 
     <main class="games" id="gameGrid">
 
-      <!-- 1. WORDLE -->
+<!-- 1. WORDLE -->
       <article
         class="game-card"
         data-id="wordle"
+        data-name="Wordle"
         data-category="word"
-        data-search="wordle word logic"
-        style="--game-color:#6aaa64"
+        data-search="wordle word logic guess the five-letter word in six tries"
+        style="--game-color: #6aaa64;"
       >
         <div class="card-top">
           <div class="game-icon">W</div>
-          <button class="favorite-button" data-favorite="wordle" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="wordle"
+            type="button"
+            aria-label="Favorite Wordle"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Wordle</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Guess the five-letter word in six tries.</p>
+
+        <div class="category">
+          Word & Logic
+        </div>
+
+        <p class="description">
+          Guess the five-letter word in six tries.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -609,28 +789,66 @@
             href="https://www.nytimes.com/games/wordle/index.html"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="wordle" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="wordle"
+            type="button"
+            aria-label="Mark Wordle complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="wordle"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="wordle"
+        ></div>
       </article>
+
 
       <!-- 2. CONNECTIONS -->
       <article
         class="game-card"
         data-id="connections"
+        data-name="Connections"
         data-category="word"
-        data-search="connections word logic"
-        style="--game-color:#8b5cf6"
+        data-search="connections word logic group sixteen words by their hidden connections"
+        style="--game-color: #8b5cf6;"
       >
         <div class="card-top">
           <div class="game-icon">▦</div>
-          <button class="favorite-button" data-favorite="connections" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="connections"
+            type="button"
+            aria-label="Favorite Connections"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Connections</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Group sixteen words by their hidden connections.</p>
+
+        <div class="category">
+          Word & Logic
+        </div>
+
+        <p class="description">
+          Group sixteen words by their hidden connections.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -638,28 +856,66 @@
             href="https://www.nytimes.com/games/connections"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="connections" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="connections"
+            type="button"
+            aria-label="Mark Connections complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="connections"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="connections"
+        ></div>
       </article>
+
 
       <!-- 3. STRANDS -->
       <article
         class="game-card"
         data-id="strands"
+        data-name="Strands"
         data-category="word"
-        data-search="strands word logic"
-        style="--game-color:#38bdf8"
+        data-search="strands word logic find themed words hidden in a letter grid"
+        style="--game-color: #38bdf8;"
       >
         <div class="card-top">
           <div class="game-icon">〰</div>
-          <button class="favorite-button" data-favorite="strands" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="strands"
+            type="button"
+            aria-label="Favorite Strands"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Strands</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Find themed words hidden in a letter grid.</p>
+
+        <div class="category">
+          Word & Logic
+        </div>
+
+        <p class="description">
+          Find themed words hidden in a letter grid.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -667,28 +923,66 @@
             href="https://www.nytimes.com/games/strands"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="strands" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="strands"
+            type="button"
+            aria-label="Mark Strands complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="strands"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="strands"
+        ></div>
       </article>
+
 
       <!-- 4. KRILLION -->
       <article
         class="game-card"
         data-id="krillion"
+        data-name="Krillion"
         data-category="trivia"
-        data-search="krillion trivia"
-        style="--game-color:#0891b2"
+        data-search="krillion trivia daily trivia rarer answers"
+        style="--game-color: #0891b2;"
       >
         <div class="card-top">
           <div class="game-icon">K</div>
-          <button class="favorite-button" data-favorite="krillion" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="krillion"
+            type="button"
+            aria-label="Favorite Krillion"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Krillion</h3>
-        <div class="category">Trivia</div>
-        <p class="description">Daily trivia where rarer answers matter.</p>
+
+        <div class="category">
+          Trivia
+        </div>
+
+        <p class="description">
+          Daily trivia where rarer answers matter.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -696,28 +990,66 @@
             href="https://krillion.io/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="krillion" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="krillion"
+            type="button"
+            aria-label="Mark Krillion complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="krillion"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="krillion"
+        ></div>
       </article>
+
 
       <!-- 5. GUESSLIST -->
       <article
         class="game-card"
         data-id="guesslist"
+        data-name="GuessList"
         data-category="trivia"
-        data-search="guesslist trivia list"
-        style="--game-color:#f97316"
+        data-search="guesslist trivia guess entries from a ranked list"
+        style="--game-color: #f97316;"
       >
         <div class="card-top">
           <div class="game-icon">100</div>
-          <button class="favorite-button" data-favorite="guesslist" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="guesslist"
+            type="button"
+            aria-label="Favorite GuessList"
+          >
+            ★
+          </button>
         </div>
 
         <h3>GuessList</h3>
-        <div class="category">Trivia</div>
-        <p class="description">Guess entries from a ranked list.</p>
+
+        <div class="category">
+          Trivia
+        </div>
+
+        <p class="description">
+          Guess entries from a ranked list.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -725,79 +1057,133 @@
             href="https://playguesslist.com/game"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="guesslist" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="guesslist"
+            type="button"
+            aria-label="Mark GuessList complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="guesslist"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="guesslist"
+        ></div>
       </article>
 
-      <!-- 18. MAGNITUDLE -->
-<article
-  class="game-card"
-  data-id="magnitudle"
-  data-category="trivia"
-  data-search="magnitudle trivia estimation scale guessing"
-  style="--game-color:#06b6d4"
->
-  <div class="card-top">
-    <div class="game-icon">↕</div>
 
-    <button
-      class="favorite-button"
-      data-favorite="magnitudle"
-      type="button"
-    >
-      ★
-    </button>
-  </div>
+      <!-- 6. MAGNITUDLE -->
+      <article
+        class="game-card"
+        data-id="magnitudle"
+        data-name="Magnitudle"
+        data-category="trivia"
+        data-search="magnitudle trivia estimation scale guessing"
+        style="--game-color: #06b6d4;"
+      >
+        <div class="card-top">
+          <div class="game-icon">↕</div>
 
-  <h3>Magnitudle</h3>
+          <button
+            class="favorite-button"
+            data-favorite="magnitudle"
+            type="button"
+            aria-label="Favorite Magnitudle"
+          >
+            ★
+          </button>
+        </div>
 
-  <div class="category">
-    Trivia
-  </div>
+        <h3>Magnitudle</h3>
 
-  <p class="description">
-    Test your intuition with daily estimation challenges.
-  </p>
+        <div class="category">
+          Trivia
+        </div>
 
-  <div class="card-buttons">
-    <a
-      class="play-button"
-      href="https://magnitudle.com/"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Play ↗
-    </a>
+        <p class="description">
+          Test your intuition with daily estimation challenges.
+        </p>
 
-    <button
-      class="complete-button"
-      data-complete="magnitudle"
-      type="button"
-    >
-      ✓
-    </button>
-  </div>
-</article>
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://magnitudle.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Play ↗
+          </a>
+
+          <button
+            class="complete-button"
+            data-complete="magnitudle"
+            type="button"
+            aria-label="Mark Magnitudle complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="magnitudle"
+            type="button"
+          >
+            Enter Result
+          </button>
+        </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="magnitudle"
+        ></div>
+      </article>
 
 
-      <!-- 6. FRAMED -->
+      <!-- 7. FRAMED -->
       <article
         class="game-card"
         data-id="framed"
+        data-name="Framed"
         data-category="movies"
-        data-search="framed movies film"
-        style="--game-color:#dc2626"
+        data-search="framed movies film identify the movie from a sequence of frames"
+        style="--game-color: #dc2626;"
       >
         <div class="card-top">
           <div class="game-icon">🎬</div>
-          <button class="favorite-button" data-favorite="framed" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="framed"
+            type="button"
+            aria-label="Favorite Framed"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Framed</h3>
-        <div class="category">Movies</div>
-        <p class="description">Identify the movie from a sequence of frames.</p>
+
+        <div class="category">
+          Movies
+        </div>
+
+        <p class="description">
+          Identify the movie from a sequence of frames.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -805,28 +1191,65 @@
             href="https://framed.wtf/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="framed" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="framed"
+            type="button"
+            aria-label="Mark Framed complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="framed"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="framed"
+        ></div>
       </article>
 
-      <!-- 7. WORLDLE -->
+<!-- 8. WORLDLE -->
       <article
         class="game-card"
         data-id="worldle"
+        data-name="Worldle"
         data-category="geography"
-        data-search="worldle geography country map"
-        style="--game-color:#16a34a"
+        data-search="worldle geography guess the country from its silhouette"
+        style="--game-color: #16a34a;"
       >
         <div class="card-top">
           <div class="game-icon">🌍</div>
-          <button class="favorite-button" data-favorite="worldle" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="worldle"
+            type="button"
+            aria-label="Favorite Worldle"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Worldle</h3>
-        <div class="category">Geography</div>
-        <p class="description">Guess the country from its silhouette.</p>
+
+        <div class="category">
+          Geography
+        </div>
+
+        <p class="description">
+          Guess the country from its silhouette.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -834,28 +1257,66 @@
             href="https://worldle.teuteuf.fr/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="worldle" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="worldle"
+            type="button"
+            aria-label="Mark Worldle complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="worldle"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="worldle"
+        ></div>
       </article>
 
-      <!-- 8. GLOBLE -->
+
+      <!-- 9. GLOBLE -->
       <article
         class="game-card"
         data-id="globle"
+        data-name="Globle"
         data-category="geography"
-        data-search="globle geography country globe"
-        style="--game-color:#2563eb"
+        data-search="globle geography use hotter and colder guesses to find the country"
+        style="--game-color: #2563eb;"
       >
         <div class="card-top">
           <div class="game-icon">🌐</div>
-          <button class="favorite-button" data-favorite="globle" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="globle"
+            type="button"
+            aria-label="Favorite Globle"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Globle</h3>
-        <div class="category">Geography</div>
-        <p class="description">Use hotter and colder guesses to find the country.</p>
+
+        <div class="category">
+          Geography
+        </div>
+
+        <p class="description">
+          Use hotter and colder guesses to find the country.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -863,79 +1324,133 @@
             href="https://globle-game.com/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="globle" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="globle"
+            type="button"
+            aria-label="Mark Globle complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="globle"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="globle"
+        ></div>
       </article>
 
-      <!-- WHENTAKEN -->
-<article
-  class="game-card"
-  data-id="whentaken"
-  data-category="geography"
-  data-search="whentaken when taken geography history photo year location"
-  style="--game-color:#f59e0b"
->
-  <div class="card-top">
-    <div class="game-icon">📸</div>
 
-    <button
-      class="favorite-button"
-      data-favorite="whentaken"
-      type="button"
-    >
-      ★
-    </button>
-  </div>
+      <!-- 10. WHENTAKEN -->
+      <article
+        class="game-card"
+        data-id="whentaken"
+        data-name="WhenTaken"
+        data-category="geography"
+        data-search="whentaken when taken geography history photo year location"
+        style="--game-color: #f59e0b;"
+      >
+        <div class="card-top">
+          <div class="game-icon">📸</div>
 
-  <h3>WhenTaken</h3>
+          <button
+            class="favorite-button"
+            data-favorite="whentaken"
+            type="button"
+            aria-label="Favorite WhenTaken"
+          >
+            ★
+          </button>
+        </div>
 
-  <div class="category">
-    Geography
-  </div>
+        <h3>WhenTaken</h3>
 
-  <p class="description">
-    Guess where and when a mystery photo was taken.
-  </p>
+        <div class="category">
+          Geography
+        </div>
 
-  <div class="card-buttons">
-    <a
-      class="play-button"
-      href="https://whentaken.com/"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Play ↗
-    </a>
+        <p class="description">
+          Guess where and when a mystery photo was taken.
+        </p>
 
-    <button
-      class="complete-button"
-      data-complete="whentaken"
-      type="button"
-    >
-      ✓
-    </button>
-  </div>
-</article>
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://whentaken.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Play ↗
+          </a>
+
+          <button
+            class="complete-button"
+            data-complete="whentaken"
+            type="button"
+            aria-label="Mark WhenTaken complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="whentaken"
+            type="button"
+          >
+            Enter Result
+          </button>
+        </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="whentaken"
+        ></div>
+      </article>
 
 
-      <!-- 9. BOX OFFICE GAME -->
+      <!-- 11. BOX OFFICE GAME -->
       <article
         class="game-card"
         data-id="boxoffice"
+        data-name="Box Office Game"
         data-category="movies"
-        data-search="box office game movies film"
-        style="--game-color:#db2777"
+        data-search="box office game movies film guess movies from a past box-office weekend"
+        style="--game-color: #db2777;"
       >
         <div class="card-top">
           <div class="game-icon">🎟</div>
-          <button class="favorite-button" data-favorite="boxoffice" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="boxoffice"
+            type="button"
+            aria-label="Favorite Box Office Game"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Box Office Game</h3>
-        <div class="category">Movies</div>
-        <p class="description">Guess movies from a past box-office weekend.</p>
+
+        <div class="category">
+          Movies
+        </div>
+
+        <p class="description">
+          Guess movies from a past box-office weekend.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -943,64 +1458,133 @@
             href="https://boxofficega.me/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="boxoffice" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="boxoffice"
+            type="button"
+            aria-label="Mark Box Office Game complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="boxoffice"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="boxoffice"
+        ></div>
       </article>
 
-      <!-- 10. POELTL -->
+
+      <!-- 12. POELTL -->
       <article
         class="game-card"
         data-id="poeltl"
+        data-name="Poeltl"
         data-category="sports"
-        data-search="poeltl sports basketball nba"
-        style="--game-color:#ea580c"
+        data-search="poeltl sports basketball nba identify the mystery nba player"
+        style="--game-color: #ea580c;"
       >
         <div class="card-top">
           <div class="game-icon">🏀</div>
-          <button class="favorite-button" data-favorite="poeltl" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="poeltl"
+            type="button"
+            aria-label="Favorite Poeltl"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Poeltl</h3>
-        <div class="category">Sports</div>
-        <p class="description">Identify the mystery NBA player.</p>
 
-        <<div class="card-buttons">
-  <a
-    class="play-button"
-    href="https://poeltl.nbpa.com/"
-    target="_blank"
-    rel="noopener noreferrer"
-  >Play ↗</a>
+        <div class="category">
+          Sports
+        </div>
 
-  <button
-    class="complete-button"
-    data-complete="poeltl"
-    type="button"
-  >
-    ✓
-  </button>
-</div>
+        <p class="description">
+          Identify the mystery NBA player.
+        </p>
 
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://poeltl.nbpa.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Play ↗
+          </a>
+
+          <button
+            class="complete-button"
+            data-complete="poeltl"
+            type="button"
+            aria-label="Mark Poeltl complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="poeltl"
+            type="button"
+          >
+            Enter Result
+          </button>
+        </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="poeltl"
+        ></div>
       </article>
 
-      <!-- 11. WEDDLE -->
+
+      <!-- 13. WEDDLE -->
       <article
         class="game-card"
         data-id="weddle"
+        data-name="Weddle"
         data-category="sports"
-        data-search="weddle sports football nfl"
-        style="--game-color:#15803d"
+        data-search="weddle sports football nfl identify the mystery nfl player"
+        style="--game-color: #15803d;"
       >
         <div class="card-top">
           <div class="game-icon">🏈</div>
-          <button class="favorite-button" data-favorite="weddle" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="weddle"
+            type="button"
+            aria-label="Favorite Weddle"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Weddle</h3>
-        <div class="category">Sports</div>
-        <p class="description">Identify the mystery NFL player.</p>
+
+        <div class="category">
+          Sports
+        </div>
+
+        <p class="description">
+          Identify the mystery NFL player.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -1008,28 +1592,66 @@
             href="https://www.weddlegame.com/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="weddle" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="weddle"
+            type="button"
+            aria-label="Mark Weddle complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="weddle"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="weddle"
+        ></div>
       </article>
 
-      <!-- 12. POOPLE -->
+
+      <!-- 14. POOPLE -->
       <article
         class="game-card"
         data-id="poople"
+        data-name="Poople"
         data-category="word"
-        data-search="poople word logic"
-        style="--game-color:#a16207"
+        data-search="poople word logic quick daily word game"
+        style="--game-color: #a16207;"
       >
         <div class="card-top">
           <div class="game-icon">P</div>
-          <button class="favorite-button" data-favorite="poople" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="poople"
+            type="button"
+            aria-label="Favorite Poople"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Poople</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">A quick daily word game.</p>
+
+        <div class="category">
+          Word & Logic
+        </div>
+
+        <p class="description">
+          A quick daily word game.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -1037,28 +1659,65 @@
             href="https://poople.io/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="poople" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="poople"
+            type="button"
+            aria-label="Mark Poople complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="poople"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="poople"
+        ></div>
       </article>
 
-      <!-- 13. MAPTAP -->
+<!-- 15. MAPTAP -->
       <article
         class="game-card"
         data-id="maptap"
+        data-name="MapTap"
         data-category="geography"
-        data-search="maptap geography map globe"
-        style="--game-color:#0d9488"
+        data-search="maptap geography pin locations on the globe accurately"
+        style="--game-color: #0d9488;"
       >
         <div class="card-top">
           <div class="game-icon">⌖</div>
-          <button class="favorite-button" data-favorite="maptap" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="maptap"
+            type="button"
+            aria-label="Favorite MapTap"
+          >
+            ★
+          </button>
         </div>
 
         <h3>MapTap</h3>
-        <div class="category">Geography</div>
-        <p class="description">Pin locations on the globe as accurately as possible.</p>
+
+        <div class="category">
+          Geography
+        </div>
+
+        <p class="description">
+          Pin locations on the globe accurately.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -1066,28 +1725,66 @@
             href="https://maptap.gg/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="maptap" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="maptap"
+            type="button"
+            aria-label="Mark MapTap complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="maptap"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="maptap"
+        ></div>
       </article>
 
-      <!-- 14. CONTEXTO -->
+
+      <!-- 16. CONTEXTO -->
       <article
         class="game-card"
         data-id="contexto"
+        data-name="Contexto"
         data-category="word"
-        data-search="contexto word logic semantic"
-        style="--game-color:#9333ea"
+        data-search="contexto word logic find the secret word using semantic similarity"
+        style="--game-color: #9333ea;"
       >
         <div class="card-top">
           <div class="game-icon">◎</div>
-          <button class="favorite-button" data-favorite="contexto" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="contexto"
+            type="button"
+            aria-label="Favorite Contexto"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Contexto</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Find the secret word using semantic similarity.</p>
+
+        <div class="category">
+          Word & Logic
+        </div>
+
+        <p class="description">
+          Find the secret word using semantic similarity.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -1095,28 +1792,66 @@
             href="https://contexto.me/en/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="contexto" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="contexto"
+            type="button"
+            aria-label="Mark Contexto complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="contexto"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="contexto"
+        ></div>
       </article>
 
-      <!-- 15. DUOTRIGORDLE -->
+
+      <!-- 17. DUOTRIGORDLE -->
       <article
         class="game-card"
         data-id="duotrigordle"
+        data-name="Duotrigordle"
         data-category="word"
-        data-search="duotrigordle word logic wordle"
-        style="--game-color:#4f46e5"
+        data-search="duotrigordle word logic solve thirty-two wordle boards with shared guesses"
+        style="--game-color: #4f46e5;"
       >
         <div class="card-top">
           <div class="game-icon">32</div>
-          <button class="favorite-button" data-favorite="duotrigordle" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="duotrigordle"
+            type="button"
+            aria-label="Favorite Duotrigordle"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Duotrigordle</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Solve thirty-two Wordle boards with shared guesses.</p>
+
+        <div class="category">
+          Word & Logic
+        </div>
+
+        <p class="description">
+          Solve thirty-two Wordle boards with shared guesses.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -1124,28 +1859,66 @@
             href="https://duotrigordle.com/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="duotrigordle" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="duotrigordle"
+            type="button"
+            aria-label="Mark Duotrigordle complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="duotrigordle"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="duotrigordle"
+        ></div>
       </article>
 
-      <!-- 16. MINUTE CRYPTIC -->
+
+      <!-- 18. MINUTE CRYPTIC -->
       <article
         class="game-card"
         data-id="minutecryptic"
+        data-name="Minute Cryptic"
         data-category="word"
-        data-search="minute cryptic crossword word logic"
-        style="--game-color:#0f766e"
+        data-search="minute cryptic crossword word logic solve one clever cryptic clue each day"
+        style="--game-color: #0f766e;"
       >
         <div class="card-top">
           <div class="game-icon">✦</div>
-          <button class="favorite-button" data-favorite="minutecryptic" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="minutecryptic"
+            type="button"
+            aria-label="Favorite Minute Cryptic"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Minute Cryptic</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Solve one clever cryptic clue every day.</p>
+
+        <div class="category">
+          Word & Logic
+        </div>
+
+        <p class="description">
+          Solve one clever cryptic clue each day.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -1153,28 +1926,66 @@
             href="https://www.minutecryptic.com/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="minutecryptic" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="minutecryptic"
+            type="button"
+            aria-label="Mark Minute Cryptic complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="minutecryptic"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="minutecryptic"
+        ></div>
       </article>
 
-      <!-- 17. IMMACULATE GRID -->
+
+      <!-- 19. IMMACULATE GRID -->
       <article
         class="game-card"
         data-id="immaculate"
+        data-name="Immaculate Grid"
         data-category="sports"
         data-search="immaculate grid sports baseball basketball football hockey"
-        style="--game-color:#0369a1"
+        style="--game-color: #0369a1;"
       >
         <div class="card-top">
           <div class="game-icon">#</div>
-          <button class="favorite-button" data-favorite="immaculate" type="button">★</button>
+
+          <button
+            class="favorite-button"
+            data-favorite="immaculate"
+            type="button"
+            aria-label="Favorite Immaculate Grid"
+          >
+            ★
+          </button>
         </div>
 
         <h3>Immaculate Grid</h3>
-        <div class="category">Sports</div>
-        <p class="description">Fill a sports grid with players matching both criteria.</p>
+
+        <div class="category">
+          Sports
+        </div>
+
+        <p class="description">
+          Fill a sports grid with matching players.
+        </p>
 
         <div class="card-buttons">
           <a
@@ -1182,141 +1993,293 @@
             href="https://www.sports-reference.com/immaculate-grid/"
             target="_blank"
             rel="noopener noreferrer"
-          >Play ↗</a>
+          >
+            Play ↗
+          </a>
 
-          <button class="complete-button" data-complete="immaculate" type="button">✓</button>
+          <button
+            class="complete-button"
+            data-complete="immaculate"
+            type="button"
+            aria-label="Mark Immaculate Grid complete"
+          >
+            ✓
+          </button>
+
+          <button
+            class="result-button"
+            data-result="immaculate"
+            type="button"
+          >
+            Enter Result
+          </button>
         </div>
+
+        <div
+          class="result-summary"
+          data-result-summary="immaculate"
+        ></div>
       </article>
 
     </main>
 
-    <div class="empty-message" id="emptyMessage">
+    <div
+      class="empty-message"
+      id="emptyMessage"
+    >
       No games match your search or selected filter.
     </div>
 
-    <!-- FEEDBACK FORM AT BOTTOM -->
-    <section class="feedback-section">
-      <h2 class="feedback-heading">
+<section
+      class="section"
+      id="friendsSection"
+    >
+      <h2>
+        👥 Friends
+      </h2>
+
+      <p class="intro">
+        Search by username, handle requests, and view today’s shared results.
+      </p>
+
+      <div class="form">
+        <div class="field full">
+          <label for="friendSearch">
+            Find a username
+          </label>
+
+          <input
+            id="friendSearch"
+            type="text"
+            maxlength="24"
+            placeholder="username"
+            autocomplete="off"
+          >
+
+          <button
+            class="button"
+            id="sendFriendButton"
+            type="button"
+          >
+            Send Friend Request
+          </button>
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="friendStatus"
+      ></p>
+
+      <div id="friendsSignedOutMessage">
+        <p class="status">
+          Log in to use friends and shared results.
+        </p>
+      </div>
+
+      <div
+        id="friendsSignedInContent"
+        class="hidden"
+      >
+        <h3>
+          Incoming Requests
+        </h3>
+
+        <div
+          class="friend-list"
+          id="requestList"
+        ></div>
+
+        <h3>
+          Your Friends
+        </h3>
+
+        <div
+          class="friend-list"
+          id="friendList"
+        ></div>
+
+        <h3>
+          Friends’ Results Today
+        </h3>
+
+        <div
+          class="friend-list"
+          id="friendScores"
+        ></div>
+      </div>
+    </section>
+
+
+    <section class="section">
+      <h2>
         💬 Help Improve Daily Game Hub
       </h2>
 
-      <p class="feedback-intro">
-        Found something broken, have an idea, or know a game
-        that should be added? Send it in for review.
+      <p class="intro">
+        Report a bug, suggest a change, or request another game.
       </p>
 
       <div class="feedback-types">
         <button
           class="feedback-type selected"
-          type="button"
           data-feedback-type="bug"
+          type="button"
         >
           🐛 Report a Bug
         </button>
 
         <button
           class="feedback-type"
-          type="button"
           data-feedback-type="suggestion"
+          type="button"
         >
           💡 Suggest a Change
         </button>
 
         <button
           class="feedback-type"
-          type="button"
           data-feedback-type="game_request"
+          type="button"
         >
           🎮 Suggest a Game
         </button>
       </div>
 
-      <form class="feedback-form" id="feedbackForm">
-
-        <div class="form-field full-width">
+      <form
+        class="form"
+        id="feedbackForm"
+      >
+        <div class="field full">
           <label for="feedbackGame">
-            Game involved (optional)
+            Game involved
           </label>
 
           <select id="feedbackGame">
-            <option value="">No specific game</option>
-            <option value="Wordle">Wordle</option>
-            <option value="Connections">Connections</option>
-            <option value="Strands">Strands</option>
-            <option value="Krillion">Krillion</option>
-            <option value="GuessList">GuessList</option>
-            <option value="Framed">Framed</option>
-            <option value="Worldle">Worldle</option>
-            <option value="Globle">Globle</option>
-            <option value="Box Office Game">Box Office Game</option>
-            <option value="Poeltl">Poeltl</option>
-            <option value="Weddle">Weddle</option>
-            <option value="Poople">Poople</option>
-            <option value="MapTap">MapTap</option>
-            <option value="Contexto">Contexto</option>
-            <option value="Duotrigordle">Duotrigordle</option>
-            <option value="Minute Cryptic">Minute Cryptic</option>
-            <option value="Immaculate Grid">Immaculate Grid</option>
-            <option value="Magnitudle">Magnitudle</option>
-            <option value="WhenTaken">WhenTaken</option>
+            <option value="">
+              No specific game
+            </option>
+
+            <option value="Wordle">
+              Wordle
+            </option>
+
+            <option value="Connections">
+              Connections
+            </option>
+
+            <option value="Strands">
+              Strands
+            </option>
+
+            <option value="Krillion">
+              Krillion
+            </option>
+
+            <option value="GuessList">
+              GuessList
+            </option>
+
+            <option value="Magnitudle">
+              Magnitudle
+            </option>
+
+            <option value="Framed">
+              Framed
+            </option>
+
+            <option value="Worldle">
+              Worldle
+            </option>
+
+            <option value="Globle">
+              Globle
+            </option>
+
+            <option value="WhenTaken">
+              WhenTaken
+            </option>
+
+            <option value="Box Office Game">
+              Box Office Game
+            </option>
+
+            <option value="Poeltl">
+              Poeltl
+            </option>
+
+            <option value="Weddle">
+              Weddle
+            </option>
+
+            <option value="Poople">
+              Poople
+            </option>
+
+            <option value="MapTap">
+              MapTap
+            </option>
+
+            <option value="Contexto">
+              Contexto
+            </option>
+
+            <option value="Duotrigordle">
+              Duotrigordle
+            </option>
+
+            <option value="Minute Cryptic">
+              Minute Cryptic
+            </option>
+
+            <option value="Immaculate Grid">
+              Immaculate Grid
+            </option>
           </select>
         </div>
 
-        <div class="form-field full-width">
+        <div class="field full">
           <label for="feedbackMessage">
-            What happened or what would you like changed?
+            Message
           </label>
 
           <textarea
             id="feedbackMessage"
             maxlength="2000"
             required
-            placeholder="Describe the bug, suggestion, or game request..."
+            placeholder="Describe the bug, idea, or game request..."
           ></textarea>
-
-          <div class="character-count" id="characterCount">
-            0 / 2000
-          </div>
         </div>
 
-        <div class="form-field">
-          <label for="feedbackName">Name (optional)</label>
+        <div class="field">
+          <label for="feedbackName">
+            Name (optional)
+          </label>
 
           <input
             id="feedbackName"
             type="text"
             maxlength="100"
             autocomplete="name"
-            placeholder="Your name"
           >
         </div>
 
-        <div class="form-field">
-          <label for="feedbackEmail">Email (optional)</label>
+        <div class="field">
+          <label for="feedbackEmail">
+            Email (optional)
+          </label>
 
           <input
             id="feedbackEmail"
             type="email"
             maxlength="200"
             autocomplete="email"
-            placeholder="you@example.com"
           >
         </div>
 
-        <div class="honeypot" aria-hidden="true">
-          <label for="companyWebsite">Company website</label>
-
-          <input
-            id="companyWebsite"
-            type="text"
-            tabindex="-1"
-            autocomplete="off"
-          >
-        </div>
-
-        <div class="submit-row">
+        <div class="field full">
           <button
-            class="submit-feedback"
+            class="button"
             id="submitFeedbackButton"
             type="submit"
           >
@@ -1324,7 +2287,7 @@
           </button>
 
           <p
-            class="feedback-status"
+            class="status"
             id="feedbackStatus"
             aria-live="polite"
           ></p>
@@ -1332,121 +2295,487 @@
       </form>
     </section>
 
+
     <p class="footer">
-      Favorites and daily completion checkmarks are stored locally
-      in this browser. Feedback is sent to the Daily Game Hub review
-      database.
+      Local favorites and checkmarks remain available without an account.
+      Signed-in results, friends, and feedback use Supabase.
     </p>
   </div>
+
+<div
+    class="modal"
+    id="accountModal"
+  >
+    <div class="modal-card">
+
+      <div class="modal-top">
+        <h2>
+          Account
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="accountModal"
+          type="button"
+          aria-label="Close account window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div id="signedOutView">
+        <div class="form">
+
+          <div class="field full">
+            <label for="authEmail">
+              Email
+            </label>
+
+            <input
+              id="authEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+            >
+          </div>
+
+          <div class="field full">
+            <label for="authPassword">
+              Password
+            </label>
+
+            <input
+              id="authPassword"
+              type="password"
+              minlength="6"
+              autocomplete="current-password"
+              placeholder="At least 6 characters"
+            >
+          </div>
+
+          <div class="field">
+            <button
+              class="button"
+              id="signInButton"
+              type="button"
+            >
+              Log In
+            </button>
+          </div>
+
+          <div class="field">
+            <button
+              class="button secondary"
+              id="signUpButton"
+              type="button"
+            >
+              Create Account
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <div
+        id="signedInView"
+        class="hidden"
+      >
+        <div class="account-state">
+
+          <div>
+            <strong id="accountName"></strong>
+
+            <p
+              class="status"
+              id="accountEmail"
+            ></p>
+          </div>
+
+          <button
+            class="button danger"
+            id="signOutButton"
+            type="button"
+          >
+            Sign Out
+          </button>
+
+        </div>
+
+        <div class="form">
+
+          <div class="field full">
+            <label for="usernameInput">
+              Username
+            </label>
+
+            <input
+              id="usernameInput"
+              type="text"
+              maxlength="24"
+              autocomplete="off"
+              placeholder="lowercase_letters"
+            >
+
+            <button
+              class="button"
+              id="saveProfileButton"
+              type="button"
+            >
+              Save Username
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="authStatus"
+        aria-live="polite"
+      ></p>
+
+    </div>
+  </div>
+
+
+  <div
+    class="modal"
+    id="scoreModal"
+  >
+    <div class="modal-card">
+
+      <div class="modal-top">
+        <h2 id="scoreTitle">
+          Enter Result
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="scoreModal"
+          type="button"
+          aria-label="Close result window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="form">
+
+        <div class="field full">
+          <label for="resultText">
+            Result shown to friends
+          </label>
+
+          <input
+            id="resultText"
+            type="text"
+            maxlength="200"
+            placeholder="Example: 4/6 or 42,650 points"
+          >
+        </div>
+
+        <div class="field">
+          <label for="numericScore">
+            Numeric score (optional)
+          </label>
+
+          <input
+            id="numericScore"
+            type="number"
+            step="any"
+            inputmode="decimal"
+          >
+        </div>
+
+        <div class="field">
+          <label for="scoreUnit">
+            Unit (optional)
+          </label>
+
+          <input
+            id="scoreUnit"
+            type="text"
+            maxlength="50"
+            placeholder="guesses, points, mistakes"
+          >
+        </div>
+
+        <div class="field full">
+          <button
+            class="button"
+            id="saveScoreButton"
+            type="button"
+          >
+            Save Result
+          </button>
+        </div>
+
+      </div>
+
+      <p
+        class="status"
+        id="scoreStatus"
+        aria-live="polite"
+      ></p>
+
+    </div>
+  </div>
+
 
   <script>
     const SUPABASE_URL =
       "https://ibffwmegxjymmulfgoqu.supabase.co";
 
-    const SUPABASE_PUBLISHABLE_KEY =
+    const SUPABASE_KEY =
       "sb_publishable_v-YaLSlXnipQLhgN5-lHcw_ovmUbwvU";
 
-    const today =
+    const TODAY =
       new Date().toLocaleDateString("en-CA");
 
-    const completedStorageKey =
-      "dailyGameHubCompleted-" + today;
+    const COMPLETED_KEY =
+      "dailyGameHubCompleted-" + TODAY;
 
-    const favoritesStorageKey =
+    const FAVORITES_KEY =
       "dailyGameHubFavorites";
 
-    let completedGames = [];
-    let favoriteGames = [];
-    let currentFilter = "all";
-    let selectedFeedbackType = "bug";
+    const SESSION_KEY =
+      "dailyGameHubSession";
 
-    try {
-      completedGames =
-        JSON.parse(localStorage.getItem(completedStorageKey)) || [];
+    let completedGames =
+      safeParse(
+        localStorage.getItem(COMPLETED_KEY),
+        []
+      );
 
-      favoriteGames =
-        JSON.parse(localStorage.getItem(favoritesStorageKey)) || [];
-    } catch (error) {
-      completedGames = [];
-      favoriteGames = [];
-    }
+    let favoriteGames =
+      safeParse(
+        localStorage.getItem(FAVORITES_KEY),
+        []
+      );
 
-    function saveLocalData() {
+    let session =
+      safeParse(
+        localStorage.getItem(SESSION_KEY),
+        null
+      );
+
+    let currentFilter =
+      "all";
+
+    let selectedFeedbackType =
+      "bug";
+
+    let selectedScoreGame =
+      "";
+
+
+    function safeParse(
+      value,
+      fallback
+    ) {
       try {
-        localStorage.setItem(
-          completedStorageKey,
-          JSON.stringify(completedGames)
-        );
-
-        localStorage.setItem(
-          favoritesStorageKey,
-          JSON.stringify(favoriteGames)
-        );
+        return value
+          ? JSON.parse(value)
+          : fallback;
       } catch (error) {
-        console.error("Local storage failed:", error);
+        return fallback;
       }
     }
 
-    function toggleCompleted(gameId) {
-      if (completedGames.includes(gameId)) {
-        completedGames =
-          completedGames.filter(id => id !== gameId);
-      } else {
-        completedGames.push(gameId);
-      }
 
-      saveLocalData();
-      updatePage();
+    function cards() {
+      return Array.from(
+        document.querySelectorAll(
+          ".game-card"
+        )
+      );
     }
 
-    function toggleFavorite(gameId) {
-      if (favoriteGames.includes(gameId)) {
-        favoriteGames =
-          favoriteGames.filter(id => id !== gameId);
-      } else {
-        favoriteGames.push(gameId);
-      }
 
-      saveLocalData();
-      updatePage();
+    function setStatus(
+      element,
+      message,
+      type = ""
+    ) {
+      element.textContent =
+        message;
+
+      element.classList.remove(
+        "success",
+        "error"
+      );
+
+      if (type) {
+        element.classList.add(type);
+      }
     }
 
-    function updateProgress() {
-      const cards =
-        Array.from(document.querySelectorAll(".game-card"));
+
+    function saveLocal() {
+      localStorage.setItem(
+        COMPLETED_KEY,
+        JSON.stringify(completedGames)
+      );
+
+      localStorage.setItem(
+        FAVORITES_KEY,
+        JSON.stringify(favoriteGames)
+      );
+    }
+
+
+    function publicHeaders() {
+      return {
+        "Content-Type":
+          "application/json",
+
+        "apikey":
+          SUPABASE_KEY
+      };
+    }
+
+
+    function authHeaders(
+      prefer = ""
+    ) {
+      const headers = {
+        "Content-Type":
+          "application/json",
+
+        "apikey":
+          SUPABASE_KEY,
+
+        "Authorization":
+          "Bearer " +
+          session.access_token
+      };
+
+      if (prefer) {
+        headers.Prefer =
+          prefer;
+      }
+
+      return headers;
+    }
+
+
+    async function request(
+      path,
+      options = {}
+    ) {
+      const response =
+        await fetch(
+          SUPABASE_URL + path,
+          options
+        );
+
+      const responseText =
+        await response.text();
+
+      let responseData =
+        null;
+
+      try {
+        responseData =
+          responseText
+            ? JSON.parse(responseText)
+            : null;
+      } catch (error) {
+        responseData =
+          responseText;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          responseData?.message ||
+          responseData?.error_description ||
+          responseData?.msg ||
+          String(responseData) ||
+          "Request failed"
+        );
+      }
+
+      return responseData;
+    }
+
+function updateLocalUI() {
+      cards().forEach(card => {
+        const gameId =
+          card.dataset.id;
+
+        card.classList.toggle(
+          "completed",
+          completedGames.includes(gameId)
+        );
+
+        const favoriteButton =
+          card.querySelector(
+            ".favorite-button"
+          );
+
+        favoriteButton.classList.toggle(
+          "favorite",
+          favoriteGames.includes(gameId)
+        );
+      });
 
       const completedCount =
-        cards.filter(card =>
-          completedGames.includes(card.dataset.id)
+        cards().filter(card =>
+          completedGames.includes(
+            card.dataset.id
+          )
         ).length;
 
-      const totalGames = cards.length;
+      const totalGames =
+        cards().length;
 
       const percentage =
         totalGames === 0
           ? 0
-          : Math.round((completedCount / totalGames) * 100);
+          : Math.round(
+              completedCount /
+              totalGames *
+              100
+            );
 
-      document.getElementById("progressCount").textContent =
-        completedCount + " of " + totalGames + " completed";
+      document
+        .getElementById(
+          "progressCount"
+        )
+        .textContent =
+          completedCount +
+          " of " +
+          totalGames +
+          " completed";
 
-      document.getElementById("percentage").textContent =
-        percentage + "%";
+      document
+        .getElementById(
+          "percentage"
+        )
+        .textContent =
+          percentage + "%";
 
-      document.getElementById("progressFill").style.width =
-        percentage + "%";
+      document
+        .getElementById(
+          "progressFill"
+        )
+        .style
+        .width =
+          percentage + "%";
+
+      applyFilters();
     }
+
 
     function applyFilters() {
       const searchValue =
         document
-          .getElementById("searchInput")
+          .getElementById(
+            "searchInput"
+          )
           .value
           .trim()
           .toLowerCase();
-
-      const cards =
-        document.querySelectorAll(".game-card");
 
       const categoryFilters = [
         "word",
@@ -1456,354 +2785,1839 @@
         "trivia"
       ];
 
-      let visibleCount = 0;
+      let visibleCount =
+        0;
 
-      cards.forEach(card => {
-        const gameId = card.dataset.id;
-        const category = card.dataset.category;
-        const searchText = card.dataset.search.toLowerCase();
+      cards().forEach(card => {
+        const gameId =
+          card.dataset.id;
+
+        const category =
+          card.dataset.category;
+
+        const searchText =
+          card.dataset.search
+            .toLowerCase();
 
         let visible =
-          searchText.includes(searchValue);
+          searchText.includes(
+            searchValue
+          );
 
         if (
-          categoryFilters.includes(currentFilter) &&
+          categoryFilters.includes(
+            currentFilter
+          ) &&
           category !== currentFilter
         ) {
           visible = false;
         }
 
         if (
-          currentFilter === "favorites" &&
-          !favoriteGames.includes(gameId)
+          currentFilter ===
+            "favorites" &&
+          !favoriteGames.includes(
+            gameId
+          )
         ) {
           visible = false;
         }
 
         if (
-          currentFilter === "completed" &&
-          !completedGames.includes(gameId)
+          currentFilter ===
+            "completed" &&
+          !completedGames.includes(
+            gameId
+          )
         ) {
           visible = false;
         }
 
         if (
-          currentFilter === "unfinished" &&
-          completedGames.includes(gameId)
+          currentFilter ===
+            "unfinished" &&
+          completedGames.includes(
+            gameId
+          )
         ) {
           visible = false;
         }
 
         card.style.display =
-          visible ? "flex" : "none";
+          visible
+            ? "flex"
+            : "none";
 
         if (visible) {
           visibleCount += 1;
         }
       });
 
-      document.getElementById("emptyMessage").style.display =
-        visibleCount === 0 ? "block" : "none";
-    }
-
-    function updatePage() {
       document
-        .querySelectorAll(".game-card")
-        .forEach(card => {
-          const gameId = card.dataset.id;
-
-          card.classList.toggle(
-            "completed",
-            completedGames.includes(gameId)
-          );
-
-          const favoriteButton =
-            card.querySelector(".favorite-button");
-
-          favoriteButton.classList.toggle(
-            "favorite",
-            favoriteGames.includes(gameId)
-          );
-        });
-
-      updateProgress();
-      applyFilters();
+        .getElementById(
+          "emptyMessage"
+        )
+        .style
+        .display =
+          visibleCount > 0
+            ? "none"
+            : "block";
     }
 
-    function openRandomGame() {
-      const cards =
-        Array.from(document.querySelectorAll(".game-card"));
 
-      let availableCards =
-        cards.filter(card =>
-          !completedGames.includes(card.dataset.id)
-        );
+    document
+      .querySelectorAll(
+        "[data-complete]"
+      )
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            const gameId =
+              button.dataset.complete;
 
-      if (availableCards.length === 0) {
-        availableCards = cards;
-      }
+            if (
+              completedGames.includes(
+                gameId
+              )
+            ) {
+              completedGames =
+                completedGames.filter(
+                  id => id !== gameId
+                );
+            } else {
+              completedGames.push(
+                gameId
+              );
+            }
 
-      if (availableCards.length === 0) {
-        return;
-      }
-
-      const randomCard =
-        availableCards[
-          Math.floor(Math.random() * availableCards.length)
-        ];
-
-      const playLink =
-        randomCard.querySelector(".play-button");
-
-      if (playLink) {
-        playLink.click();
-      }
-    }
-
-    function setFeedbackStatus(message, type = "") {
-      const status =
-        document.getElementById("feedbackStatus");
-
-      status.textContent = message;
-      status.classList.remove("success", "error");
-
-      if (type) {
-        status.classList.add(type);
-      }
-    }
-
-    function resetFeedbackType() {
-      selectedFeedbackType = "bug";
-
-      document
-        .querySelectorAll("[data-feedback-type]")
-        .forEach(button => {
-          button.classList.toggle(
-            "selected",
-            button.dataset.feedbackType === "bug"
-          );
-        });
-    }
-
-    async function submitFeedback(event) {
-      event.preventDefault();
-
-      const submitButton =
-        document.getElementById("submitFeedbackButton");
-
-      const message =
-        document
-          .getElementById("feedbackMessage")
-          .value
-          .trim();
-
-      const game =
-        document
-          .getElementById("feedbackGame")
-          .value
-          .trim();
-
-      const name =
-        document
-          .getElementById("feedbackName")
-          .value
-          .trim();
-
-      const email =
-        document
-          .getElementById("feedbackEmail")
-          .value
-          .trim();
-
-      const honeypot =
-        document
-          .getElementById("companyWebsite")
-          .value
-          .trim();
-
-      if (honeypot !== "") {
-        setFeedbackStatus(
-          "Thanks! Your feedback was sent.",
-          "success"
-        );
-
-        return;
-      }
-
-      if (message.length < 3) {
-        setFeedbackStatus(
-          "Please enter at least 3 characters.",
-          "error"
-        );
-
-        return;
-      }
-
-      const feedbackRecord = {
-        type: selectedFeedbackType,
-        game: game || null,
-        message: message,
-        name: name || null,
-        email: email || null,
-        status: "new"
-      };
-
-      submitButton.disabled = true;
-      submitButton.textContent = "Sending...";
-
-      setFeedbackStatus("Submitting your feedback...");
-
-      try {
-        const response = await fetch(
-          SUPABASE_URL + "/rest/v1/feedback",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type": "application/json",
-              "apikey": SUPABASE_PUBLISHABLE_KEY,
-              "Authorization":
-                "Bearer " + SUPABASE_PUBLISHABLE_KEY,
-              "Prefer": "return=minimal"
-            },
-
-            body: JSON.stringify(feedbackRecord)
+            saveLocal();
+            updateLocalUI();
           }
         );
-
-        if (!response.ok) {
-          const responseText =
-            await response.text();
-
-          console.error(
-            "Supabase rejected feedback:",
-            response.status,
-            responseText
-          );
-
-          throw new Error(
-            "Supabase returned status " + response.status
-          );
-        }
-
-        document
-          .getElementById("feedbackForm")
-          .reset();
-
-        document.getElementById(
-          "characterCount"
-        ).textContent = "0 / 2000";
-
-        resetFeedbackType();
-
-        setFeedbackStatus(
-          "Thanks! Your feedback was sent for review.",
-          "success"
-        );
-      } catch (error) {
-        console.error(
-          "Feedback submission failed:",
-          error
-        );
-
-        setFeedbackStatus(
-          "The feedback could not be sent. Please try again.",
-          "error"
-        );
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = "Submit Feedback";
-      }
-    }
-
-    document
-      .querySelectorAll("[data-complete]")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          toggleCompleted(button.dataset.complete);
-        });
       });
 
-    document
-      .querySelectorAll("[data-favorite]")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          toggleFavorite(button.dataset.favorite);
-        });
-      });
 
     document
-      .querySelectorAll("[data-filter]")
+      .querySelectorAll(
+        "[data-favorite]"
+      )
       .forEach(button => {
-        button.addEventListener("click", () => {
-          currentFilter = button.dataset.filter;
+        button.addEventListener(
+          "click",
+          () => {
+            const gameId =
+              button.dataset.favorite;
 
-          document
-            .querySelectorAll("[data-filter]")
-            .forEach(filterButton => {
-              filterButton.classList.toggle(
-                "active",
-                filterButton === button
+            if (
+              favoriteGames.includes(
+                gameId
+              )
+            ) {
+              favoriteGames =
+                favoriteGames.filter(
+                  id => id !== gameId
+                );
+            } else {
+              favoriteGames.push(
+                gameId
               );
-            });
+            }
 
-          applyFilters();
-        });
+            saveLocal();
+            updateLocalUI();
+          }
+        );
       });
 
+
     document
-      .querySelectorAll("[data-feedback-type]")
+      .querySelectorAll(
+        "[data-filter]"
+      )
       .forEach(button => {
-        button.addEventListener("click", () => {
-          selectedFeedbackType =
-            button.dataset.feedbackType;
+        button.addEventListener(
+          "click",
+          () => {
+            currentFilter =
+              button.dataset.filter;
 
-          document
-            .querySelectorAll("[data-feedback-type]")
-            .forEach(typeButton => {
-              typeButton.classList.toggle(
-                "selected",
-                typeButton === button
+            document
+              .querySelectorAll(
+                "[data-filter]"
+              )
+              .forEach(
+                filterButton => {
+                  filterButton
+                    .classList
+                    .toggle(
+                      "active",
+                      filterButton ===
+                        button
+                    );
+                }
               );
-            });
-        });
+
+            applyFilters();
+          }
+        );
       });
 
-    document
-      .getElementById("searchInput")
-      .addEventListener("input", applyFilters);
 
     document
-      .getElementById("randomButton")
-      .addEventListener("click", openRandomGame);
+      .getElementById(
+        "searchInput"
+      )
+      .addEventListener(
+        "input",
+        applyFilters
+      );
+
 
     document
-      .getElementById("feedbackForm")
-      .addEventListener("submit", submitFeedback);
+      .getElementById(
+        "randomButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+          let availableCards =
+            cards().filter(
+              card =>
+                !completedGames.includes(
+                  card.dataset.id
+                )
+            );
 
-    document
-      .getElementById("feedbackMessage")
-      .addEventListener("input", event => {
-        document.getElementById(
-          "characterCount"
-        ).textContent =
-          event.target.value.length + " / 2000";
-      });
+          if (
+            availableCards.length === 0
+          ) {
+            availableCards =
+              cards();
+          }
 
-    document.getElementById(
-      "currentDate"
-    ).textContent =
-      new Date().toLocaleDateString(
-        undefined,
-        {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric"
+          if (
+            availableCards.length === 0
+          ) {
+            return;
+          }
+
+          const randomCard =
+            availableCards[
+              Math.floor(
+                Math.random() *
+                availableCards.length
+              )
+            ];
+
+          const playLink =
+            randomCard.querySelector(
+              ".play-button"
+            );
+
+          if (playLink) {
+            playLink.click();
+          }
         }
       );
 
-    updatePage();
+
+    document
+      .querySelectorAll(
+        "[data-close]"
+      )
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            document
+              .getElementById(
+                button.dataset.close
+              )
+              .classList
+              .remove("open");
+          }
+        );
+      });
+
+
+    document
+      .getElementById(
+        "accountButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+          document
+            .getElementById(
+              "accountModal"
+            )
+            .classList
+            .add("open");
+        }
+      );
+
+
+    document
+      .getElementById(
+        "friendsButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+          document
+            .getElementById(
+              "friendsSection"
+            )
+            .scrollIntoView({
+              behavior: "smooth"
+            });
+        }
+      );
+
+
+    function showSessionUI() {
+      const signedIn =
+        Boolean(
+          session?.access_token &&
+          session?.user
+        );
+
+      document
+        .getElementById(
+          "signedOutView"
+        )
+        .classList
+        .toggle(
+          "hidden",
+          signedIn
+        );
+
+      document
+        .getElementById(
+          "signedInView"
+        )
+        .classList
+        .toggle(
+          "hidden",
+          !signedIn
+        );
+
+      document
+        .getElementById(
+          "friendsSignedOutMessage"
+        )
+        .classList
+        .toggle(
+          "hidden",
+          signedIn
+        );
+
+      document
+        .getElementById(
+          "friendsSignedInContent"
+        )
+        .classList
+        .toggle(
+          "hidden",
+          !signedIn
+        );
+
+      document
+        .getElementById(
+          "sendFriendButton"
+        )
+        .disabled =
+          !signedIn;
+
+      if (signedIn) {
+        document
+          .getElementById(
+            "accountEmail"
+          )
+          .textContent =
+            session.user.email || "";
+
+        document
+          .getElementById(
+            "accountName"
+          )
+          .textContent =
+            session.user.email ||
+            "Signed in";
+
+        loadProfile();
+        loadFriends();
+        loadTodayScores();
+      }
+    }
+
+
+    async function signUp() {
+      const email =
+        document
+          .getElementById(
+            "authEmail"
+          )
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById(
+            "authPassword"
+          )
+          .value;
+
+      if (
+        !email ||
+        password.length < 6
+      ) {
+        setStatus(
+          authStatus,
+          "Enter a valid email and a password with at least 6 characters.",
+          "error"
+        );
+
+        return;
+      }
+
+      try {
+        setStatus(
+          authStatus,
+          "Creating account..."
+        );
+
+        const data =
+          await request(
+            "/auth/v1/signup",
+            {
+              method: "POST",
+
+              headers:
+                publicHeaders(),
+
+              body:
+                JSON.stringify({
+                  email: email,
+                  password: password
+                })
+            }
+          );
+
+        if (
+          data?.access_token
+        ) {
+          session = data;
+
+          localStorage.setItem(
+            SESSION_KEY,
+            JSON.stringify(session)
+          );
+
+          showSessionUI();
+
+          setStatus(
+            authStatus,
+            "Account created and signed in.",
+            "success"
+          );
+        } else {
+          setStatus(
+            authStatus,
+            "Account created. Check your email to confirm it.",
+            "success"
+          );
+        }
+      } catch (error) {
+        setStatus(
+          authStatus,
+          error.message,
+          "error"
+        );
+      }
+    }
+
+
+    async function signIn() {
+      const email =
+        document
+          .getElementById(
+            "authEmail"
+          )
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById(
+            "authPassword"
+          )
+          .value;
+
+      if (
+        !email ||
+        !password
+      ) {
+        setStatus(
+          authStatus,
+          "Enter your email and password.",
+          "error"
+        );
+
+        return;
+      }
+
+      try {
+        setStatus(
+          authStatus,
+          "Signing in..."
+        );
+
+        session =
+          await request(
+            "/auth/v1/token?grant_type=password",
+            {
+              method: "POST",
+
+              headers:
+                publicHeaders(),
+
+              body:
+                JSON.stringify({
+                  email: email,
+                  password: password
+                })
+            }
+          );
+
+        localStorage.setItem(
+          SESSION_KEY,
+          JSON.stringify(session)
+        );
+
+        setStatus(
+          authStatus,
+          "Signed in.",
+          "success"
+        );
+
+        showSessionUI();
+      } catch (error) {
+        setStatus(
+          authStatus,
+          error.message,
+          "error"
+        );
+      }
+    }
+
+
+    document
+      .getElementById(
+        "signUpButton"
+      )
+      .addEventListener(
+        "click",
+        signUp
+      );
+
+
+    document
+      .getElementById(
+        "signInButton"
+      )
+      .addEventListener(
+        "click",
+        signIn
+      );
+
+
+    document
+      .getElementById(
+        "signOutButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+          session = null;
+
+          localStorage.removeItem(
+            SESSION_KEY
+          );
+
+          showSessionUI();
+
+          document
+            .getElementById(
+              "accountModal"
+            )
+            .classList
+            .remove("open");
+        }
+      );
+
+async function loadProfile() {
+      if (!session) {
+        return;
+      }
+
+      try {
+        const profileRows =
+          await request(
+            "/rest/v1/profiles" +
+            "?user_id=eq." +
+            encodeURIComponent(
+              session.user.id
+            ) +
+            "&select=" +
+            "user_id,username,display_name",
+            {
+              headers:
+                authHeaders()
+            }
+          );
+
+        if (
+          profileRows &&
+          profileRows.length > 0
+        ) {
+          const profile =
+            profileRows[0];
+
+          document
+            .getElementById(
+              "usernameInput"
+            )
+            .value =
+              profile.username || "";
+
+          document
+            .getElementById(
+              "accountName"
+            )
+            .textContent =
+              profile.display_name ||
+              "@" + profile.username;
+        } else {
+          document
+            .getElementById(
+              "accountName"
+            )
+            .textContent =
+              session.user.email ||
+              "Signed in";
+
+          setStatus(
+            authStatus,
+            "Choose a username to finish setting up your profile."
+          );
+        }
+      } catch (error) {
+        setStatus(
+          authStatus,
+          error.message,
+          "error"
+        );
+      }
+    }
+
+
+    document
+      .getElementById(
+        "saveProfileButton"
+      )
+      .addEventListener(
+        "click",
+        async () => {
+          if (!session) {
+            setStatus(
+              authStatus,
+              "Log in before saving a username.",
+              "error"
+            );
+
+            return;
+          }
+
+          const username =
+            document
+              .getElementById(
+                "usernameInput"
+              )
+              .value
+              .trim()
+              .toLowerCase();
+
+          const usernameIsValid =
+            /^[a-z0-9_]{3,24}$/
+              .test(username);
+
+          if (!usernameIsValid) {
+            setStatus(
+              authStatus,
+              "Use 3–24 lowercase letters, numbers, or underscores.",
+              "error"
+            );
+
+            return;
+          }
+
+          try {
+            setStatus(
+              authStatus,
+              "Saving username..."
+            );
+
+            await request(
+              "/rest/v1/profiles" +
+              "?on_conflict=user_id",
+              {
+                method: "POST",
+
+                headers:
+                  authHeaders(
+                    "resolution=merge-duplicates,return=minimal"
+                  ),
+
+                body:
+                  JSON.stringify({
+                    user_id:
+                      session.user.id,
+
+                    username:
+                      username
+                  })
+              }
+            );
+
+            setStatus(
+              authStatus,
+              "Username saved.",
+              "success"
+            );
+
+            await loadProfile();
+            await loadFriends();
+          } catch (error) {
+            setStatus(
+              authStatus,
+              error.message,
+              "error"
+            );
+          }
+        }
+      );
+
+
+    async function getProfile(
+      userId
+    ) {
+      const profileRows =
+        await request(
+          "/rest/v1/profiles" +
+          "?user_id=eq." +
+          encodeURIComponent(
+            userId
+          ) +
+          "&select=" +
+          "user_id,username,display_name",
+          {
+            headers:
+              authHeaders()
+          }
+        );
+
+      if (
+        profileRows &&
+        profileRows.length > 0
+      ) {
+        return profileRows[0];
+      }
+
+      return {
+        user_id: userId,
+        username: "unknown",
+        display_name: null
+      };
+    }
+
+
+    document
+      .getElementById(
+        "sendFriendButton"
+      )
+      .addEventListener(
+        "click",
+        async () => {
+          if (!session) {
+            document
+              .getElementById(
+                "accountModal"
+              )
+              .classList
+              .add("open");
+
+            setStatus(
+              authStatus,
+              "Log in before sending a friend request.",
+              "error"
+            );
+
+            return;
+          }
+
+          const username =
+            document
+              .getElementById(
+                "friendSearch"
+              )
+              .value
+              .trim()
+              .toLowerCase();
+
+          if (!username) {
+            setStatus(
+              friendStatus,
+              "Enter a username.",
+              "error"
+            );
+
+            return;
+          }
+
+          try {
+            setStatus(
+              friendStatus,
+              "Searching for username..."
+            );
+
+            const profileRows =
+              await request(
+                "/rest/v1/profiles" +
+                "?username=eq." +
+                encodeURIComponent(
+                  username
+                ) +
+                "&select=" +
+                "user_id,username,display_name",
+                {
+                  headers:
+                    authHeaders()
+                }
+              );
+
+            if (
+              !profileRows ||
+              profileRows.length === 0
+            ) {
+              throw new Error(
+                "Username not found."
+              );
+            }
+
+            const friendProfile =
+              profileRows[0];
+
+            if (
+              friendProfile.user_id ===
+              session.user.id
+            ) {
+              throw new Error(
+                "You cannot add yourself."
+              );
+            }
+
+            await request(
+              "/rest/v1/friendships",
+              {
+                method: "POST",
+
+                headers:
+                  authHeaders(
+                    "return=minimal"
+                  ),
+
+                body:
+                  JSON.stringify({
+                    requester_id:
+                      session.user.id,
+
+                    addressee_id:
+                      friendProfile.user_id,
+
+                    status:
+                      "pending"
+                  })
+              }
+            );
+
+            document
+              .getElementById(
+                "friendSearch"
+              )
+              .value = "";
+
+            setStatus(
+              friendStatus,
+              "Friend request sent.",
+              "success"
+            );
+
+            await loadFriends();
+          } catch (error) {
+            let message =
+              error.message;
+
+            if (
+              message.includes(
+                "duplicate key"
+              ) ||
+              message.includes(
+                "friendships_unique_direction"
+              )
+            ) {
+              message =
+                "A request or friendship with that user already exists.";
+            }
+
+            setStatus(
+              friendStatus,
+              message,
+              "error"
+            );
+          }
+        }
+      );
+
+
+    async function loadFriends() {
+      if (!session) {
+        return;
+      }
+
+      const requestList =
+        document.getElementById(
+          "requestList"
+        );
+
+      const friendList =
+        document.getElementById(
+          "friendList"
+        );
+
+      requestList.innerHTML =
+        "";
+
+      friendList.innerHTML =
+        "";
+
+      try {
+        const friendshipRows =
+          await request(
+            "/rest/v1/friendships" +
+            "?or=(" +
+            "requester_id.eq." +
+            session.user.id +
+            "," +
+            "addressee_id.eq." +
+            session.user.id +
+            ")" +
+            "&select=*",
+            {
+              headers:
+                authHeaders()
+            }
+          );
+
+        for (
+          const friendship
+          of friendshipRows || []
+        ) {
+          const otherUserId =
+            friendship.requester_id ===
+            session.user.id
+              ? friendship.addressee_id
+              : friendship.requester_id;
+
+          const otherProfile =
+            await getProfile(
+              otherUserId
+            );
+
+          const displayName =
+            otherProfile.display_name ||
+            "@" +
+            otherProfile.username;
+
+          const isIncomingRequest =
+            friendship.status ===
+              "pending" &&
+            friendship.addressee_id ===
+              session.user.id;
+
+          if (isIncomingRequest) {
+            const requestRow =
+              document.createElement(
+                "div"
+              );
+
+            requestRow.className =
+              "friend-row";
+
+            const nameElement =
+              document.createElement(
+                "span"
+              );
+
+            nameElement.textContent =
+              displayName;
+
+            const actionContainer =
+              document.createElement(
+                "div"
+              );
+
+            actionContainer.className =
+              "friend-actions";
+
+            const acceptButton =
+              document.createElement(
+                "button"
+              );
+
+            acceptButton.className =
+              "small-button";
+
+            acceptButton.type =
+              "button";
+
+            acceptButton.textContent =
+              "Accept";
+
+            acceptButton.addEventListener(
+              "click",
+              () => {
+                respondToFriendRequest(
+                  friendship.id,
+                  "accepted"
+                );
+              }
+            );
+
+            const declineButton =
+              document.createElement(
+                "button"
+              );
+
+            declineButton.className =
+              "small-button";
+
+            declineButton.type =
+              "button";
+
+            declineButton.textContent =
+              "Decline";
+
+            declineButton.addEventListener(
+              "click",
+              () => {
+                respondToFriendRequest(
+                  friendship.id,
+                  "declined"
+                );
+              }
+            );
+
+            actionContainer.append(
+              acceptButton,
+              declineButton
+            );
+
+            requestRow.append(
+              nameElement,
+              actionContainer
+            );
+
+            requestList.appendChild(
+              requestRow
+            );
+          }
+
+          if (
+            friendship.status ===
+            "accepted"
+          ) {
+            const friendRow =
+              document.createElement(
+                "div"
+              );
+
+            friendRow.className =
+              "friend-row";
+
+            const nameElement =
+              document.createElement(
+                "span"
+              );
+
+            nameElement.textContent =
+              displayName;
+
+            const removeButton =
+              document.createElement(
+                "button"
+              );
+
+            removeButton.className =
+              "small-button";
+
+            removeButton.type =
+              "button";
+
+            removeButton.textContent =
+              "Remove";
+
+            removeButton.addEventListener(
+              "click",
+              () => {
+                removeFriendship(
+                  friendship.id
+                );
+              }
+            );
+
+            friendRow.append(
+              nameElement,
+              removeButton
+            );
+
+            friendList.appendChild(
+              friendRow
+            );
+          }
+        }
+
+        if (
+          requestList.children.length ===
+          0
+        ) {
+          requestList.innerHTML =
+            '<p class="status">' +
+            "No incoming requests." +
+            "</p>";
+        }
+
+        if (
+          friendList.children.length ===
+          0
+        ) {
+          friendList.innerHTML =
+            '<p class="status">' +
+            "No friends yet." +
+            "</p>";
+        }
+      } catch (error) {
+        setStatus(
+          friendStatus,
+          error.message,
+          "error"
+        );
+      }
+    }
+
+
+    async function respondToFriendRequest(
+      friendshipId,
+      newStatus
+    ) {
+      try {
+        setStatus(
+          friendStatus,
+          newStatus === "accepted"
+            ? "Accepting request..."
+            : "Declining request..."
+        );
+
+        await request(
+          "/rest/v1/friendships" +
+          "?id=eq." +
+          encodeURIComponent(
+            friendshipId
+          ),
+          {
+            method: "PATCH",
+
+            headers:
+              authHeaders(
+                "return=minimal"
+              ),
+
+            body:
+              JSON.stringify({
+                status:
+                  newStatus
+              })
+          }
+        );
+
+        setStatus(
+          friendStatus,
+          newStatus === "accepted"
+            ? "Friend request accepted."
+            : "Friend request declined.",
+          "success"
+        );
+
+        await loadFriends();
+        await loadTodayScores();
+      } catch (error) {
+        setStatus(
+          friendStatus,
+          error.message,
+          "error"
+        );
+      }
+    }
+
+
+    async function removeFriendship(
+      friendshipId
+    ) {
+      try {
+        setStatus(
+          friendStatus,
+          "Removing friend..."
+        );
+
+        await request(
+          "/rest/v1/friendships" +
+          "?id=eq." +
+          encodeURIComponent(
+            friendshipId
+          ),
+          {
+            method: "DELETE",
+
+            headers:
+              authHeaders(
+                "return=minimal"
+              )
+          }
+        );
+
+        setStatus(
+          friendStatus,
+          "Friend removed.",
+          "success"
+        );
+
+        await loadFriends();
+        await loadTodayScores();
+      } catch (error) {
+        setStatus(
+          friendStatus,
+          error.message,
+          "error"
+        );
+      }
+    }
+
+document
+      .querySelectorAll(
+        "[data-result]"
+      )
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            if (!session) {
+              document
+                .getElementById(
+                  "accountModal"
+                )
+                .classList
+                .add("open");
+
+              setStatus(
+                authStatus,
+                "Log in before entering a shared result.",
+                "error"
+              );
+
+              return;
+            }
+
+            selectedScoreGame =
+              button.dataset.result;
+
+            const gameCard =
+              button.closest(
+                ".game-card"
+              );
+
+            document
+              .getElementById(
+                "scoreTitle"
+              )
+              .textContent =
+                "Enter " +
+                gameCard.dataset.name +
+                " Result";
+
+            document
+              .getElementById(
+                "resultText"
+              )
+              .value = "";
+
+            document
+              .getElementById(
+                "numericScore"
+              )
+              .value = "";
+
+            document
+              .getElementById(
+                "scoreUnit"
+              )
+              .value = "";
+
+            setStatus(
+              scoreStatus,
+              ""
+            );
+
+            document
+              .getElementById(
+                "scoreModal"
+              )
+              .classList
+              .add("open");
+          }
+        );
+      });
+
+
+    document
+      .getElementById(
+        "saveScoreButton"
+      )
+      .addEventListener(
+        "click",
+        async () => {
+          if (!session) {
+            setStatus(
+              scoreStatus,
+              "Log in before saving a result.",
+              "error"
+            );
+
+            return;
+          }
+
+          const resultTextValue =
+            document
+              .getElementById(
+                "resultText"
+              )
+              .value
+              .trim();
+
+          const numericScoreValue =
+            document
+              .getElementById(
+                "numericScore"
+              )
+              .value;
+
+          const scoreUnitValue =
+            document
+              .getElementById(
+                "scoreUnit"
+              )
+              .value
+              .trim();
+
+          if (
+            !resultTextValue &&
+            numericScoreValue === ""
+          ) {
+            setStatus(
+              scoreStatus,
+              "Enter a result or numeric score.",
+              "error"
+            );
+
+            return;
+          }
+
+          const scoreRecord = {
+            user_id:
+              session.user.id,
+
+            game_id:
+              selectedScoreGame,
+
+            play_date:
+              TODAY,
+
+            completed:
+              true,
+
+            result_text:
+              resultTextValue ||
+              null,
+
+            numeric_score:
+              numericScoreValue === ""
+                ? null
+                : Number(
+                    numericScoreValue
+                  ),
+
+            score_unit:
+              scoreUnitValue ||
+              null
+          };
+
+          try {
+            setStatus(
+              scoreStatus,
+              "Saving result..."
+            );
+
+            await request(
+              "/rest/v1/daily_scores" +
+              "?on_conflict=" +
+              "user_id,game_id,play_date",
+              {
+                method: "POST",
+
+                headers:
+                  authHeaders(
+                    "resolution=merge-duplicates,return=minimal"
+                  ),
+
+                body:
+                  JSON.stringify(
+                    scoreRecord
+                  )
+              }
+            );
+
+            if (
+              !completedGames.includes(
+                selectedScoreGame
+              )
+            ) {
+              completedGames.push(
+                selectedScoreGame
+              );
+
+              saveLocal();
+              updateLocalUI();
+            }
+
+            setStatus(
+              scoreStatus,
+              "Result saved.",
+              "success"
+            );
+
+            await loadTodayScores();
+          } catch (error) {
+            setStatus(
+              scoreStatus,
+              error.message,
+              "error"
+            );
+          }
+        }
+      );
+
+
+    function formatScore(
+      score
+    ) {
+      if (
+        score.result_text
+      ) {
+        return score.result_text;
+      }
+
+      if (
+        score.numeric_score !==
+        null &&
+        score.numeric_score !==
+        undefined
+      ) {
+        const scoreParts = [
+          score.numeric_score,
+          score.score_unit
+        ].filter(Boolean);
+
+        return scoreParts.join(" ");
+      }
+
+      return "Completed";
+    }
+
+
+    async function loadTodayScores() {
+      if (!session) {
+        return;
+      }
+
+      try {
+        const scoreRows =
+          await request(
+            "/rest/v1/daily_scores" +
+            "?play_date=eq." +
+            encodeURIComponent(
+              TODAY
+            ) +
+            "&select=" +
+            "user_id," +
+            "game_id," +
+            "result_text," +
+            "numeric_score," +
+            "score_unit," +
+            "completed",
+            {
+              headers:
+                authHeaders()
+            }
+          );
+
+        cards().forEach(card => {
+          const gameId =
+            card.dataset.id;
+
+          const resultSummary =
+            card.querySelector(
+              ".result-summary"
+            );
+
+          const myScore =
+            scoreRows?.find(
+              score =>
+                score.user_id ===
+                  session.user.id &&
+                score.game_id ===
+                  gameId
+            );
+
+          if (myScore) {
+            resultSummary.style.display =
+              "block";
+
+            resultSummary.textContent =
+              "Your result: " +
+              formatScore(myScore);
+          } else {
+            resultSummary.style.display =
+              "none";
+
+            resultSummary.textContent =
+              "";
+          }
+        });
+
+        const friendScoreList =
+          document.getElementById(
+            "friendScores"
+          );
+
+        friendScoreList.innerHTML =
+          "";
+
+        const friendScores =
+          (scoreRows || []).filter(
+            score =>
+              score.user_id !==
+              session.user.id
+          );
+
+        for (
+          const friendScore
+          of friendScores
+        ) {
+          const friendProfile =
+            await getProfile(
+              friendScore.user_id
+            );
+
+          const gameCard =
+            document.querySelector(
+              '[data-id="' +
+              friendScore.game_id +
+              '"]'
+            );
+
+          const gameName =
+            gameCard?.dataset.name ||
+            friendScore.game_id;
+
+          const displayName =
+            friendProfile.display_name ||
+            "@" +
+            friendProfile.username;
+
+          const scoreRow =
+            document.createElement(
+              "div"
+            );
+
+          scoreRow.className =
+            "friend-row";
+
+          const scoreName =
+            document.createElement(
+              "span"
+            );
+
+          scoreName.textContent =
+            displayName +
+            " · " +
+            gameName;
+
+          const scoreResult =
+            document.createElement(
+              "strong"
+            );
+
+          scoreResult.textContent =
+            formatScore(
+              friendScore
+            );
+
+          scoreRow.append(
+            scoreName,
+            scoreResult
+          );
+
+          friendScoreList.appendChild(
+            scoreRow
+          );
+        }
+
+        if (
+          friendScoreList
+            .children
+            .length === 0
+        ) {
+          friendScoreList.innerHTML =
+            '<p class="status">' +
+            "No friend results yet today." +
+            "</p>";
+        }
+      } catch (error) {
+        console.error(
+          "Score loading failed:",
+          error
+        );
+      }
+    }
+
+
+    document
+      .querySelectorAll(
+        "[data-feedback-type]"
+      )
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            selectedFeedbackType =
+              button.dataset
+                .feedbackType;
+
+            document
+              .querySelectorAll(
+                "[data-feedback-type]"
+              )
+              .forEach(
+                feedbackButton => {
+                  feedbackButton
+                    .classList
+                    .toggle(
+                      "selected",
+                      feedbackButton ===
+                        button
+                    );
+                }
+              );
+          }
+        );
+      });
+
+
+    document
+      .getElementById(
+        "feedbackForm"
+      )
+      .addEventListener(
+        "submit",
+        async event => {
+          event.preventDefault();
+
+          const submitButton =
+            document
+              .getElementById(
+                "submitFeedbackButton"
+              );
+
+          const feedbackMessageValue =
+            document
+              .getElementById(
+                "feedbackMessage"
+              )
+              .value
+              .trim();
+
+          if (
+            feedbackMessageValue
+              .length < 3
+          ) {
+            setStatus(
+              feedbackStatus,
+              "Enter at least 3 characters.",
+              "error"
+            );
+
+            return;
+          }
+
+          const feedbackRecord = {
+            type:
+              selectedFeedbackType,
+
+            game:
+              document
+                .getElementById(
+                  "feedbackGame"
+                )
+                .value ||
+              null,
+
+            message:
+              feedbackMessageValue,
+
+            name:
+              document
+                .getElementById(
+                  "feedbackName"
+                )
+                .value
+                .trim() ||
+              null,
+
+            email:
+              document
+                .getElementById(
+                  "feedbackEmail"
+                )
+                .value
+                .trim() ||
+              null,
+
+            status:
+              "new"
+          };
+
+          submitButton.disabled =
+            true;
+
+          setStatus(
+            feedbackStatus,
+            "Sending feedback..."
+          );
+
+          try {
+            await request(
+              "/rest/v1/feedback",
+              {
+                method: "POST",
+
+                headers: {
+                  ...publicHeaders(),
+
+                  "Authorization":
+                    "Bearer " +
+                    SUPABASE_KEY,
+
+                  "Prefer":
+                    "return=minimal"
+                },
+
+                body:
+                  JSON.stringify(
+                    feedbackRecord
+                  )
+              }
+            );
+
+            document
+              .getElementById(
+                "feedbackForm"
+              )
+              .reset();
+
+            selectedFeedbackType =
+              "bug";
+
+            document
+              .querySelectorAll(
+                "[data-feedback-type]"
+              )
+              .forEach(button => {
+                button.classList.toggle(
+                  "selected",
+                  button.dataset
+                    .feedbackType ===
+                    "bug"
+                );
+              });
+
+            setStatus(
+              feedbackStatus,
+              "Thanks! Feedback sent.",
+              "success"
+            );
+          } catch (error) {
+            setStatus(
+              feedbackStatus,
+              error.message,
+              "error"
+            );
+          } finally {
+            submitButton.disabled =
+              false;
+          }
+        }
+      );
+
+
+    document
+      .getElementById(
+        "currentDate"
+      )
+      .textContent =
+        new Date()
+          .toLocaleDateString(
+            undefined,
+            {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric"
+            }
+          );
+
+
+    updateLocalUI();
+    showSessionUI();
   </script>
 </body>
 </html>
