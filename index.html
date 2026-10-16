@@ -1,1163 +1,1639 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#080c18">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080c18">
 
-  <title>Daily Game Hub</title>
+<title>Daily Game Hub</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    :root {
-      --background: #080c18;
-      --panel: #111827;
-      --panel-light: #182234;
-      --border: #263348;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --green: #10b981;
-      --yellow: #f59e0b;
-    }
+:root {
+  --background: #080c18;
+  --panel: #111827;
+  --panel-light: #182234;
+  --border: #263348;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --green: #10b981;
+  --yellow: #f59e0b;
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 10% 0%, rgba(124, 58, 237, 0.28), transparent 30%),
-        radial-gradient(circle at 100% 35%, rgba(14, 165, 233, 0.17), transparent 28%),
-        var(--background);
-    }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(124,58,237,.28), transparent 30%),
+    radial-gradient(circle at 100% 35%, rgba(14,165,233,.17), transparent 28%),
+    var(--background);
+}
 
-    button,
-    input {
-      font: inherit;
-    }
+button,
+input {
+  font: inherit;
+}
 
-    button {
-      cursor: pointer;
-    }
+button {
+  cursor: pointer;
+}
 
-    .container {
-      width: min(1180px, 100%);
-      margin: auto;
-      padding: 24px 16px 60px;
-    }
+.container {
+  width: min(1180px,100%);
+  margin: auto;
+  padding: 24px 16px 60px;
+}
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 24px;
-    }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
 
-    .logo {
-      margin: 0;
-      font-size: 25px;
-    }
+.logo {
+  margin: 0;
+  font-size: 25px;
+}
 
-    .date {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
+.date {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
 
-    .random-button {
-      padding: 11px 15px;
-      color: white;
-      font-weight: 800;
-      border: 0;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #7c3aed, #2563eb);
-    }
+.random-button {
+  padding: 11px 15px;
+  color: white;
+  font-weight: 800;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg,#7c3aed,#2563eb);
+}
 
-    .progress-card {
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background: linear-gradient(135deg, #0f172a, #312e81);
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
-    }
+.progress-card {
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: linear-gradient(135deg,#0f172a,#312e81);
+  box-shadow: 0 18px 45px rgba(0,0,0,.24);
+}
 
-    .progress-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 18px;
-    }
+.progress-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+}
 
-    .eyebrow {
-      color: #cbd5e1;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.12em;
-    }
+.eyebrow {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
 
-    .progress-card h2 {
-      margin: 7px 0 5px;
-      font-size: 30px;
-    }
+.progress-card h2 {
+  margin: 7px 0 5px;
+  font-size: 30px;
+}
 
-    .progress-message {
-      margin: 0;
-      color: #cbd5e1;
-    }
+.progress-message {
+  margin: 0;
+  color: #cbd5e1;
+}
 
-    .percentage {
-      font-size: 40px;
-      font-weight: 900;
-    }
+.percentage {
+  font-size: 40px;
+  font-weight: 900;
+}
 
-    .progress-track {
-      height: 11px;
-      margin-top: 20px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.15);
-    }
+.progress-track {
+  height: 11px;
+  margin-top: 20px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.15);
+}
 
-    .progress-fill {
-      display: block;
-      width: 0;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #34d399, #22d3ee);
-      transition: width 0.3s ease;
-    }
+.progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg,#34d399,#22d3ee);
+  transition: width .3s ease;
+}
 
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
+/* FILTERS */
 
-    .search {
-      flex: 1;
-      min-width: 225px;
-      padding: 12px 14px;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 13px;
-      outline: none;
-      background: var(--panel);
-    }
+.controls {
+  margin-bottom: 18px;
+}
 
-    .filter-button {
-      padding: 9px 13px;
-      color: var(--muted);
-      font-weight: 750;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--panel);
-    }
+.search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
 
-    .filter-button.active {
-      color: #111827;
-      border-color: white;
-      background: white;
-    }
+.search {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  outline: none;
+  background: var(--panel);
+}
 
-    .games {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
+.filter-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  scrollbar-width: none;
+}
 
-    .game-card {
-      --game-color: #7c3aed;
+.filter-scroll::-webkit-scrollbar {
+  display: none;
+}
 
-      position: relative;
-      display: flex;
-      min-height: 215px;
-      flex-direction: column;
-      padding: 17px;
-      border: 1px solid var(--border);
-      border-top: 5px solid var(--game-color);
-      border-radius: 19px;
-      background: var(--panel);
-    }
+.filter-button {
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  color: var(--muted);
+  font-weight: 750;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+}
 
-    .game-card.completed {
-      border-color: var(--green);
-      border-top-color: var(--green);
-    }
+.filter-button.active {
+  color: #111827;
+  border-color: white;
+  background: white;
+}
 
-    .game-card.completed::after {
-      content: "✓";
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      display: grid;
-      width: 26px;
-      height: 26px;
-      place-items: center;
-      color: white;
-      font-weight: 900;
-      border-radius: 50%;
-      background: var(--green);
-    }
+/* GAMES */
 
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-    }
+.games {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 14px;
+}
 
-    .game-icon {
-      display: grid;
-      width: 47px;
-      height: 47px;
-      place-items: center;
-      font-size: 20px;
-      font-weight: 900;
-      border-radius: 14px;
-      background: var(--panel-light);
-    }
+.game-card {
+  --game-color: #7c3aed;
 
-    .favorite-button {
-      padding: 3px;
-      color: #64748b;
-      font-size: 22px;
-      border: 0;
-      background: transparent;
-    }
+  position: relative;
+  display: flex;
+  min-height: 215px;
+  flex-direction: column;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--game-color);
+  border-radius: 19px;
+  background: var(--panel);
+}
 
-    .favorite-button.favorite {
-      color: var(--yellow);
-    }
+.game-card.completed {
+  border-color: var(--green);
+  border-top-color: var(--green);
+}
 
-    .game-card h3 {
-      margin: 16px 0 5px;
-      font-size: 18px;
-    }
+.game-card.completed::after {
+  content: "✓";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  color: white;
+  font-weight: 900;
+  border-radius: 50%;
+  background: var(--green);
+}
 
-    .category {
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
 
-    .description {
-      flex: 1;
-      margin: 10px 0 16px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
+.game-icon {
+  display: grid;
+  width: 47px;
+  height: 47px;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 900;
+  border-radius: 14px;
+  background: var(--panel-light);
+}
 
-    .card-buttons {
-      display: flex;
-      gap: 8px;
-    }
+.favorite-button {
+  padding: 3px;
+  color: #64748b;
+  font-size: 22px;
+  border: 0;
+  background: transparent;
+}
 
-    .play-button {
-      flex: 1;
-      display: block;
-      padding: 10px;
-      color: white;
-      font-weight: 900;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 11px;
-      background: var(--game-color);
-    }
+.favorite-button.favorite {
+  color: var(--yellow);
+}
 
-    .complete-button {
-      width: 43px;
-      padding: 10px;
-      color: white;
-      font-size: 17px;
-      font-weight: 900;
-      border: 0;
-      border-radius: 11px;
-      background: var(--panel-light);
-    }
+.game-card h3 {
+  margin: 16px 0 5px;
+  font-size: 18px;
+}
 
-    .completed .complete-button {
-      background: var(--green);
-    }
+.category {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
 
-    .empty-message {
-      display: none;
-      padding: 45px 20px;
-      color: var(--muted);
-      text-align: center;
-      border: 1px dashed var(--border);
-      border-radius: 20px;
-    }
+.description {
+  flex: 1;
+  margin: 10px 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
 
-    .footer {
-      margin-top: 28px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
+.card-buttons {
+  display: flex;
+  gap: 8px;
+}
 
-    @media (max-width: 950px) {
-      .games {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
+.play-button {
+  flex: 1;
+  display: block;
+  padding: 10px;
+  color: white;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 11px;
+  background: var(--game-color);
+}
 
-    @media (max-width: 700px) {
-      .games {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+.complete-button {
+  width: 43px;
+  padding: 10px;
+  color: white;
+  font-size: 17px;
+  font-weight: 900;
+  border: 0;
+  border-radius: 11px;
+  background: var(--panel-light);
+}
 
-      .percentage {
-        font-size: 32px;
-      }
+.completed .complete-button {
+  background: var(--green);
+}
 
-      .progress-card h2 {
-        font-size: 24px;
-      }
-    }
+.empty-message {
+  display: none;
+  padding: 45px 20px;
+  color: var(--muted);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 20px;
+}
 
-    @media (max-width: 480px) {
-      .container {
-        padding: 18px 12px 50px;
-      }
+.footer {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
 
-      .logo {
-        font-size: 21px;
-      }
+@media(max-width:950px) {
+  .games {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+  }
+}
 
-      .progress-card {
-        padding: 19px;
-      }
+@media(max-width:700px) {
+  .games {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
 
-      .progress-top {
-        align-items: start;
-      }
+  .percentage {
+    font-size: 32px;
+  }
 
-      .games {
-        grid-template-columns: 1fr;
-      }
+  .progress-card h2 {
+    font-size: 24px;
+  }
+}
 
-      .game-card {
-        min-height: 195px;
-      }
-    }
-  </style>
+@media(max-width:480px) {
+  .container {
+    padding: 18px 12px 50px;
+  }
+
+  .logo {
+    font-size: 21px;
+  }
+
+  .progress-card {
+    padding: 19px;
+  }
+
+  .games {
+    grid-template-columns: 1fr;
+  }
+
+  .game-card {
+    min-height: 195px;
+  }
+}
+</style>
 </head>
 
 <body>
-  <div class="container">
 
-    <header>
-      <div>
-        <h1 class="logo">◆ Daily Game Hub</h1>
-        <p class="date" id="currentDate">Your daily games</p>
-      </div>
+<div class="container">
 
-      <button class="random-button" id="randomButton">
-        🎲 Random
-      </button>
-    </header>
-
-    <section class="progress-card">
-      <div class="progress-top">
-        <div>
-          <div class="eyebrow">TODAY'S PROGRESS</div>
-          <h2 id="progressCount">0 of 17 completed</h2>
-          <p class="progress-message">
-            Pick a game and start today's run.
-          </p>
-        </div>
-
-        <div class="percentage" id="percentage">0%</div>
-      </div>
-
-      <div class="progress-track">
-        <span class="progress-fill" id="progressFill"></span>
-      </div>
-    </section>
-
-    <section class="controls">
-      <input
-        class="search"
-        id="searchInput"
-        type="search"
-        placeholder="Search games..."
-        autocomplete="off"
-      >
-
-      <button class="filter-button active" data-filter="all">
-        All
-      </button>
-
-      <button class="filter-button" data-filter="favorites">
-        ★ Favorites
-      </button>
-
-      <button class="filter-button" data-filter="unfinished">
-        Not Played
-      </button>
-
-      <button class="filter-button" data-filter="completed">
-        Completed
-      </button>
-    </section>
-
-    <main class="games" id="gameGrid">
-
-      <!-- WORDLE -->
-      <article
-        class="game-card"
-        data-id="wordle"
-        data-search="wordle word logic"
-        style="--game-color:#6aaa64"
-      >
-        <div class="card-top">
-          <div class="game-icon">W</div>
-          <button class="favorite-button" data-favorite="wordle">★</button>
-        </div>
-
-        <h3>Wordle</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Guess the five-letter word in six tries.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://www.nytimes.com/games/wordle/index.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="wordle">✓</button>
-        </div>
-      </article>
-
-      <!-- CONNECTIONS -->
-      <article
-        class="game-card"
-        data-id="connections"
-        data-search="connections word logic"
-        style="--game-color:#8b5cf6"
-      >
-        <div class="card-top">
-          <div class="game-icon">▦</div>
-          <button class="favorite-button" data-favorite="connections">★</button>
-        </div>
-
-        <h3>Connections</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Group sixteen words by their hidden connections.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://www.nytimes.com/games/connections"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="connections">✓</button>
-        </div>
-      </article>
-
-      <!-- STRANDS -->
-      <article
-        class="game-card"
-        data-id="strands"
-        data-search="strands word logic"
-        style="--game-color:#38bdf8"
-      >
-        <div class="card-top">
-          <div class="game-icon">〰</div>
-          <button class="favorite-button" data-favorite="strands">★</button>
-        </div>
-
-        <h3>Strands</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Find themed words hidden in a letter grid.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://www.nytimes.com/games/strands"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="strands">✓</button>
-        </div>
-      </article>
-
-      <!-- KRILLION -->
-      <article
-        class="game-card"
-        data-id="krillion"
-        data-search="krillion trivia"
-        style="--game-color:#0891b2"
-      >
-        <div class="card-top">
-          <div class="game-icon">K</div>
-          <button class="favorite-button" data-favorite="krillion">★</button>
-        </div>
-
-        <h3>Krillion</h3>
-        <div class="category">Trivia</div>
-        <p class="description">Daily trivia where rarer answers matter.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://krillion.io/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="krillion">✓</button>
-        </div>
-      </article>
-
-      <!-- GUESSLIST -->
-      <article
-        class="game-card"
-        data-id="guesslist"
-        data-search="guesslist trivia list"
-        style="--game-color:#f97316"
-      >
-        <div class="card-top">
-          <div class="game-icon">100</div>
-          <button class="favorite-button" data-favorite="guesslist">★</button>
-        </div>
-
-        <h3>GuessList</h3>
-        <div class="category">Trivia</div>
-        <p class="description">Guess entries from a ranked list.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://playguesslist.com/game"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="guesslist">✓</button>
-        </div>
-      </article>
-
-      <!-- FRAMED -->
-      <article
-        class="game-card"
-        data-id="framed"
-        data-search="framed movies film"
-        style="--game-color:#dc2626"
-      >
-        <div class="card-top">
-          <div class="game-icon">🎬</div>
-          <button class="favorite-button" data-favorite="framed">★</button>
-        </div>
-
-        <h3>Framed</h3>
-        <div class="category">Movies</div>
-        <p class="description">Identify the movie from a sequence of frames.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://framed.wtf/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="framed">✓</button>
-        </div>
-      </article>
-
-      <!-- WORLDLE -->
-      <article
-        class="game-card"
-        data-id="worldle"
-        data-search="worldle geography country map"
-        style="--game-color:#16a34a"
-      >
-        <div class="card-top">
-          <div class="game-icon">🌍</div>
-          <button class="favorite-button" data-favorite="worldle">★</button>
-        </div>
-
-        <h3>Worldle</h3>
-        <div class="category">Geography</div>
-        <p class="description">Guess the country from its silhouette.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://worldle.teuteuf.fr/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="worldle">✓</button>
-        </div>
-      </article>
-
-      <!-- GLOBLE -->
-      <article
-        class="game-card"
-        data-id="globle"
-        data-search="globle geography country globe"
-        style="--game-color:#2563eb"
-      >
-        <div class="card-top">
-          <div class="game-icon">🌐</div>
-          <button class="favorite-button" data-favorite="globle">★</button>
-        </div>
-
-        <h3>Globle</h3>
-        <div class="category">Geography</div>
-        <p class="description">Use hotter and colder guesses to find the country.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://globle-game.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="globle">✓</button>
-        </div>
-      </article>
-
-      <!-- BOX OFFICE GAME -->
-      <article
-        class="game-card"
-        data-id="boxoffice"
-        data-search="box office game movies film"
-        style="--game-color:#db2777"
-      >
-        <div class="card-top">
-          <div class="game-icon">🎟</div>
-          <button class="favorite-button" data-favorite="boxoffice">★</button>
-        </div>
-
-        <h3>Box Office Game</h3>
-        <div class="category">Movies</div>
-        <p class="description">Guess movies from a past box-office weekend.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://boxofficega.me/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="boxoffice">✓</button>
-        </div>
-      </article>
-
-      <!-- POELTL -->
-      <article
-        class="game-card"
-        data-id="poeltl"
-        data-search="poeltl sports basketball nba"
-        style="--game-color:#ea580c"
-      >
-        <div class="card-top">
-          <div class="game-icon">🏀</div>
-          <button class="favorite-button" data-favorite="poeltl">★</button>
-        </div>
-
-        <h3>Poeltl</h3>
-        <div class="category">Sports</div>
-        <p class="description">Identify the mystery NBA player.</p>
-
-        <div class="card-buttons">
-          https://poeltl.nbpa.com/Play ↗</a>
-
-          <button class="complete-button" data-complete="poeltl">✓</button>
-        </div>
-      </article>
-
-      <!-- WEDDLE -->
-      <article
-        class="game-card"
-        data-id="weddle"
-        data-search="weddle sports football nfl"
-        style="--game-color:#15803d"
-      >
-        <div class="card-top">
-          <div class="game-icon">🏈</div>
-          <button class="favorite-button" data-favorite="weddle">★</button>
-        </div>
-
-        <h3>Weddle</h3>
-        <div class="category">Sports</div>
-        <p class="description">Identify the mystery NFL player.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://www.weddlegame.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="weddle">✓</button>
-        </div>
-      </article>
-
-      <!-- POOPLE -->
-      <article
-        class="game-card"
-        data-id="poople"
-        data-search="poople word logic"
-        style="--game-color:#a16207"
-      >
-        <div class="card-top">
-          <div class="game-icon">P</div>
-          <button class="favorite-button" data-favorite="poople">★</button>
-        </div>
-
-        <h3>Poople</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">A quick daily word game.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://poople.io/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="poople">✓</button>
-        </div>
-      </article>
-
-      <!-- MAPTAP -->
-      <article
-        class="game-card"
-        data-id="maptap"
-        data-search="maptap geography map globe"
-        style="--game-color:#0d9488"
-      >
-        <div class="card-top">
-          <div class="game-icon">⌖</div>
-          <button class="favorite-button" data-favorite="maptap">★</button>
-        </div>
-
-        <h3>MapTap</h3>
-        <div class="category">Geography</div>
-        <p class="description">Pin locations on the globe as accurately as possible.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://maptap.gg/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="maptap">✓</button>
-        </div>
-      </article>
-
-      <!-- CONTEXTO -->
-      <article
-        class="game-card"
-        data-id="contexto"
-        data-search="contexto word logic semantic"
-        style="--game-color:#9333ea"
-      >
-        <div class="card-top">
-          <div class="game-icon">◎</div>
-          <button class="favorite-button" data-favorite="contexto">★</button>
-        </div>
-
-        <h3>Contexto</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Find the secret word using semantic similarity.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://contexto.me/en/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="contexto">✓</button>
-        </div>
-      </article>
-
-      <!-- DUOTRIGORDLE -->
-      <article
-        class="game-card"
-        data-id="duotrigordle"
-        data-search="duotrigordle word logic wordle"
-        style="--game-color:#4f46e5"
-      >
-        <div class="card-top">
-          <div class="game-icon">32</div>
-          <button class="favorite-button" data-favorite="duotrigordle">★</button>
-        </div>
-
-        <h3>Duotrigordle</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Solve thirty-two Wordle boards with shared guesses.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://duotrigordle.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="duotrigordle">✓</button>
-        </div>
-      </article>
-
-      <!-- MINUTE CRYPTIC -->
-      <article
-        class="game-card"
-        data-id="minutecryptic"
-        data-search="minute cryptic crossword word logic"
-        style="--game-color:#0f766e"
-      >
-        <div class="card-top">
-          <div class="game-icon">✦</div>
-          <button class="favorite-button" data-favorite="minutecryptic">★</button>
-        </div>
-
-        <h3>Minute Cryptic</h3>
-        <div class="category">Word & Logic</div>
-        <p class="description">Solve one clever cryptic clue every day.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://www.minutecryptic.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="minutecryptic">✓</button>
-        </div>
-      </article>
-
-      <!-- IMMACULATE GRID -->
-      <article
-        class="game-card"
-        data-id="immaculate"
-        data-search="immaculate grid sports baseball basketball football hockey"
-        style="--game-color:#0369a1"
-      >
-        <div class="card-top">
-          <div class="game-icon">#</div>
-          <button class="favorite-button" data-favorite="immaculate">★</button>
-        </div>
-
-        <h3>Immaculate Grid</h3>
-        <div class="category">Sports</div>
-        <p class="description">Fill a sports grid with players matching both criteria.</p>
-
-        <div class="card-buttons">
-          <a
-            class="play-button"
-            href="https://www.sports-reference.com/immaculate-grid/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >Play ↗</a>
-
-          <button class="complete-button" data-complete="immaculate">✓</button>
-        </div>
-      </article>
-
-    </main>
-
-    <div class="empty-message" id="emptyMessage">
-      No games match your search or selected filter.
-    </div>
-
-    <p class="footer">
-      Your favorites and daily completion checkmarks are stored locally in
-      this browser. Each friend will have their own progress on their device.
-    </p>
+<header>
+  <div>
+    <h1 class="logo">◆ Daily Game Hub</h1>
+    <p class="date" id="currentDate">Your daily games</p>
   </div>
 
-  <script>
-    const today = new Date().toLocaleDateString("en-CA");
+  <button class="random-button" id="randomButton">
+    🎲 Random
+  </button>
+</header>
 
-    const completedStorageKey =
-      "dailyGameHubCompleted-" + today;
 
-    const favoritesStorageKey =
-      "dailyGameHubFavorites";
+<section class="progress-card">
 
-    let completedGames = [];
-    let favoriteGames = [];
-    let currentFilter = "all";
+  <div class="progress-top">
 
-    try {
-      completedGames =
-        JSON.parse(localStorage.getItem(completedStorageKey)) || [];
+    <div>
+      <div class="eyebrow">TODAY'S PROGRESS</div>
 
-      favoriteGames =
-        JSON.parse(localStorage.getItem(favoritesStorageKey)) || [];
-    } catch (error) {
-      completedGames = [];
-      favoriteGames = [];
-    }
+      <h2 id="progressCount">
+        0 of 17 completed
+      </h2>
 
-    function saveData() {
-      try {
-        localStorage.setItem(
-          completedStorageKey,
-          JSON.stringify(completedGames)
+      <p class="progress-message">
+        Pick a game and start today's run.
+      </p>
+    </div>
+
+    <div class="percentage" id="percentage">
+      0%
+    </div>
+
+  </div>
+
+  <div class="progress-track">
+    <span class="progress-fill" id="progressFill"></span>
+  </div>
+
+</section>
+
+
+<section class="controls">
+
+  <div class="search-row">
+
+    <input
+      class="search"
+      id="searchInput"
+      type="search"
+      placeholder="Search games..."
+      autocomplete="off"
+    >
+
+  </div>
+
+
+  <div class="filter-scroll">
+
+    <button class="filter-button active" data-filter="all">
+      All
+    </button>
+
+    <button class="filter-button" data-filter="word">
+      🔤 Word & Logic
+    </button>
+
+    <button class="filter-button" data-filter="geography">
+      🌎 Geography
+    </button>
+
+    <button class="filter-button" data-filter="movies">
+      🎬 Movies
+    </button>
+
+    <button class="filter-button" data-filter="sports">
+      🏆 Sports
+    </button>
+
+    <button class="filter-button" data-filter="trivia">
+      🧠 Trivia
+    </button>
+
+    <button class="filter-button" data-filter="favorites">
+      ★ Favorites
+    </button>
+
+    <button class="filter-button" data-filter="unfinished">
+      Not Played
+    </button>
+
+    <button class="filter-button" data-filter="completed">
+      ✓ Completed
+    </button>
+
+  </div>
+
+</section>
+
+
+<main class="games" id="gameGrid">
+
+
+<!-- WORDLE -->
+
+<article
+class="game-card"
+data-id="wordle"
+data-category="word"
+data-search="wordle word logic"
+style="--game-color:#6aaa64"
+>
+
+<div class="card-top">
+<div class="game-icon">W</div>
+<button class="favorite-button" data-favorite="wordle">★</button>
+</div>
+
+<h3>Wordle</h3>
+
+<div class="category">Word & Logic</div>
+
+<p class="description">
+Guess the five-letter word in six tries.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://www.nytimes.com/games/wordle/index.html"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="wordle">
+✓
+</button>
+
+</div>
+
+</article>
+
+
+<!-- CONNECTIONS -->
+
+<article
+class="game-card"
+data-id="connections"
+data-category="word"
+data-search="connections word logic"
+style="--game-color:#8b5cf6"
+>
+
+<div class="card-top">
+<div class="game-icon">▦</div>
+<button class="favorite-button" data-favorite="connections">★</button>
+</div>
+
+<h3>Connections</h3>
+
+<div class="category">Word & Logic</div>
+
+<p class="description">
+Group sixteen words by their hidden connections.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://www.nytimes.com/games/connections"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="connections">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- STRANDS -->
+
+<article
+class="game-card"
+data-id="strands"
+data-category="word"
+data-search="strands word logic"
+style="--game-color:#38bdf8"
+>
+
+<div class="card-top">
+<div class="game-icon">〰</div>
+<button class="favorite-button" data-favorite="strands">★</button>
+</div>
+
+<h3>Strands</h3>
+
+<div class="category">Word & Logic</div>
+
+<p class="description">
+Find themed words hidden in a letter grid.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://www.nytimes.com/games/strands"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="strands">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- KRILLION -->
+
+<article
+class="game-card"
+data-id="krillion"
+data-category="trivia"
+data-search="krillion trivia"
+style="--game-color:#0891b2"
+>
+
+<div class="card-top">
+<div class="game-icon">K</div>
+<button class="favorite-button" data-favorite="krillion">★</button>
+</div>
+
+<h3>Krillion</h3>
+<div class="category">Trivia</div>
+
+<p class="description">
+Daily trivia where rarer answers matter.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://krillion.io/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="krillion">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- GUESSLIST -->
+
+<article
+class="game-card"
+data-id="guesslist"
+data-category="trivia"
+data-search="guesslist trivia list"
+style="--game-color:#f97316"
+>
+
+<div class="card-top">
+<div class="game-icon">100</div>
+<button class="favorite-button" data-favorite="guesslist">★</button>
+</div>
+
+<h3>GuessList</h3>
+<div class="category">Trivia</div>
+
+<p class="description">
+Guess entries from a ranked list.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://playguesslist.com/game"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="guesslist">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- FRAMED -->
+
+<article
+class="game-card"
+data-id="framed"
+data-category="movies"
+data-search="framed movies film"
+style="--game-color:#dc2626"
+>
+
+<div class="card-top">
+<div class="game-icon">🎬</div>
+<button class="favorite-button" data-favorite="framed">★</button>
+</div>
+
+<h3>Framed</h3>
+<div class="category">Movies</div>
+
+<p class="description">
+Identify the movie from a sequence of frames.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://framed.wtf/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="framed">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- WORLDLE -->
+
+<article
+class="game-card"
+data-id="worldle"
+data-category="geography"
+data-search="worldle geography country map"
+style="--game-color:#16a34a"
+>
+
+<div class="card-top">
+<div class="game-icon">🌍</div>
+<button class="favorite-button" data-favorite="worldle">★</button>
+</div>
+
+<h3>Worldle</h3>
+<div class="category">Geography</div>
+
+<p class="description">
+Guess the country from its silhouette.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://worldle.teuteuf.fr/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="worldle">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- GLOBLE -->
+
+<article
+class="game-card"
+data-id="globle"
+data-category="geography"
+data-search="globle geography country globe"
+style="--game-color:#2563eb"
+>
+
+<div class="card-top">
+<div class="game-icon">🌐</div>
+<button class="favorite-button" data-favorite="globle">★</button>
+</div>
+
+<h3>Globle</h3>
+<div class="category">Geography</div>
+
+<p class="description">
+Use hotter and colder guesses to find the country.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://globle-game.com/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="globle">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- BOX OFFICE GAME -->
+
+<article
+class="game-card"
+data-id="boxoffice"
+data-category="movies"
+data-search="box office game movies film"
+style="--game-color:#db2777"
+>
+
+<div class="card-top">
+<div class="game-icon">🎟</div>
+<button class="favorite-button" data-favorite="boxoffice">★</button>
+</div>
+
+<h3>Box Office Game</h3>
+<div class="category">Movies</div>
+
+<p class="description">
+Guess movies from a past box-office weekend.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://boxofficega.me/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="boxoffice">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- POELTL -->
+
+<article
+class="game-card"
+data-id="poeltl"
+data-category="sports"
+data-search="poeltl sports basketball nba"
+style="--game-color:#ea580c"
+>
+
+<div class="card-top">
+<div class="game-icon">🏀</div>
+<button class="favorite-button" data-favorite="poeltl">★</button>
+</div>
+
+<h3>Poeltl</h3>
+<div class="category">Sports</div>
+
+<p class="description">
+Identify the mystery NBA player.
+</p>
+
+<div class="card-buttons">
+
+https://poeltl.nbpa.com/
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="poeltl">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- WEDDLE -->
+
+<article
+class="game-card"
+data-id="weddle"
+data-category="sports"
+data-search="weddle sports football nfl"
+style="--game-color:#15803d"
+>
+
+<div class="card-top">
+<div class="game-icon">🏈</div>
+<button class="favorite-button" data-favorite="weddle">★</button>
+</div>
+
+<h3>Weddle</h3>
+<div class="category">Sports</div>
+
+<p class="description">
+Identify the mystery NFL player.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://www.weddlegame.com/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="weddle">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- POOPLE -->
+
+<article
+class="game-card"
+data-id="poople"
+data-category="word"
+data-search="poople word logic"
+style="--game-color:#a16207"
+>
+
+<div class="card-top">
+<div class="game-icon">P</div>
+<button class="favorite-button" data-favorite="poople">★</button>
+</div>
+
+<h3>Poople</h3>
+<div class="category">Word & Logic</div>
+
+<p class="description">
+A quick daily word game.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://poople.io/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="poople">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- MAPTAP -->
+
+<article
+class="game-card"
+data-id="maptap"
+data-category="geography"
+data-search="maptap geography map globe"
+style="--game-color:#0d9488"
+>
+
+<div class="card-top">
+<div class="game-icon">⌖</div>
+<button class="favorite-button" data-favorite="maptap">★</button>
+</div>
+
+<h3>MapTap</h3>
+<div class="category">Geography</div>
+
+<p class="description">
+Pin locations on the globe as accurately as possible.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://maptap.gg/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="maptap">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- CONTEXTO -->
+
+<article
+class="game-card"
+data-id="contexto"
+data-category="word"
+data-search="contexto word logic semantic"
+style="--game-color:#9333ea"
+>
+
+<div class="card-top">
+<div class="game-icon">◎</div>
+<button class="favorite-button" data-favorite="contexto">★</button>
+</div>
+
+<h3>Contexto</h3>
+<div class="category">Word & Logic</div>
+
+<p class="description">
+Find the secret word using semantic similarity.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://contexto.me/en/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="contexto">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- DUOTRIGORDLE -->
+
+<article
+class="game-card"
+data-id="duotrigordle"
+data-category="word"
+data-search="duotrigordle word logic wordle"
+style="--game-color:#4f46e5"
+>
+
+<div class="card-top">
+<div class="game-icon">32</div>
+<button class="favorite-button" data-favorite="duotrigordle">★</button>
+</div>
+
+<h3>Duotrigordle</h3>
+<div class="category">Word & Logic</div>
+
+<p class="description">
+Solve thirty-two Wordle boards with shared guesses.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://duotrigordle.com/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="duotrigordle">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- MINUTE CRYPTIC -->
+
+<article
+class="game-card"
+data-id="minutecryptic"
+data-category="word"
+data-search="minute cryptic crossword word logic"
+style="--game-color:#0f766e"
+>
+
+<div class="card-top">
+<div class="game-icon">✦</div>
+<button class="favorite-button" data-favorite="minutecryptic">★</button>
+</div>
+
+<h3>Minute Cryptic</h3>
+<div class="category">Word & Logic</div>
+
+<p class="description">
+Solve one clever cryptic clue every day.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://www.minutecryptic.com/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="minutecryptic">✓</button>
+
+</div>
+
+</article>
+
+
+<!-- IMMACULATE GRID -->
+
+<article
+class="game-card"
+data-id="immaculate"
+data-category="sports"
+data-search="immaculate grid sports"
+style="--game-color:#0369a1"
+>
+
+<div class="card-top">
+<div class="game-icon">#</div>
+<button class="favorite-button" data-favorite="immaculate">★</button>
+</div>
+
+<h3>Immaculate Grid</h3>
+<div class="category">Sports</div>
+
+<p class="description">
+Fill a sports grid with players matching both criteria.
+</p>
+
+<div class="card-buttons">
+
+<a
+class="play-button"
+href="https://www.sports-reference.com/immaculate-grid/"
+target="_blank"
+rel="noopener noreferrer"
+>
+Play ↗
+</a>
+
+<button class="complete-button" data-complete="immaculate">✓</button>
+
+</div>
+
+</article>
+
+
+</main>
+
+
+<div class="empty-message" id="emptyMessage">
+No games match your search or filter.
+</div>
+
+
+<p class="footer">
+Favorites and today's completion checkmarks are saved in this browser.
+Each person using the site gets their own local progress.
+</p>
+
+</div>
+
+
+<script>
+
+const today =
+  new Date().toLocaleDateString("en-CA");
+
+const completedStorageKey =
+  "dailyGameHubCompleted-" + today;
+
+const favoritesStorageKey =
+  "dailyGameHubFavorites";
+
+let completedGames = [];
+let favoriteGames = [];
+let currentFilter = "all";
+
+
+try {
+
+  completedGames =
+    JSON.parse(
+      localStorage.getItem(completedStorageKey)
+    ) || [];
+
+  favoriteGames =
+    JSON.parse(
+      localStorage.getItem(favoritesStorageKey)
+    ) || [];
+
+} catch(error) {
+
+  completedGames = [];
+  favoriteGames = [];
+
+}
+
+
+function saveData() {
+
+  try {
+
+    localStorage.setItem(
+      completedStorageKey,
+      JSON.stringify(completedGames)
+    );
+
+    localStorage.setItem(
+      favoritesStorageKey,
+      JSON.stringify(favoriteGames)
+    );
+
+  } catch(error) {
+
+    console.log("Browser storage unavailable.");
+
+  }
+
+}
+
+
+function toggleCompleted(gameId) {
+
+  if(completedGames.includes(gameId)) {
+
+    completedGames =
+      completedGames.filter(
+        id => id !== gameId
+      );
+
+  } else {
+
+    completedGames.push(gameId);
+
+  }
+
+  saveData();
+
+  updatePage();
+
+}
+
+
+function toggleFavorite(gameId) {
+
+  if(favoriteGames.includes(gameId)) {
+
+    favoriteGames =
+      favoriteGames.filter(
+        id => id !== gameId
+      );
+
+  } else {
+
+    favoriteGames.push(gameId);
+
+  }
+
+  saveData();
+
+  updatePage();
+
+}
+
+
+function updateProgress() {
+
+  const cards =
+    Array.from(
+      document.querySelectorAll(".game-card")
+    );
+
+  const completedCount =
+    cards.filter(card =>
+      completedGames.includes(card.dataset.id)
+    ).length;
+
+  const totalGames = cards.length;
+
+  const percentage =
+    totalGames === 0
+      ? 0
+      : Math.round(
+          completedCount / totalGames * 100
         );
 
-        localStorage.setItem(
-          favoritesStorageKey,
-          JSON.stringify(favoriteGames)
-        );
-      } catch (error) {
-        console.log("Browser storage is unavailable.");
-      }
-    }
+  document.getElementById(
+    "progressCount"
+  ).textContent =
+    completedCount +
+    " of " +
+    totalGames +
+    " completed";
 
-    function toggleCompleted(gameId) {
-      if (completedGames.includes(gameId)) {
-        completedGames =
-          completedGames.filter(id => id !== gameId);
-      } else {
-        completedGames.push(gameId);
-      }
+  document.getElementById(
+    "percentage"
+  ).textContent =
+    percentage + "%";
 
-      saveData();
-      updatePage();
-    }
+  document.getElementById(
+    "progressFill"
+  ).style.width =
+    percentage + "%";
 
-    function toggleFavorite(gameId) {
-      if (favoriteGames.includes(gameId)) {
-        favoriteGames =
-          favoriteGames.filter(id => id !== gameId);
-      } else {
-        favoriteGames.push(gameId);
-      }
+}
 
-      saveData();
-      updatePage();
-    }
 
-    function updateProgress() {
-      const cards =
-        document.querySelectorAll(".game-card");
+function applyFilters() {
 
-      const validCompletedCount =
-        Array.from(cards).filter(card =>
-          completedGames.includes(card.dataset.id)
-        ).length;
-
-      const totalGames = cards.length;
-
-      const percentage =
-        totalGames === 0
-          ? 0
-          : Math.round(
-              (validCompletedCount / totalGames) * 100
-            );
-
-      document.getElementById("progressCount").textContent =
-        validCompletedCount +
-        " of " +
-        totalGames +
-        " completed";
-
-      document.getElementById("percentage").textContent =
-        percentage + "%";
-
-      document.getElementById("progressFill").style.width =
-        percentage + "%";
-    }
-
-    function applySearchAndFilter() {
-      const searchValue =
-        document
-          .getElementById("searchInput")
-          .value
-          .trim()
-          .toLowerCase();
-
-      const cards =
-        document.querySelectorAll(".game-card");
-
-      let visibleCount = 0;
-
-      cards.forEach(card => {
-        const gameId = card.dataset.id;
-        const searchText =
-          card.dataset.search.toLowerCase();
-
-        let shouldShow =
-          searchText.includes(searchValue);
-
-        if (
-          currentFilter === "favorites" &&
-          !favoriteGames.includes(gameId)
-        ) {
-          shouldShow = false;
-        }
-
-        if (
-          currentFilter === "completed" &&
-          !completedGames.includes(gameId)
-        ) {
-          shouldShow = false;
-        }
-
-        if (
-          currentFilter === "unfinished" &&
-          completedGames.includes(gameId)
-        ) {
-          shouldShow = false;
-        }
-
-        card.style.display =
-          shouldShow ? "flex" : "none";
-
-        if (shouldShow) {
-          visibleCount += 1;
-        }
-      });
-
-      document.getElementById("emptyMessage").style.display =
-        visibleCount === 0 ? "block" : "none";
-    }
-
-    function updatePage() {
-      document
-        .querySelectorAll(".game-card")
-        .forEach(card => {
-          const gameId = card.dataset.id;
-
-          card.classList.toggle(
-            "completed",
-            completedGames.includes(gameId)
-          );
-
-          const favoriteButton =
-            card.querySelector(".favorite-button");
-
-          favoriteButton.classList.toggle(
-            "favorite",
-            favoriteGames.includes(gameId)
-          );
-        });
-
-      updateProgress();
-      applySearchAndFilter();
-    }
-
-    function openRandomGame() {
-      const cards =
-        Array.from(
-          document.querySelectorAll(".game-card")
-        );
-
-      let availableCards =
-        cards.filter(card =>
-          !completedGames.includes(card.dataset.id)
-        );
-
-      if (availableCards.length === 0) {
-        availableCards = cards;
-      }
-
-      if (availableCards.length === 0) {
-        return;
-      }
-
-      const randomCard =
-        availableCards[
-          Math.floor(Math.random() * availableCards.length)
-        ];
-
-      const playLink =
-        randomCard.querySelector(".play-button");
-
-      if (playLink) {
-        playLink.click();
-      }
-    }
-
-    document
-      .querySelectorAll("[data-complete]")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          toggleCompleted(button.dataset.complete);
-        });
-      });
-
-    document
-      .querySelectorAll("[data-favorite]")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          toggleFavorite(button.dataset.favorite);
-        });
-      });
-
-    document
-      .querySelectorAll("[data-filter]")
-      .forEach(button => {
-        button.addEventListener("click", () => {
-          currentFilter = button.dataset.filter;
-
-          document
-            .querySelectorAll("[data-filter]")
-            .forEach(filterButton => {
-              filterButton.classList.toggle(
-                "active",
-                filterButton === button
-              );
-            });
-
-          applySearchAndFilter();
-        });
-      });
-
+  const searchValue =
     document
       .getElementById("searchInput")
-      .addEventListener(
-        "input",
-        applySearchAndFilter
+      .value
+      .trim()
+      .toLowerCase();
+
+  const cards =
+    document.querySelectorAll(
+      ".game-card"
+    );
+
+  let visibleCount = 0;
+
+
+  cards.forEach(card => {
+
+    const gameId =
+      card.dataset.id;
+
+    const category =
+      card.dataset.category;
+
+    const searchText =
+      card.dataset.search.toLowerCase();
+
+
+    let visible =
+      searchText.includes(searchValue);
+
+
+    if(
+      currentFilter === "word" &&
+      category !== "word"
+    ) {
+      visible = false;
+    }
+
+
+    if(
+      currentFilter === "geography" &&
+      category !== "geography"
+    ) {
+      visible = false;
+    }
+
+
+    if(
+      currentFilter === "movies" &&
+      category !== "movies"
+    ) {
+      visible = false;
+    }
+
+
+    if(
+      currentFilter === "sports" &&
+      category !== "sports"
+    ) {
+      visible = false;
+    }
+
+
+    if(
+      currentFilter === "trivia" &&
+      category !== "trivia"
+    ) {
+      visible = false;
+    }
+
+
+    if(
+      currentFilter === "favorites" &&
+      !favoriteGames.includes(gameId)
+    ) {
+      visible = false;
+    }
+
+
+    if(
+      currentFilter === "completed" &&
+      !completedGames.includes(gameId)
+    ) {
+      visible = false;
+    }
+
+
+    if(
+      currentFilter === "unfinished" &&
+      completedGames.includes(gameId)
+    ) {
+      visible = false;
+    }
+
+
+    card.style.display =
+      visible ? "flex" : "none";
+
+
+    if(visible) {
+      visibleCount++;
+    }
+
+  });
+
+
+  document.getElementById(
+    "emptyMessage"
+  ).style.display =
+    visibleCount === 0
+      ? "block"
+      : "none";
+
+}
+
+
+function updatePage() {
+
+  document
+    .querySelectorAll(".game-card")
+    .forEach(card => {
+
+      const gameId =
+        card.dataset.id;
+
+
+      card.classList.toggle(
+        "completed",
+        completedGames.includes(gameId)
       );
 
-    document
-      .getElementById("randomButton")
-      .addEventListener(
-        "click",
-        openRandomGame
+
+      const favoriteButton =
+        card.querySelector(
+          ".favorite-button"
+        );
+
+
+      favoriteButton.classList.toggle(
+        "favorite",
+        favoriteGames.includes(gameId)
       );
 
-    document.getElementById("currentDate").textContent =
-      new Date().toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
+    });
 
-    updatePage();
-  </script>
+
+  updateProgress();
+
+  applyFilters();
+
+}
+
+
+function openRandomGame() {
+
+  const cards =
+    Array.from(
+      document.querySelectorAll(
+        ".game-card"
+      )
+    );
+
+
+  let availableCards =
+    cards.filter(card =>
+      !completedGames.includes(
+        card.dataset.id
+      )
+    );
+
+
+  if(availableCards.length === 0) {
+    availableCards = cards;
+  }
+
+
+  if(availableCards.length === 0) {
+    return;
+  }
+
+
+  const randomCard =
+    availableCards[
+      Math.floor(
+        Math.random() *
+        availableCards.length
+      )
+    ];
+
+
+  const playLink =
+    randomCard.querySelector(
+      ".play-button"
+    );
+
+
+  if(playLink) {
+    playLink.click();
+  }
+
+}
+
+
+document
+  .querySelectorAll(
+    "[data-complete]"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        toggleCompleted(
+          button.dataset.complete
+        );
+
+      }
+    );
+
+  });
+
+
+document
+  .querySelectorAll(
+    "[data-favorite]"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        toggleFavorite(
+          button.dataset.favorite
+        );
+
+      }
+    );
+
+  });
+
+
+document
+  .querySelectorAll(
+    "[data-filter]"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        currentFilter =
+          button.dataset.filter;
+
+
+        document
+          .querySelectorAll(
+            "[data-filter]"
+          )
+          .forEach(filterButton => {
+
+            filterButton.classList.toggle(
+              "active",
+              filterButton === button
+            );
+
+          });
+
+
+        applyFilters();
+
+      }
+    );
+
+  });
+
+
+document
+  .getElementById(
+    "searchInput"
+  )
+  .addEventListener(
+    "input",
+    applyFilters
+  );
+
+
+document
+  .getElementById(
+    "randomButton"
+  )
+  .addEventListener(
+    "click",
+    openRandomGame
+  );
+
+
+document.getElementById(
+  "currentDate"
+).textContent =
+  new Date().toLocaleDateString(
+    undefined,
+    {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    }
+  );
+
+
+updatePage();
+
+</script>
+
 </body>
 </html>
 
