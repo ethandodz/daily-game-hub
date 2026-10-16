@@ -1,1639 +1,1612 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#080c18">
+  <meta charset="UTF-8">
 
-<title>Daily Game Hub</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<style>
-* {
-  box-sizing: border-box;
-}
+  <meta name="theme-color" content="#080c18">
 
-:root {
-  --background: #080c18;
-  --panel: #111827;
-  --panel-light: #182234;
-  --border: #263348;
-  --text: #f8fafc;
-  --muted: #94a3b8;
-  --green: #10b981;
-  --yellow: #f59e0b;
-}
+  <title>Daily Game Hub</title>
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at 10% 0%, rgba(124,58,237,.28), transparent 30%),
-    radial-gradient(circle at 100% 35%, rgba(14,165,233,.17), transparent 28%),
-    var(--background);
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-button,
-input {
-  font: inherit;
-}
+    :root {
+      --background: #080c18;
+      --panel: #111827;
+      --panel-light: #182234;
+      --border: #263348;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --purple: #7c3aed;
+      --blue: #2563eb;
+    }
 
-button {
-  cursor: pointer;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 
-.container {
-  width: min(1180px,100%);
-  margin: auto;
-  padding: 24px 16px 60px;
-}
+      background:
+        radial-gradient(
+          circle at 10% 0%,
+          rgba(124, 58, 237, 0.28),
+          transparent 30%
+        ),
+        radial-gradient(
+          circle at 100% 35%,
+          rgba(14, 165, 233, 0.17),
+          transparent 28%
+        ),
+        var(--background);
+    }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 24px;
-}
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
 
-.logo {
-  margin: 0;
-  font-size: 25px;
-}
+    button {
+      cursor: pointer;
+    }
 
-.date {
-  margin: 5px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
+    .container {
+      width: min(1180px, 100%);
+      margin: auto;
+      padding: 24px 16px 60px;
+    }
 
-.random-button {
-  padding: 11px 15px;
-  color: white;
-  font-weight: 800;
-  border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg,#7c3aed,#2563eb);
-}
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
 
-.progress-card {
-  padding: 24px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  background: linear-gradient(135deg,#0f172a,#312e81);
-  box-shadow: 0 18px 45px rgba(0,0,0,.24);
-}
+    .logo {
+      margin: 0;
+      font-size: 25px;
+    }
 
-.progress-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  gap: 18px;
-}
+    .date {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
 
-.eyebrow {
-  color: #cbd5e1;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .12em;
-}
+    .random-button {
+      flex: 0 0 auto;
+      padding: 11px 15px;
+      color: white;
+      font-weight: 800;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(
+        135deg,
+        var(--purple),
+        var(--blue)
+      );
+    }
 
-.progress-card h2 {
-  margin: 7px 0 5px;
-  font-size: 30px;
-}
+    .progress-card {
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(
+        135deg,
+        #0f172a,
+        #312e81
+      );
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+    }
 
-.progress-message {
-  margin: 0;
-  color: #cbd5e1;
-}
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+    }
 
-.percentage {
-  font-size: 40px;
-  font-weight: 900;
-}
+    .eyebrow {
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
 
-.progress-track {
-  height: 11px;
-  margin-top: 20px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255,255,255,.15);
-}
+    .progress-card h2 {
+      margin: 7px 0 5px;
+      font-size: 30px;
+    }
 
-.progress-fill {
-  display: block;
-  width: 0;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg,#34d399,#22d3ee);
-  transition: width .3s ease;
-}
+    .progress-message {
+      margin: 0;
+      color: #cbd5e1;
+    }
 
-/* FILTERS */
+    .percentage {
+      font-size: 40px;
+      font-weight: 900;
+    }
 
-.controls {
-  margin-bottom: 18px;
-}
+    .progress-track {
+      height: 11px;
+      margin-top: 20px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+    }
 
-.search-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
+    .progress-fill {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        #34d399,
+        #22d3ee
+      );
+      transition: width 0.3s ease;
+    }
 
-.search {
-  flex: 1;
-  min-width: 0;
-  padding: 12px 14px;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 13px;
-  outline: none;
-  background: var(--panel);
-}
+    .controls {
+      margin-bottom: 18px;
+    }
 
-.filter-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 5px;
-  scrollbar-width: none;
-}
+    .search {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      outline: none;
+      background: var(--panel);
+    }
 
-.filter-scroll::-webkit-scrollbar {
-  display: none;
-}
+    .search:focus {
+      border-color: #8b5cf6;
+    }
 
-.filter-button {
-  flex: 0 0 auto;
-  padding: 9px 13px;
-  color: var(--muted);
-  font-weight: 750;
-  white-space: nowrap;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--panel);
-}
+    .filter-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+      scrollbar-width: none;
+    }
 
-.filter-button.active {
-  color: #111827;
-  border-color: white;
-  background: white;
-}
+    .filter-scroll::-webkit-scrollbar {
+      display: none;
+    }
 
-/* GAMES */
+    .filter-button {
+      flex: 0 0 auto;
+      padding: 9px 13px;
+      color: var(--muted);
+      font-weight: 750;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+    }
 
-.games {
-  display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
-  gap: 14px;
-}
+    .filter-button.active {
+      color: #111827;
+      border-color: white;
+      background: white;
+    }
 
-.game-card {
-  --game-color: #7c3aed;
+    .games {
+      display: grid;
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
 
-  position: relative;
-  display: flex;
-  min-height: 215px;
-  flex-direction: column;
-  padding: 17px;
-  border: 1px solid var(--border);
-  border-top: 5px solid var(--game-color);
-  border-radius: 19px;
-  background: var(--panel);
-}
+    .game-card {
+      --game-color: #7c3aed;
 
-.game-card.completed {
-  border-color: var(--green);
-  border-top-color: var(--green);
-}
+      position: relative;
+      display: flex;
+      min-height: 215px;
+      flex-direction: column;
+      padding: 17px;
+      border: 1px solid var(--border);
+      border-top: 5px solid var(--game-color);
+      border-radius: 19px;
+      background: var(--panel);
+    }
 
-.game-card.completed::after {
-  content: "✓";
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: grid;
-  width: 26px;
-  height: 26px;
-  place-items: center;
-  color: white;
-  font-weight: 900;
-  border-radius: 50%;
-  background: var(--green);
-}
+    .game-card.completed {
+      border-color: var(--green);
+      border-top-color: var(--green);
+    }
 
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-}
+    .game-card.completed::after {
+      content: "✓";
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: grid;
+      width: 26px;
+      height: 26px;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      border-radius: 50%;
+      background: var(--green);
+    }
 
-.game-icon {
-  display: grid;
-  width: 47px;
-  height: 47px;
-  place-items: center;
-  font-size: 20px;
-  font-weight: 900;
-  border-radius: 14px;
-  background: var(--panel-light);
-}
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
 
-.favorite-button {
-  padding: 3px;
-  color: #64748b;
-  font-size: 22px;
-  border: 0;
-  background: transparent;
-}
+    .game-icon {
+      display: grid;
+      width: 47px;
+      height: 47px;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 900;
+      border-radius: 14px;
+      background: var(--panel-light);
+    }
 
-.favorite-button.favorite {
-  color: var(--yellow);
-}
+    .favorite-button {
+      padding: 3px;
+      color: #64748b;
+      font-size: 22px;
+      border: 0;
+      background: transparent;
+    }
 
-.game-card h3 {
-  margin: 16px 0 5px;
-  font-size: 18px;
-}
+    .favorite-button.favorite {
+      color: var(--yellow);
+    }
 
-.category {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
+    .game-card h3 {
+      margin: 16px 0 5px;
+      font-size: 18px;
+    }
 
-.description {
-  flex: 1;
-  margin: 10px 0 16px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
+    .category {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
 
-.card-buttons {
-  display: flex;
-  gap: 8px;
-}
+    .description {
+      flex: 1;
+      margin: 10px 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
 
-.play-button {
-  flex: 1;
-  display: block;
-  padding: 10px;
-  color: white;
-  font-weight: 900;
-  text-align: center;
-  text-decoration: none;
-  border-radius: 11px;
-  background: var(--game-color);
-}
+    .card-buttons {
+      display: flex;
+      gap: 8px;
+    }
 
-.complete-button {
-  width: 43px;
-  padding: 10px;
-  color: white;
-  font-size: 17px;
-  font-weight: 900;
-  border: 0;
-  border-radius: 11px;
-  background: var(--panel-light);
-}
+    .play-button {
+      flex: 1;
+      display: block;
+      padding: 10px;
+      color: white;
+      font-weight: 900;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 11px;
+      background: var(--game-color);
+    }
 
-.completed .complete-button {
-  background: var(--green);
-}
+    .complete-button {
+      width: 43px;
+      padding: 10px;
+      color: white;
+      font-size: 17px;
+      font-weight: 900;
+      border: 0;
+      border-radius: 11px;
+      background: var(--panel-light);
+    }
 
-.empty-message {
-  display: none;
-  padding: 45px 20px;
-  color: var(--muted);
-  text-align: center;
-  border: 1px dashed var(--border);
-  border-radius: 20px;
-}
+    .completed .complete-button {
+      background: var(--green);
+    }
 
-.footer {
-  margin-top: 28px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
+    .empty-message {
+      display: none;
+      padding: 45px 20px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--border);
+      border-radius: 20px;
+    }
 
-@media(max-width:950px) {
-  .games {
-    grid-template-columns: repeat(3,minmax(0,1fr));
-  }
-}
+    .feedback-section {
+      padding: 24px;
+      margin-top: 40px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--panel);
+    }
 
-@media(max-width:700px) {
-  .games {
-    grid-template-columns: repeat(2,minmax(0,1fr));
-  }
+    .feedback-heading {
+      margin: 0;
+      font-size: 23px;
+    }
 
-  .percentage {
-    font-size: 32px;
-  }
+    .feedback-intro {
+      margin: 7px 0 22px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
 
-  .progress-card h2 {
-    font-size: 24px;
-  }
-}
+    .feedback-types {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 20px;
+    }
 
-@media(max-width:480px) {
-  .container {
-    padding: 18px 12px 50px;
-  }
+    .feedback-type {
+      padding: 13px 10px;
+      color: var(--muted);
+      font-weight: 800;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: var(--panel-light);
+    }
 
-  .logo {
-    font-size: 21px;
-  }
+    .feedback-type.selected {
+      color: white;
+      border-color: #8b5cf6;
+      background: linear-gradient(
+        135deg,
+        #7c3aed,
+        #2563eb
+      );
+    }
 
-  .progress-card {
-    padding: 19px;
-  }
+    .feedback-form {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
 
-  .games {
-    grid-template-columns: 1fr;
-  }
+    .form-field {
+      display: grid;
+      gap: 7px;
+    }
 
-  .game-card {
-    min-height: 195px;
-  }
-}
-</style>
+    .form-field.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      width: 100%;
+      padding: 12px 13px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      background: var(--background);
+    }
+
+    .form-field textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+      border-color: #8b5cf6;
+    }
+
+    .form-field select option {
+      color: var(--text);
+      background: var(--panel);
+    }
+
+    .character-count {
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .honeypot {
+      position: absolute;
+      left: -10000px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    .submit-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .submit-feedback {
+      padding: 12px 18px;
+      color: white;
+      font-weight: 900;
+      border: 0;
+      border-radius: 13px;
+      background: linear-gradient(
+        135deg,
+        #7c3aed,
+        #2563eb
+      );
+    }
+
+    .submit-feedback:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .feedback-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .feedback-status.success {
+      color: #34d399;
+    }
+
+    .feedback-status.error {
+      color: #f87171;
+    }
+
+    .footer {
+      margin-top: 25px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 950px) {
+      .games {
+        grid-template-columns:
+          repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .games {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .percentage {
+        font-size: 32px;
+      }
+
+      .progress-card h2 {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 18px 12px 50px;
+      }
+
+      .logo {
+        font-size: 21px;
+      }
+
+      .progress-card {
+        padding: 19px;
+      }
+
+      .progress-top {
+        align-items: start;
+      }
+
+      .games {
+        grid-template-columns: 1fr;
+      }
+
+      .game-card {
+        min-height: 195px;
+      }
+
+      .feedback-section {
+        padding: 19px;
+      }
+
+      .feedback-types {
+        grid-template-columns: 1fr;
+      }
+
+      .feedback-form {
+        grid-template-columns: 1fr;
+      }
+
+      .form-field.full-width,
+      .submit-row {
+        grid-column: auto;
+      }
+
+      .submit-row {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .submit-feedback {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
 
-<div class="container">
+    <header>
+      <div>
+        <h1 class="logo">◆ Daily Game Hub</h1>
 
-<header>
-  <div>
-    <h1 class="logo">◆ Daily Game Hub</h1>
-    <p class="date" id="currentDate">Your daily games</p>
-  </div>
+        <p class="date" id="currentDate">
+          Your daily games
+        </p>
+      </div>
 
-  <button class="random-button" id="randomButton">
-    🎲 Random
-  </button>
-</header>
+      <button
+        class="random-button"
+        id="randomButton"
+        type="button"
+      >
+        🎲 Random
+      </button>
+    </header>
 
+    <section class="progress-card">
+      <div class="progress-top">
+        <div>
+          <div class="eyebrow">
+            TODAY'S PROGRESS
+          </div>
 
-<section class="progress-card">
+          <h2 id="progressCount">
+            0 of 17 completed
+          </h2>
 
-  <div class="progress-top">
+          <p class="progress-message">
+            Pick a game and start today's run.
+          </p>
+        </div>
 
-    <div>
-      <div class="eyebrow">TODAY'S PROGRESS</div>
+        <div class="percentage" id="percentage">
+          0%
+        </div>
+      </div>
 
-      <h2 id="progressCount">
-        0 of 17 completed
+      <div class="progress-track">
+        <span
+          class="progress-fill"
+          id="progressFill"
+        ></span>
+      </div>
+    </section>
+
+    <section class="controls">
+      <input
+        class="search"
+        id="searchInput"
+        type="search"
+        placeholder="Search games..."
+        autocomplete="off"
+      >
+
+      <div class="filter-scroll">
+        <button class="filter-button active" data-filter="all">
+          All
+        </button>
+
+        <button class="filter-button" data-filter="word">
+          🔤 Word & Logic
+        </button>
+
+        <button class="filter-button" data-filter="geography">
+          🌎 Geography
+        </button>
+
+        <button class="filter-button" data-filter="movies">
+          🎬 Movies
+        </button>
+
+        <button class="filter-button" data-filter="sports">
+          🏆 Sports
+        </button>
+
+        <button class="filter-button" data-filter="trivia">
+          🧠 Trivia
+        </button>
+
+        <button class="filter-button" data-filter="favorites">
+          ★ Favorites
+        </button>
+
+        <button class="filter-button" data-filter="unfinished">
+          Not Played
+        </button>
+
+        <button class="filter-button" data-filter="completed">
+          ✓ Completed
+        </button>
+      </div>
+    </section>
+
+    <main class="games" id="gameGrid"></main>
+
+    <div class="empty-message" id="emptyMessage">
+      No games match your search or selected filter.
+    </div>
+
+    <section class="feedback-section">
+      <h2 class="feedback-heading">
+        💬 Help Improve Daily Game Hub
       </h2>
 
-      <p class="progress-message">
-        Pick a game and start today's run.
+      <p class="feedback-intro">
+        Found something broken, have an idea, or know a game
+        that should be added? Send it in for review.
       </p>
-    </div>
 
-    <div class="percentage" id="percentage">
-      0%
-    </div>
+      <div class="feedback-types">
+        <button
+          class="feedback-type selected"
+          type="button"
+          data-feedback-type="bug"
+        >
+          🐛 Report a Bug
+        </button>
 
+        <button
+          class="feedback-type"
+          type="button"
+          data-feedback-type="suggestion"
+        >
+          💡 Suggest a Change
+        </button>
+
+        <button
+          class="feedback-type"
+          type="button"
+          data-feedback-type="game_request"
+        >
+          🎮 Suggest a Game
+        </button>
+      </div>
+
+      <form class="feedback-form" id="feedbackForm">
+
+        <div class="form-field full-width">
+          <label for="feedbackGame">
+            Game involved (optional)
+          </label>
+
+          <select id="feedbackGame">
+            <option value="">
+              No specific game
+            </option>
+          </select>
+        </div>
+
+        <div class="form-field full-width">
+          <label for="feedbackMessage">
+            What happened or what would you like changed?
+          </label>
+
+          <textarea
+            id="feedbackMessage"
+            maxlength="2000"
+            required
+            placeholder="Describe the bug or suggestion..."
+          ></textarea>
+
+          <div
+            class="character-count"
+            id="characterCount"
+          >
+            0 / 2000
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="feedbackName">
+            Name (optional)
+          </label>
+
+          <input
+            id="feedbackName"
+            type="text"
+            maxlength="100"
+            autocomplete="name"
+            placeholder="Your name"
+          >
+        </div>
+
+        <div class="form-field">
+          <label for="feedbackEmail">
+            Email (optional)
+          </label>
+
+          <input
+            id="feedbackEmail"
+            type="email"
+            maxlength="200"
+            autocomplete="email"
+            placeholder="you@example.com"
+          >
+        </div>
+
+        <div class="honeypot" aria-hidden="true">
+          <label for="companyWebsite">
+            Company website
+          </label>
+
+          <input
+            id="companyWebsite"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+          >
+        </div>
+
+        <div class="submit-row">
+          <button
+            class="submit-feedback"
+            id="submitFeedbackButton"
+            type="submit"
+          >
+            Submit Feedback
+          </button>
+
+          <p
+            class="feedback-status"
+            id="feedbackStatus"
+            aria-live="polite"
+          ></p>
+        </div>
+      </form>
+    </section>
+
+    <p class="footer">
+      Favorites and daily completion checkmarks are stored
+      locally in this browser. Feedback is sent to the Daily
+      Game Hub review database.
+    </p>
   </div>
 
-  <div class="progress-track">
-    <span class="progress-fill" id="progressFill"></span>
-  </div>
-
-</section>
-
-
-<section class="controls">
-
-  <div class="search-row">
-
-    <input
-      class="search"
-      id="searchInput"
-      type="search"
-      placeholder="Search games..."
-      autocomplete="off"
-    >
-
-  </div>
-
-
-  <div class="filter-scroll">
-
-    <button class="filter-button active" data-filter="all">
-      All
-    </button>
-
-    <button class="filter-button" data-filter="word">
-      🔤 Word & Logic
-    </button>
-
-    <button class="filter-button" data-filter="geography">
-      🌎 Geography
-    </button>
-
-    <button class="filter-button" data-filter="movies">
-      🎬 Movies
-    </button>
-
-    <button class="filter-button" data-filter="sports">
-      🏆 Sports
-    </button>
-
-    <button class="filter-button" data-filter="trivia">
-      🧠 Trivia
-    </button>
-
-    <button class="filter-button" data-filter="favorites">
-      ★ Favorites
-    </button>
-
-    <button class="filter-button" data-filter="unfinished">
-      Not Played
-    </button>
-
-    <button class="filter-button" data-filter="completed">
-      ✓ Completed
-    </button>
-
-  </div>
-
-</section>
-
-
-<main class="games" id="gameGrid">
-
-
-<!-- WORDLE -->
-
-<article
-class="game-card"
-data-id="wordle"
-data-category="word"
-data-search="wordle word logic"
-style="--game-color:#6aaa64"
->
-
-<div class="card-top">
-<div class="game-icon">W</div>
-<button class="favorite-button" data-favorite="wordle">★</button>
-</div>
-
-<h3>Wordle</h3>
-
-<div class="category">Word & Logic</div>
-
-<p class="description">
-Guess the five-letter word in six tries.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://www.nytimes.com/games/wordle/index.html"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="wordle">
-✓
-</button>
-
-</div>
-
-</article>
-
-
-<!-- CONNECTIONS -->
-
-<article
-class="game-card"
-data-id="connections"
-data-category="word"
-data-search="connections word logic"
-style="--game-color:#8b5cf6"
->
-
-<div class="card-top">
-<div class="game-icon">▦</div>
-<button class="favorite-button" data-favorite="connections">★</button>
-</div>
-
-<h3>Connections</h3>
-
-<div class="category">Word & Logic</div>
-
-<p class="description">
-Group sixteen words by their hidden connections.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://www.nytimes.com/games/connections"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="connections">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- STRANDS -->
-
-<article
-class="game-card"
-data-id="strands"
-data-category="word"
-data-search="strands word logic"
-style="--game-color:#38bdf8"
->
-
-<div class="card-top">
-<div class="game-icon">〰</div>
-<button class="favorite-button" data-favorite="strands">★</button>
-</div>
-
-<h3>Strands</h3>
-
-<div class="category">Word & Logic</div>
-
-<p class="description">
-Find themed words hidden in a letter grid.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://www.nytimes.com/games/strands"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="strands">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- KRILLION -->
-
-<article
-class="game-card"
-data-id="krillion"
-data-category="trivia"
-data-search="krillion trivia"
-style="--game-color:#0891b2"
->
-
-<div class="card-top">
-<div class="game-icon">K</div>
-<button class="favorite-button" data-favorite="krillion">★</button>
-</div>
-
-<h3>Krillion</h3>
-<div class="category">Trivia</div>
-
-<p class="description">
-Daily trivia where rarer answers matter.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://krillion.io/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="krillion">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- GUESSLIST -->
-
-<article
-class="game-card"
-data-id="guesslist"
-data-category="trivia"
-data-search="guesslist trivia list"
-style="--game-color:#f97316"
->
-
-<div class="card-top">
-<div class="game-icon">100</div>
-<button class="favorite-button" data-favorite="guesslist">★</button>
-</div>
-
-<h3>GuessList</h3>
-<div class="category">Trivia</div>
-
-<p class="description">
-Guess entries from a ranked list.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://playguesslist.com/game"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="guesslist">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- FRAMED -->
-
-<article
-class="game-card"
-data-id="framed"
-data-category="movies"
-data-search="framed movies film"
-style="--game-color:#dc2626"
->
-
-<div class="card-top">
-<div class="game-icon">🎬</div>
-<button class="favorite-button" data-favorite="framed">★</button>
-</div>
-
-<h3>Framed</h3>
-<div class="category">Movies</div>
-
-<p class="description">
-Identify the movie from a sequence of frames.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://framed.wtf/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="framed">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- WORLDLE -->
-
-<article
-class="game-card"
-data-id="worldle"
-data-category="geography"
-data-search="worldle geography country map"
-style="--game-color:#16a34a"
->
-
-<div class="card-top">
-<div class="game-icon">🌍</div>
-<button class="favorite-button" data-favorite="worldle">★</button>
-</div>
-
-<h3>Worldle</h3>
-<div class="category">Geography</div>
-
-<p class="description">
-Guess the country from its silhouette.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://worldle.teuteuf.fr/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="worldle">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- GLOBLE -->
-
-<article
-class="game-card"
-data-id="globle"
-data-category="geography"
-data-search="globle geography country globe"
-style="--game-color:#2563eb"
->
-
-<div class="card-top">
-<div class="game-icon">🌐</div>
-<button class="favorite-button" data-favorite="globle">★</button>
-</div>
-
-<h3>Globle</h3>
-<div class="category">Geography</div>
-
-<p class="description">
-Use hotter and colder guesses to find the country.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://globle-game.com/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="globle">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- BOX OFFICE GAME -->
-
-<article
-class="game-card"
-data-id="boxoffice"
-data-category="movies"
-data-search="box office game movies film"
-style="--game-color:#db2777"
->
-
-<div class="card-top">
-<div class="game-icon">🎟</div>
-<button class="favorite-button" data-favorite="boxoffice">★</button>
-</div>
-
-<h3>Box Office Game</h3>
-<div class="category">Movies</div>
-
-<p class="description">
-Guess movies from a past box-office weekend.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://boxofficega.me/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="boxoffice">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- POELTL -->
-
-<article
-class="game-card"
-data-id="poeltl"
-data-category="sports"
-data-search="poeltl sports basketball nba"
-style="--game-color:#ea580c"
->
-
-<div class="card-top">
-<div class="game-icon">🏀</div>
-<button class="favorite-button" data-favorite="poeltl">★</button>
-</div>
-
-<h3>Poeltl</h3>
-<div class="category">Sports</div>
-
-<p class="description">
-Identify the mystery NBA player.
-</p>
-
-<div class="card-buttons">
-
-https://poeltl.nbpa.com/
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="poeltl">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- WEDDLE -->
-
-<article
-class="game-card"
-data-id="weddle"
-data-category="sports"
-data-search="weddle sports football nfl"
-style="--game-color:#15803d"
->
-
-<div class="card-top">
-<div class="game-icon">🏈</div>
-<button class="favorite-button" data-favorite="weddle">★</button>
-</div>
-
-<h3>Weddle</h3>
-<div class="category">Sports</div>
-
-<p class="description">
-Identify the mystery NFL player.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://www.weddlegame.com/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="weddle">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- POOPLE -->
-
-<article
-class="game-card"
-data-id="poople"
-data-category="word"
-data-search="poople word logic"
-style="--game-color:#a16207"
->
-
-<div class="card-top">
-<div class="game-icon">P</div>
-<button class="favorite-button" data-favorite="poople">★</button>
-</div>
-
-<h3>Poople</h3>
-<div class="category">Word & Logic</div>
-
-<p class="description">
-A quick daily word game.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://poople.io/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="poople">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- MAPTAP -->
-
-<article
-class="game-card"
-data-id="maptap"
-data-category="geography"
-data-search="maptap geography map globe"
-style="--game-color:#0d9488"
->
-
-<div class="card-top">
-<div class="game-icon">⌖</div>
-<button class="favorite-button" data-favorite="maptap">★</button>
-</div>
-
-<h3>MapTap</h3>
-<div class="category">Geography</div>
-
-<p class="description">
-Pin locations on the globe as accurately as possible.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://maptap.gg/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="maptap">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- CONTEXTO -->
-
-<article
-class="game-card"
-data-id="contexto"
-data-category="word"
-data-search="contexto word logic semantic"
-style="--game-color:#9333ea"
->
-
-<div class="card-top">
-<div class="game-icon">◎</div>
-<button class="favorite-button" data-favorite="contexto">★</button>
-</div>
-
-<h3>Contexto</h3>
-<div class="category">Word & Logic</div>
-
-<p class="description">
-Find the secret word using semantic similarity.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://contexto.me/en/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="contexto">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- DUOTRIGORDLE -->
-
-<article
-class="game-card"
-data-id="duotrigordle"
-data-category="word"
-data-search="duotrigordle word logic wordle"
-style="--game-color:#4f46e5"
->
-
-<div class="card-top">
-<div class="game-icon">32</div>
-<button class="favorite-button" data-favorite="duotrigordle">★</button>
-</div>
-
-<h3>Duotrigordle</h3>
-<div class="category">Word & Logic</div>
-
-<p class="description">
-Solve thirty-two Wordle boards with shared guesses.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://duotrigordle.com/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="duotrigordle">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- MINUTE CRYPTIC -->
-
-<article
-class="game-card"
-data-id="minutecryptic"
-data-category="word"
-data-search="minute cryptic crossword word logic"
-style="--game-color:#0f766e"
->
-
-<div class="card-top">
-<div class="game-icon">✦</div>
-<button class="favorite-button" data-favorite="minutecryptic">★</button>
-</div>
-
-<h3>Minute Cryptic</h3>
-<div class="category">Word & Logic</div>
-
-<p class="description">
-Solve one clever cryptic clue every day.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://www.minutecryptic.com/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="minutecryptic">✓</button>
-
-</div>
-
-</article>
-
-
-<!-- IMMACULATE GRID -->
-
-<article
-class="game-card"
-data-id="immaculate"
-data-category="sports"
-data-search="immaculate grid sports"
-style="--game-color:#0369a1"
->
-
-<div class="card-top">
-<div class="game-icon">#</div>
-<button class="favorite-button" data-favorite="immaculate">★</button>
-</div>
-
-<h3>Immaculate Grid</h3>
-<div class="category">Sports</div>
-
-<p class="description">
-Fill a sports grid with players matching both criteria.
-</p>
-
-<div class="card-buttons">
-
-<a
-class="play-button"
-href="https://www.sports-reference.com/immaculate-grid/"
-target="_blank"
-rel="noopener noreferrer"
->
-Play ↗
-</a>
-
-<button class="complete-button" data-complete="immaculate">✓</button>
-
-</div>
-
-</article>
-
-
-</main>
-
-
-<div class="empty-message" id="emptyMessage">
-No games match your search or filter.
-</div>
-
-
-<p class="footer">
-Favorites and today's completion checkmarks are saved in this browser.
-Each person using the site gets their own local progress.
-</p>
-
-</div>
-
-
-<script>
-
-const today =
-  new Date().toLocaleDateString("en-CA");
-
-const completedStorageKey =
-  "dailyGameHubCompleted-" + today;
-
-const favoritesStorageKey =
-  "dailyGameHubFavorites";
-
-let completedGames = [];
-let favoriteGames = [];
-let currentFilter = "all";
-
-
-try {
-
-  completedGames =
-    JSON.parse(
-      localStorage.getItem(completedStorageKey)
-    ) || [];
-
-  favoriteGames =
-    JSON.parse(
-      localStorage.getItem(favoritesStorageKey)
-    ) || [];
-
-} catch(error) {
-
-  completedGames = [];
-  favoriteGames = [];
-
-}
-
-
-function saveData() {
-
-  try {
-
-    localStorage.setItem(
-      completedStorageKey,
-      JSON.stringify(completedGames)
-    );
-
-    localStorage.setItem(
-      favoritesStorageKey,
-      JSON.stringify(favoriteGames)
-    );
-
-  } catch(error) {
-
-    console.log("Browser storage unavailable.");
-
-  }
-
-}
-
-
-function toggleCompleted(gameId) {
-
-  if(completedGames.includes(gameId)) {
-
-    completedGames =
-      completedGames.filter(
-        id => id !== gameId
-      );
-
-  } else {
-
-    completedGames.push(gameId);
-
-  }
-
-  saveData();
-
-  updatePage();
-
-}
-
-
-function toggleFavorite(gameId) {
-
-  if(favoriteGames.includes(gameId)) {
-
-    favoriteGames =
-      favoriteGames.filter(
-        id => id !== gameId
-      );
-
-  } else {
-
-    favoriteGames.push(gameId);
-
-  }
-
-  saveData();
-
-  updatePage();
-
-}
-
-
-function updateProgress() {
-
-  const cards =
-    Array.from(
-      document.querySelectorAll(".game-card")
-    );
-
-  const completedCount =
-    cards.filter(card =>
-      completedGames.includes(card.dataset.id)
-    ).length;
-
-  const totalGames = cards.length;
-
-  const percentage =
-    totalGames === 0
-      ? 0
-      : Math.round(
-          completedCount / totalGames * 100
-        );
-
-  document.getElementById(
-    "progressCount"
-  ).textContent =
-    completedCount +
-    " of " +
-    totalGames +
-    " completed";
-
-  document.getElementById(
-    "percentage"
-  ).textContent =
-    percentage + "%";
-
-  document.getElementById(
-    "progressFill"
-  ).style.width =
-    percentage + "%";
-
-}
-
-
-function applyFilters() {
-
-  const searchValue =
-    document
-      .getElementById("searchInput")
-      .value
-      .trim()
-      .toLowerCase();
-
-  const cards =
-    document.querySelectorAll(
-      ".game-card"
-    );
-
-  let visibleCount = 0;
-
-
-  cards.forEach(card => {
-
-    const gameId =
-      card.dataset.id;
-
-    const category =
-      card.dataset.category;
-
-    const searchText =
-      card.dataset.search.toLowerCase();
-
-
-    let visible =
-      searchText.includes(searchValue);
-
-
-    if(
-      currentFilter === "word" &&
-      category !== "word"
-    ) {
-      visible = false;
-    }
-
-
-    if(
-      currentFilter === "geography" &&
-      category !== "geography"
-    ) {
-      visible = false;
-    }
-
-
-    if(
-      currentFilter === "movies" &&
-      category !== "movies"
-    ) {
-      visible = false;
-    }
-
-
-    if(
-      currentFilter === "sports" &&
-      category !== "sports"
-    ) {
-      visible = false;
-    }
-
-
-    if(
-      currentFilter === "trivia" &&
-      category !== "trivia"
-    ) {
-      visible = false;
-    }
-
-
-    if(
-      currentFilter === "favorites" &&
-      !favoriteGames.includes(gameId)
-    ) {
-      visible = false;
-    }
-
-
-    if(
-      currentFilter === "completed" &&
-      !completedGames.includes(gameId)
-    ) {
-      visible = false;
-    }
-
-
-    if(
-      currentFilter === "unfinished" &&
-      completedGames.includes(gameId)
-    ) {
-      visible = false;
-    }
-
-
-    card.style.display =
-      visible ? "flex" : "none";
-
-
-    if(visible) {
-      visibleCount++;
-    }
-
-  });
-
-
-  document.getElementById(
-    "emptyMessage"
-  ).style.display =
-    visibleCount === 0
-      ? "block"
-      : "none";
-
-}
-
-
-function updatePage() {
-
-  document
-    .querySelectorAll(".game-card")
-    .forEach(card => {
-
-      const gameId =
-        card.dataset.id;
-
-
-      card.classList.toggle(
-        "completed",
-        completedGames.includes(gameId)
-      );
-
-
-      const favoriteButton =
-        card.querySelector(
-          ".favorite-button"
-        );
-
-
-      favoriteButton.classList.toggle(
-        "favorite",
-        favoriteGames.includes(gameId)
-      );
-
-    });
-
-
-  updateProgress();
-
-  applyFilters();
-
-}
-
-
-function openRandomGame() {
-
-  const cards =
-    Array.from(
-      document.querySelectorAll(
-        ".game-card"
-      )
-    );
-
-
-  let availableCards =
-    cards.filter(card =>
-      !completedGames.includes(
-        card.dataset.id
-      )
-    );
-
-
-  if(availableCards.length === 0) {
-    availableCards = cards;
-  }
-
-
-  if(availableCards.length === 0) {
-    return;
-  }
-
-
-  const randomCard =
-    availableCards[
-      Math.floor(
-        Math.random() *
-        availableCards.length
-      )
+  <script>
+    const SUPABASE_URL =
+      "https://ibffwmegxjymmulfgoqu.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_v-YaLSlXnipQLhgN5-lHcw_ovmUbwvU";
+
+    const games = [
+      {
+        id: "wordle",
+        name: "Wordle",
+        category: "word",
+        categoryLabel: "Word & Logic",
+        description: "Guess the five-letter word in six tries.",
+        icon: "W",
+        color: "#6aaa64",
+        url: "https://www.nytimes.com/games/wordle/index.html"
+      },
+      {
+        id: "connections",
+        name: "Connections",
+        category: "word",
+        categoryLabel: "Word & Logic",
+        description: "Group sixteen words by their hidden connections.",
+        icon: "▦",
+        color: "#8b5cf6",
+        url: "https://www.nytimes.com/games/connections"
+      },
+      {
+        id: "strands",
+        name: "Strands",
+        category: "word",
+        categoryLabel: "Word & Logic",
+        description: "Find themed words hidden in a letter grid.",
+        icon: "〰",
+        color: "#38bdf8",
+        url: "https://www.nytimes.com/games/strands"
+      },
+      {
+        id: "krillion",
+        name: "Krillion",
+        category: "trivia",
+        categoryLabel: "Trivia",
+        description: "Daily trivia where rarer answers matter.",
+        icon: "K",
+        color: "#0891b2",
+        url: "https://krillion.io/"
+      },
+      {
+        id: "guesslist",
+        name: "GuessList",
+        category: "trivia",
+        categoryLabel: "Trivia",
+        description: "Guess entries from a ranked list.",
+        icon: "100",
+        color: "#f97316",
+        url: "https://playguesslist.com/game"
+      },
+      {
+        id: "framed",
+        name: "Framed",
+        category: "movies",
+        categoryLabel: "Movies",
+        description: "Identify the movie from a sequence of frames.",
+        icon: "🎬",
+        color: "#dc2626",
+        url: "https://framed.wtf/"
+      },
+      {
+        id: "worldle",
+        name: "Worldle",
+        category: "geography",
+        categoryLabel: "Geography",
+        description: "Guess the country from its silhouette.",
+        icon: "🌍",
+        color: "#16a34a",
+        url: "https://worldle.teuteuf.fr/"
+      },
+      {
+        id: "globle",
+        name: "Globle",
+        category: "geography",
+        categoryLabel: "Geography",
+        description: "Use hotter and colder guesses to find the country.",
+        icon: "🌐",
+        color: "#2563eb",
+        url: "https://globle-game.com/"
+      },
+      {
+        id: "boxoffice",
+        name: "Box Office Game",
+        category: "movies",
+        categoryLabel: "Movies",
+        description: "Guess movies from a past box-office weekend.",
+        icon: "🎟",
+        color: "#db2777",
+        url: "https://boxofficega.me/"
+      },
+      {
+        id: "poeltl",
+        name: "Poeltl",
+        category: "sports",
+        categoryLabel: "Sports",
+        description: "Identify the mystery NBA player.",
+        icon: "🏀",
+        color: "#ea580c",
+        url: "https://poeltl.nbpa.com/"
+      },
+      {
+        id: "weddle",
+        name: "Weddle",
+        category: "sports",
+        categoryLabel: "Sports",
+        description: "Identify the mystery NFL player.",
+        icon: "🏈",
+        color: "#15803d",
+        url: "https://www.weddlegame.com/"
+      },
+      {
+        id: "poople",
+        name: "Poople",
+        category: "word",
+        categoryLabel: "Word & Logic",
+        description: "A quick daily word game.",
+        icon: "P",
+        color: "#a16207",
+        url: "https://poople.io/"
+      },
+      {
+        id: "maptap",
+        name: "MapTap",
+        category: "geography",
+        categoryLabel: "Geography",
+        description: "Pin locations on the globe accurately.",
+        icon: "⌖",
+        color: "#0d9488",
+        url: "https://maptap.gg/"
+      },
+      {
+        id: "contexto",
+        name: "Contexto",
+        category: "word",
+        categoryLabel: "Word & Logic",
+        description: "Find the secret word using semantic similarity.",
+        icon: "◎",
+        color: "#9333ea",
+        url: "https://contexto.me/en/"
+      },
+      {
+        id: "duotrigordle",
+        name: "Duotrigordle",
+        category: "word",
+        categoryLabel: "Word & Logic",
+        description: "Solve thirty-two Wordle boards.",
+        icon: "32",
+        color: "#4f46e5",
+        url: "https://duotrigordle.com/"
+      },
+      {
+        id: "minutecryptic",
+        name: "Minute Cryptic",
+        category: "word",
+        categoryLabel: "Word & Logic",
+        description: "Solve one clever cryptic clue every day.",
+        icon: "✦",
+        color: "#0f766e",
+        url: "https://www.minutecryptic.com/"
+      },
+      {
+        id: "immaculate",
+        name: "Immaculate Grid",
+        category: "sports",
+        categoryLabel: "Sports",
+        description: "Fill a grid with matching sports players.",
+        icon: "#",
+        color: "#0369a1",
+        url: "https://www.sports-reference.com/immaculate-grid/"
+      }
     ];
 
+    const today =
+      new Date().toLocaleDateString("en-CA");
 
-  const playLink =
-    randomCard.querySelector(
-      ".play-button"
-    );
+    const completedStorageKey =
+      "dailyGameHubCompleted-" + today;
 
+    const favoritesStorageKey =
+      "dailyGameHubFavorites";
 
-  if(playLink) {
-    playLink.click();
-  }
+    let completedGames = [];
+    let favoriteGames = [];
+    let currentFilter = "all";
+    let selectedFeedbackType = "bug";
 
-}
+    try {
+      completedGames =
+        JSON.parse(
+          localStorage.getItem(completedStorageKey)
+        ) || [];
 
+      favoriteGames =
+        JSON.parse(
+          localStorage.getItem(favoritesStorageKey)
+        ) || [];
+    } catch (error) {
+      completedGames = [];
+      favoriteGames = [];
+    }
 
-document
-  .querySelectorAll(
-    "[data-complete]"
-  )
-  .forEach(button => {
+    function escapeHtml(value) {
+      return String(value).replace(
+        /[&<>"']/g,
+        character => ({
+          "&": "&",
+          "<": "<",
+          ">": ">",
+          "\"": """,
+          "'": "'"
+        })[character]
+      );
+    }
 
-    button.addEventListener(
-      "click",
-      () => {
-
-        toggleCompleted(
-          button.dataset.complete
+    function saveLocalData() {
+      try {
+        localStorage.setItem(
+          completedStorageKey,
+          JSON.stringify(completedGames)
         );
 
-      }
-    );
-
-  });
-
-
-document
-  .querySelectorAll(
-    "[data-favorite]"
-  )
-  .forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        toggleFavorite(
-          button.dataset.favorite
+        localStorage.setItem(
+          favoritesStorageKey,
+          JSON.stringify(favoriteGames)
         );
-
+      } catch (error) {
+        console.error(
+          "Local browser storage failed:",
+          error
+        );
       }
-    );
+    }
 
-  });
+    function createGameCard(game) {
+      return `
+        <article
+          class="game-card"
+          data-id="${escapeHtml(game.id)}"
+          data-category="${escapeHtml(game.category)}"
+          data-search="${escapeHtml(
+            (
+              game.name +
+              " " +
+              game.categoryLabel +
+              " " +
+              game.description
+            ).toLowerCase()
+          )}"
+          style="--game-color:${escapeHtml(game.color)}"
+        >
+          <div class="card-top">
+            <div class="game-icon">
+              ${escapeHtml(game.icon)}
+            </div>
 
+            <button
+              class="favorite-button"
+              type="button"
+              data-favorite="${escapeHtml(game.id)}"
+              aria-label="Favorite ${escapeHtml(game.name)}"
+            >
+              ★
+            </button>
+          </div>
 
-document
-  .querySelectorAll(
-    "[data-filter]"
-  )
-  .forEach(button => {
+          <h3>${escapeHtml(game.name)}</h3>
 
-    button.addEventListener(
-      "click",
-      () => {
+          <div class="category">
+            ${escapeHtml(game.categoryLabel)}
+          </div>
 
-        currentFilter =
-          button.dataset.filter;
+          <p class="description">
+            ${escapeHtml(game.description)}
+          </p>
 
+          <div class="card-buttons">
+            <a
+              class="play-button"
+              href="${escapeHtml(game.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Play ↗
+            </a>
 
-        document
-          .querySelectorAll(
-            "[data-filter]"
-          )
-          .forEach(filterButton => {
+            <button
+              class="complete-button"
+              type="button"
+              data-complete="${escapeHtml(game.id)}"
+              aria-label="Mark ${escapeHtml(game.name)} complete"
+            >
+              ✓
+            </button>
+          </div>
+        </article>
+      `;
+    }
 
-            filterButton.classList.toggle(
-              "active",
-              filterButton === button
+    function renderGameCards() {
+      const gameGrid =
+        document.getElementById("gameGrid");
+
+      gameGrid.innerHTML =
+        games.map(createGameCard).join("");
+
+      document
+        .querySelectorAll("[data-complete]")
+        .forEach(button => {
+          button.addEventListener("click", () => {
+            toggleCompleted(button.dataset.complete);
+          });
+        });
+
+      document
+        .querySelectorAll("[data-favorite]")
+        .forEach(button => {
+          button.addEventListener("click", () => {
+            toggleFavorite(button.dataset.favorite);
+          });
+        });
+    }
+
+    function populateFeedbackGames() {
+      const select =
+        document.getElementById("feedbackGame");
+
+      [...games]
+        .sort((first, second) =>
+          first.name.localeCompare(second.name)
+        )
+        .forEach(game => {
+          const option =
+            document.createElement("option");
+
+          option.value = game.name;
+          option.textContent = game.name;
+
+          select.appendChild(option);
+        });
+    }
+
+    function toggleCompleted(gameId) {
+      if (completedGames.includes(gameId)) {
+        completedGames =
+          completedGames.filter(id => id !== gameId);
+      } else {
+        completedGames.push(gameId);
+      }
+
+      saveLocalData();
+      updatePage();
+    }
+
+    function toggleFavorite(gameId) {
+      if (favoriteGames.includes(gameId)) {
+        favoriteGames =
+          favoriteGames.filter(id => id !== gameId);
+      } else {
+        favoriteGames.push(gameId);
+      }
+
+      saveLocalData();
+      updatePage();
+    }
+
+    function updateProgress() {
+      const completedCount =
+        games.filter(game =>
+          completedGames.includes(game.id)
+        ).length;
+
+      const percentage =
+        games.length === 0
+          ? 0
+          : Math.round(
+              completedCount / games.length * 100
             );
 
-          });
+      document.getElementById(
+        "progressCount"
+      ).textContent =
+        completedCount +
+        " of " +
+        games.length +
+        " completed";
 
+      document.getElementById(
+        "percentage"
+      ).textContent =
+        percentage + "%";
 
-        applyFilters();
-
-      }
-    );
-
-  });
-
-
-document
-  .getElementById(
-    "searchInput"
-  )
-  .addEventListener(
-    "input",
-    applyFilters
-  );
-
-
-document
-  .getElementById(
-    "randomButton"
-  )
-  .addEventListener(
-    "click",
-    openRandomGame
-  );
-
-
-document.getElementById(
-  "currentDate"
-).textContent =
-  new Date().toLocaleDateString(
-    undefined,
-    {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric"
+      document.getElementById(
+        "progressFill"
+      ).style.width =
+        percentage + "%";
     }
-  );
 
+    function applyFilters() {
+      const searchValue =
+        document
+          .getElementById("searchInput")
+          .value
+          .trim()
+          .toLowerCase();
 
-updatePage();
+      const cards =
+        document.querySelectorAll(".game-card");
 
-</script>
+      const categoryFilters = [
+        "word",
+        "geography",
+        "movies",
+        "sports",
+        "trivia"
+      ];
 
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const gameId = card.dataset.id;
+        const category = card.dataset.category;
+        const searchText = card.dataset.search;
+
+        let visible =
+          searchText.includes(searchValue);
+
+        if (
+          categoryFilters.includes(currentFilter) &&
+          category !== currentFilter
+        ) {
+          visible = false;
+        }
+
+        if (
+          currentFilter === "favorites" &&
+          !favoriteGames.includes(gameId)
+        ) {
+          visible = false;
+        }
+
+        if (
+          currentFilter === "completed" &&
+          !completedGames.includes(gameId)
+        ) {
+          visible = false;
+        }
+
+        if (
+          currentFilter === "unfinished" &&
+          completedGames.includes(gameId)
+        ) {
+          visible = false;
+        }
+
+        card.style.display =
+          visible ? "flex" : "none";
+
+        if (visible) {
+          visibleCount += 1;
+        }
+      });
+
+      document.getElementById(
+        "emptyMessage"
+      ).style.display =
+        visibleCount === 0
+          ? "block"
+          : "none";
+    }
+
+    function updatePage() {
+      document
+        .querySelectorAll(".game-card")
+        .forEach(card => {
+          const gameId = card.dataset.id;
+
+          card.classList.toggle(
+            "completed",
+            completedGames.includes(gameId)
+          );
+
+          const favoriteButton =
+            card.querySelector(".favorite-button");
+
+          favoriteButton.classList.toggle(
+            "favorite",
+            favoriteGames.includes(gameId)
+          );
+        });
+
+      updateProgress();
+      applyFilters();
+    }
+
+    function openRandomGame() {
+      let availableGames =
+        games.filter(game =>
+          !completedGames.includes(game.id)
+        );
+
+      if (availableGames.length === 0) {
+        availableGames = games;
+      }
+
+      const randomGame =
+        availableGames[
+          Math.floor(
+            Math.random() * availableGames.length
+          )
+        ];
+
+      if (!randomGame) {
+        return;
+      }
+
+      window.open(
+        randomGame.url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+
+    function setFeedbackStatus(message, type = "") {
+      const status =
+        document.getElementById("feedbackStatus");
+
+      status.textContent = message;
+
+      status.classList.remove(
+        "success",
+        "error"
+      );
+
+      if (type) {
+        status.classList.add(type);
+      }
+    }
+
+    function resetFeedbackType() {
+      selectedFeedbackType = "bug";
+
+      document
+        .querySelectorAll("[data-feedback-type]")
+        .forEach(button => {
+          button.classList.toggle(
+            "selected",
+            button.dataset.feedbackType === "bug"
+          );
+        });
+    }
+
+    async function submitFeedback(event) {
+      event.preventDefault();
+
+      const submitButton =
+        document.getElementById(
+          "submitFeedbackButton"
+        );
+
+      const message =
+        document
+          .getElementById("feedbackMessage")
+          .value
+          .trim();
+
+      const game =
+        document
+          .getElementById("feedbackGame")
+          .value
+          .trim();
+
+      const name =
+        document
+          .getElementById("feedbackName")
+          .value
+          .trim();
+
+      const email =
+        document
+          .getElementById("feedbackEmail")
+          .value
+          .trim();
+
+      const honeypot =
+        document
+          .getElementById("companyWebsite")
+          .value
+          .trim();
+
+      if (honeypot !== "") {
+        setFeedbackStatus(
+          "Thanks! Your feedback was sent.",
+          "success"
+        );
+
+        return;
+      }
+
+      if (message.length < 3) {
+        setFeedbackStatus(
+          "Please enter at least 3 characters.",
+          "error"
+        );
+
+        return;
+      }
+
+      const feedbackRecord = {
+        type: selectedFeedbackType,
+        game: game || null,
+        message: message,
+        name: name || null,
+        email: email || null,
+        status: "new"
+      };
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Sending...";
+
+      setFeedbackStatus(
+        "Submitting your feedback..."
+      );
+
+      try {
+        const response = await fetch(
+          SUPABASE_URL + "/rest/v1/feedback",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": SUPABASE_PUBLISHABLE_KEY,
+              "Authorization":
+                "Bearer " + SUPABASE_PUBLISHABLE_KEY,
+              "Prefer": "return=minimal"
+            },
+
+            body: JSON.stringify(feedbackRecord)
+          }
+        );
+
+        if (!response.ok) {
+          const responseText =
+            await response.text();
+
+          console.error(
+            "Supabase rejected feedback:",
+            response.status,
+            responseText
+          );
+
+          throw new Error(
+            "Supabase returned status " +
+            response.status
+          );
+        }
+
+        document
+          .getElementById("feedbackForm")
+          .reset();
+
+        document.getElementById(
+          "characterCount"
+        ).textContent = "0 / 2000";
+
+        resetFeedbackType();
+
+        setFeedbackStatus(
+          "Thanks! Your feedback was sent for review.",
+          "success"
+        );
+      } catch (error) {
+        console.error(
+          "Feedback submission failed:",
+          error
+        );
+
+        setFeedbackStatus(
+          "The feedback could not be sent. Please try again.",
+          "error"
+        );
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent =
+          "Submit Feedback";
+      }
+    }
+
+    renderGameCards();
+    populateFeedbackGames();
+
+    document
+      .querySelectorAll("[data-filter]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          currentFilter =
+            button.dataset.filter;
+
+          document
+            .querySelectorAll("[data-filter]")
+            .forEach(filterButton => {
+              filterButton.classList.toggle(
+                "active",
+                filterButton === button
+              );
+            });
+
+          applyFilters();
+        });
+      });
+
+    document
+      .querySelectorAll("[data-feedback-type]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          selectedFeedbackType =
+            button.dataset.feedbackType;
+
+          document
+            .querySelectorAll(
+              "[data-feedback-type]"
+            )
+            .forEach(typeButton => {
+              typeButton.classList.toggle(
+                "selected",
+                typeButton === button
+              );
+            });
+        });
+      });
+
+    document
+      .getElementById("searchInput")
+      .addEventListener(
+        "input",
+        applyFilters
+      );
+
+    document
+      .getElementById("randomButton")
+      .addEventListener(
+        "click",
+        openRandomGame
+      );
+
+    document
+      .getElementById("feedbackForm")
+      .addEventListener(
+        "submit",
+        submitFeedback
+      );
+
+    document
+      .getElementById("feedbackMessage")
+      .addEventListener("input", event => {
+        document.getElementById(
+          "characterCount"
+        ).textContent =
+          event.target.value.length +
+          " / 2000";
+      });
+
+    document.getElementById(
+      "currentDate"
+    ).textContent =
+      new Date().toLocaleDateString(
+        undefined,
+        {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }
+      );
+
+    updatePage();
+  </script>
 </body>
 </html>
 
