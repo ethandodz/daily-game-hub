@@ -637,6 +637,57 @@
         flex-direction: column;
       }
     }
+.friend-results {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.65);
+    }
+
+    .friend-results.visible {
+      display: block;
+    }
+
+    .friend-results-title {
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .friend-result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    }
+
+    .friend-result-row:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .friend-result-name {
+      min-width: 0;
+      overflow: hidden;
+      color: #cbd5e1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .friend-result-score {
+      flex: 0 0 auto;
+      color: white;
+      font-weight: 900;
+    }
+
   </style>
 </head>
 
@@ -4290,6 +4341,33 @@ document
             }
           );
 
+        const profileCache =
+          new Map();
+
+
+        async function getCachedProfile(
+          userId
+        ) {
+          if (
+            profileCache.has(userId)
+          ) {
+            return profileCache.get(
+              userId
+            );
+          }
+
+          const profile =
+            await getProfile(userId);
+
+          profileCache.set(
+            userId,
+            profile
+          );
+
+          return profile;
+        }
+
+
         cards().forEach(card => {
           const gameId =
             card.dataset.id;
@@ -4322,7 +4400,172 @@ document
             resultSummary.textContent =
               "";
           }
+
+
+          let friendResults =
+            card.querySelector(
+              ".friend-results"
+            );
+
+          if (!friendResults) {
+            friendResults =
+              document.createElement(
+                "div"
+              );
+
+            friendResults.className =
+              "friend-results";
+
+            card.appendChild(
+              friendResults
+            );
+          }
+
+          friendResults.innerHTML =
+            "";
+
+          friendResults.classList.remove(
+            "visible"
+          );
         });
+
+
+        const friendsByGame =
+          new Map();
+
+        const friendsOnly =
+          (scoreRows || []).filter(
+            score =>
+              score.user_id !==
+              session.user.id
+          );
+
+
+        for (
+          const friendScore
+          of friendsOnly
+        ) {
+          if (
+            !friendsByGame.has(
+              friendScore.game_id
+            )
+          ) {
+            friendsByGame.set(
+              friendScore.game_id,
+              []
+            );
+          }
+
+          friendsByGame
+            .get(friendScore.game_id)
+            .push(friendScore);
+        }
+
+
+        for (
+          const [
+            gameId,
+            gameScores
+          ]
+          of friendsByGame
+        ) {
+          const gameCard =
+            document.querySelector(
+              '[data-id="' +
+              gameId +
+              '"]'
+            );
+
+          if (!gameCard) {
+            continue;
+          }
+
+          const friendResults =
+            gameCard.querySelector(
+              ".friend-results"
+            );
+
+          const title =
+            document.createElement(
+              "div"
+            );
+
+          title.className =
+            "friend-results-title";
+
+          title.textContent =
+            "Friends Today";
+
+          friendResults.appendChild(
+            title
+          );
+
+
+          for (
+            const friendScore
+            of gameScores
+          ) {
+            const friendProfile =
+              await getCachedProfile(
+                friendScore.user_id
+              );
+
+            const displayName =
+              friendProfile.display_name ||
+              "@" +
+              friendProfile.username;
+
+            const resultRow =
+              document.createElement(
+                "div"
+              );
+
+            resultRow.className =
+              "friend-result-row";
+
+
+            const nameElement =
+              document.createElement(
+                "span"
+              );
+
+            nameElement.className =
+              "friend-result-name";
+
+            nameElement.textContent =
+              displayName;
+
+
+            const scoreElement =
+              document.createElement(
+                "strong"
+              );
+
+            scoreElement.className =
+              "friend-result-score";
+
+            scoreElement.textContent =
+              formatScore(
+                friendScore
+              );
+
+
+            resultRow.append(
+              nameElement,
+              scoreElement
+            );
+
+            friendResults.appendChild(
+              resultRow
+            );
+          }
+
+
+          friendResults.classList.add(
+            "visible"
+          );
+        }
+
 
         const friendScoreList =
           document.getElementById(
@@ -4332,84 +4575,18 @@ document
         friendScoreList.innerHTML =
           "";
 
-        const friendScores =
-          (scoreRows || []).filter(
-            score =>
-              score.user_id !==
-              session.user.id
-          );
-
-        for (
-          const friendScore
-          of friendScores
-        ) {
-          const friendProfile =
-            await getProfile(
-              friendScore.user_id
-            );
-
-          const gameCard =
-            document.querySelector(
-              '[data-id="' +
-              friendScore.game_id +
-              '"]'
-            );
-
-          const gameName =
-            gameCard?.dataset.name ||
-            friendScore.game_id;
-
-          const displayName =
-            friendProfile.display_name ||
-            "@" +
-            friendProfile.username;
-
-          const scoreRow =
-            document.createElement(
-              "div"
-            );
-
-          scoreRow.className =
-            "friend-row";
-
-          const scoreName =
-            document.createElement(
-              "span"
-            );
-
-          scoreName.textContent =
-            displayName +
-            " · " +
-            gameName;
-
-          const scoreResult =
-            document.createElement(
-              "strong"
-            );
-
-          scoreResult.textContent =
-            formatScore(
-              friendScore
-            );
-
-          scoreRow.append(
-            scoreName,
-            scoreResult
-          );
-
-          friendScoreList.appendChild(
-            scoreRow
-          );
-        }
 
         if (
-          friendScoreList
-            .children
-            .length === 0
+          friendsOnly.length === 0
         ) {
           friendScoreList.innerHTML =
             '<p class="status">' +
             "No friend results yet today." +
+            "</p>";
+        } else {
+          friendScoreList.innerHTML =
+            '<p class="status">' +
+            "Friend results are displayed under each game above." +
             "</p>";
         }
       } catch (error) {
@@ -4417,8 +4594,19 @@ document
           "Score loading failed:",
           error
         );
+
+        const friendScoreList =
+          document.getElementById(
+            "friendScores"
+          );
+
+        friendScoreList.innerHTML =
+          '<p class="status error">' +
+          "Friend results could not be loaded." +
+          "</p>";
       }
     }
+
 
 
     document
