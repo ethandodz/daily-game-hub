@@ -2,12 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080c18">
 
   <title>Daily Game Hub</title>
@@ -26,32 +21,19 @@
       --muted: #94a3b8;
       --green: #10b981;
       --yellow: #f59e0b;
-      --red: #ef4444;
       --purple: #7c3aed;
       --blue: #2563eb;
+      --red: #f87171;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
       color: var(--text);
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(
-          circle at 10% 0%,
-          rgba(124, 58, 237, 0.28),
-          transparent 30%
-        ),
-        radial-gradient(
-          circle at 100% 35%,
-          rgba(14, 165, 233, 0.17),
-          transparent 28%
-        ),
+        radial-gradient(circle at 10% 0%, rgba(124, 58, 237, 0.28), transparent 30%),
+        radial-gradient(circle at 100% 35%, rgba(14, 165, 233, 0.17), transparent 28%),
         var(--background);
     }
 
@@ -98,11 +80,7 @@
       font-weight: 800;
       border: 0;
       border-radius: 14px;
-      background: linear-gradient(
-        135deg,
-        var(--purple),
-        var(--blue)
-      );
+      background: linear-gradient(135deg, var(--purple), var(--blue));
     }
 
     .progress-card {
@@ -110,11 +88,7 @@
       margin-bottom: 24px;
       border: 1px solid var(--border);
       border-radius: 24px;
-      background: linear-gradient(
-        135deg,
-        #0f172a,
-        #312e81
-      );
+      background: linear-gradient(135deg, #0f172a, #312e81);
       box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
     }
 
@@ -160,11 +134,7 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(
-        90deg,
-        #34d399,
-        #22d3ee
-      );
+      background: linear-gradient(90deg, #34d399, #22d3ee);
       transition: width 0.3s ease;
     }
 
@@ -218,14 +188,12 @@
 
     .games {
       display: grid;
-      grid-template-columns:
-        repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
     }
 
     .game-card {
       --game-color: #7c3aed;
-
       position: relative;
       display: flex;
       min-height: 215px;
@@ -350,7 +318,7 @@
 
     .feedback-section {
       padding: 24px;
-      margin-top: 40px;
+      margin-top: 42px;
       border: 1px solid var(--border);
       border-radius: 24px;
       background: var(--panel);
@@ -369,8 +337,7 @@
 
     .feedback-types {
       display: grid;
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 9px;
       margin-bottom: 20px;
     }
@@ -387,17 +354,12 @@
     .feedback-type.selected {
       color: white;
       border-color: #8b5cf6;
-      background: linear-gradient(
-        135deg,
-        #7c3aed,
-        #2563eb
-      );
+      background: linear-gradient(135deg, var(--purple), var(--blue));
     }
 
     .feedback-form {
       display: grid;
-      grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
 
@@ -472,11 +434,7 @@
       font-weight: 900;
       border: 0;
       border-radius: 13px;
-      background: linear-gradient(
-        135deg,
-        #7c3aed,
-        #2563eb
-      );
+      background: linear-gradient(135deg, var(--purple), var(--blue));
     }
 
     .submit-feedback:disabled {
@@ -496,7 +454,7 @@
     }
 
     .feedback-status.error {
-      color: #f87171;
+      color: var(--red);
     }
 
     .footer {
@@ -508,15 +466,13 @@
 
     @media (max-width: 950px) {
       .games {
-        grid-template-columns:
-          repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 700px) {
       .games {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .percentage {
@@ -537,7 +493,8 @@
         font-size: 21px;
       }
 
-      .progress-card {
+      .progress-card,
+      .feedback-section {
         padding: 19px;
       }
 
@@ -545,24 +502,14 @@
         align-items: start;
       }
 
-      .games {
+      .games,
+      .feedback-types,
+      .feedback-form {
         grid-template-columns: 1fr;
       }
 
       .game-card {
         min-height: 195px;
-      }
-
-      .feedback-section {
-        padding: 19px;
-      }
-
-      .feedback-types {
-        grid-template-columns: 1fr;
-      }
-
-      .feedback-form {
-        grid-template-columns: 1fr;
       }
 
       .form-field.full-width,
@@ -588,17 +535,10 @@
     <header>
       <div>
         <h1 class="logo">◆ Daily Game Hub</h1>
-
-        <p class="date" id="currentDate">
-          Your daily games
-        </p>
+        <p class="date" id="currentDate">Your daily games</p>
       </div>
 
-      <button
-        class="random-button"
-        id="randomButton"
-        type="button"
-      >
+      <button class="random-button" id="randomButton" type="button">
         🎲 Random
       </button>
     </header>
@@ -606,29 +546,19 @@
     <section class="progress-card">
       <div class="progress-top">
         <div>
-          <div class="eyebrow">
-            TODAY'S PROGRESS
-          </div>
-
-          <h2 id="progressCount">
-            0 of 17 completed
-          </h2>
+          <div class="eyebrow">TODAY'S PROGRESS</div>
+          <h2 id="progressCount">0 of 17 completed</h2>
 
           <p class="progress-message">
             Pick a game and start today's run.
           </p>
         </div>
 
-        <div class="percentage" id="percentage">
-          0%
-        </div>
+        <div class="percentage" id="percentage">0%</div>
       </div>
 
       <div class="progress-track">
-        <span
-          class="progress-fill"
-          id="progressFill"
-        ></span>
+        <span class="progress-fill" id="progressFill"></span>
       </div>
     </section>
 
@@ -642,50 +572,515 @@
       >
 
       <div class="filter-scroll">
-        <button class="filter-button active" data-filter="all">
-          All
-        </button>
-
-        <button class="filter-button" data-filter="word">
-          🔤 Word & Logic
-        </button>
-
-        <button class="filter-button" data-filter="geography">
-          🌎 Geography
-        </button>
-
-        <button class="filter-button" data-filter="movies">
-          🎬 Movies
-        </button>
-
-        <button class="filter-button" data-filter="sports">
-          🏆 Sports
-        </button>
-
-        <button class="filter-button" data-filter="trivia">
-          🧠 Trivia
-        </button>
-
-        <button class="filter-button" data-filter="favorites">
-          ★ Favorites
-        </button>
-
-        <button class="filter-button" data-filter="unfinished">
-          Not Played
-        </button>
-
-        <button class="filter-button" data-filter="completed">
-          ✓ Completed
-        </button>
+        <button class="filter-button active" data-filter="all">All</button>
+        <button class="filter-button" data-filter="word">🔤 Word & Logic</button>
+        <button class="filter-button" data-filter="geography">🌎 Geography</button>
+        <button class="filter-button" data-filter="movies">🎬 Movies</button>
+        <button class="filter-button" data-filter="sports">🏆 Sports</button>
+        <button class="filter-button" data-filter="trivia">🧠 Trivia</button>
+        <button class="filter-button" data-filter="favorites">★ Favorites</button>
+        <button class="filter-button" data-filter="unfinished">Not Played</button>
+        <button class="filter-button" data-filter="completed">✓ Completed</button>
       </div>
     </section>
 
-    <main class="games" id="gameGrid"></main>
+    <main class="games" id="gameGrid">
+
+      <!-- 1. WORDLE -->
+      <article
+        class="game-card"
+        data-id="wordle"
+        data-category="word"
+        data-search="wordle word logic"
+        style="--game-color:#6aaa64"
+      >
+        <div class="card-top">
+          <div class="game-icon">W</div>
+          <button class="favorite-button" data-favorite="wordle" type="button">★</button>
+        </div>
+
+        <h3>Wordle</h3>
+        <div class="category">Word & Logic</div>
+        <p class="description">Guess the five-letter word in six tries.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://www.nytimes.com/games/wordle/index.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="wordle" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 2. CONNECTIONS -->
+      <article
+        class="game-card"
+        data-id="connections"
+        data-category="word"
+        data-search="connections word logic"
+        style="--game-color:#8b5cf6"
+      >
+        <div class="card-top">
+          <div class="game-icon">▦</div>
+          <button class="favorite-button" data-favorite="connections" type="button">★</button>
+        </div>
+
+        <h3>Connections</h3>
+        <div class="category">Word & Logic</div>
+        <p class="description">Group sixteen words by their hidden connections.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://www.nytimes.com/games/connections"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="connections" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 3. STRANDS -->
+      <article
+        class="game-card"
+        data-id="strands"
+        data-category="word"
+        data-search="strands word logic"
+        style="--game-color:#38bdf8"
+      >
+        <div class="card-top">
+          <div class="game-icon">〰</div>
+          <button class="favorite-button" data-favorite="strands" type="button">★</button>
+        </div>
+
+        <h3>Strands</h3>
+        <div class="category">Word & Logic</div>
+        <p class="description">Find themed words hidden in a letter grid.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://www.nytimes.com/games/strands"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="strands" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 4. KRILLION -->
+      <article
+        class="game-card"
+        data-id="krillion"
+        data-category="trivia"
+        data-search="krillion trivia"
+        style="--game-color:#0891b2"
+      >
+        <div class="card-top">
+          <div class="game-icon">K</div>
+          <button class="favorite-button" data-favorite="krillion" type="button">★</button>
+        </div>
+
+        <h3>Krillion</h3>
+        <div class="category">Trivia</div>
+        <p class="description">Daily trivia where rarer answers matter.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://krillion.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="krillion" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 5. GUESSLIST -->
+      <article
+        class="game-card"
+        data-id="guesslist"
+        data-category="trivia"
+        data-search="guesslist trivia list"
+        style="--game-color:#f97316"
+      >
+        <div class="card-top">
+          <div class="game-icon">100</div>
+          <button class="favorite-button" data-favorite="guesslist" type="button">★</button>
+        </div>
+
+        <h3>GuessList</h3>
+        <div class="category">Trivia</div>
+        <p class="description">Guess entries from a ranked list.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://playguesslist.com/game"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="guesslist" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 6. FRAMED -->
+      <article
+        class="game-card"
+        data-id="framed"
+        data-category="movies"
+        data-search="framed movies film"
+        style="--game-color:#dc2626"
+      >
+        <div class="card-top">
+          <div class="game-icon">🎬</div>
+          <button class="favorite-button" data-favorite="framed" type="button">★</button>
+        </div>
+
+        <h3>Framed</h3>
+        <div class="category">Movies</div>
+        <p class="description">Identify the movie from a sequence of frames.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://framed.wtf/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="framed" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 7. WORLDLE -->
+      <article
+        class="game-card"
+        data-id="worldle"
+        data-category="geography"
+        data-search="worldle geography country map"
+        style="--game-color:#16a34a"
+      >
+        <div class="card-top">
+          <div class="game-icon">🌍</div>
+          <button class="favorite-button" data-favorite="worldle" type="button">★</button>
+        </div>
+
+        <h3>Worldle</h3>
+        <div class="category">Geography</div>
+        <p class="description">Guess the country from its silhouette.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://worldle.teuteuf.fr/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="worldle" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 8. GLOBLE -->
+      <article
+        class="game-card"
+        data-id="globle"
+        data-category="geography"
+        data-search="globle geography country globe"
+        style="--game-color:#2563eb"
+      >
+        <div class="card-top">
+          <div class="game-icon">🌐</div>
+          <button class="favorite-button" data-favorite="globle" type="button">★</button>
+        </div>
+
+        <h3>Globle</h3>
+        <div class="category">Geography</div>
+        <p class="description">Use hotter and colder guesses to find the country.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://globle-game.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="globle" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 9. BOX OFFICE GAME -->
+      <article
+        class="game-card"
+        data-id="boxoffice"
+        data-category="movies"
+        data-search="box office game movies film"
+        style="--game-color:#db2777"
+      >
+        <div class="card-top">
+          <div class="game-icon">🎟</div>
+          <button class="favorite-button" data-favorite="boxoffice" type="button">★</button>
+        </div>
+
+        <h3>Box Office Game</h3>
+        <div class="category">Movies</div>
+        <p class="description">Guess movies from a past box-office weekend.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://boxofficega.me/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="boxoffice" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 10. POELTL -->
+      <article
+        class="game-card"
+        data-id="poeltl"
+        data-category="sports"
+        data-search="poeltl sports basketball nba"
+        style="--game-color:#ea580c"
+      >
+        <div class="card-top">
+          <div class="game-icon">🏀</div>
+          <button class="favorite-button" data-favorite="poeltl" type="button">★</button>
+        </div>
+
+        <h3>Poeltl</h3>
+        <div class="category">Sports</div>
+        <p class="description">Identify the mystery NBA player.</p>
+
+        <div class="card-buttons">
+          https://poeltl.nbpa.com/Play ↗</a>
+
+          <button class="complete-button" data-complete="poeltl" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 11. WEDDLE -->
+      <article
+        class="game-card"
+        data-id="weddle"
+        data-category="sports"
+        data-search="weddle sports football nfl"
+        style="--game-color:#15803d"
+      >
+        <div class="card-top">
+          <div class="game-icon">🏈</div>
+          <button class="favorite-button" data-favorite="weddle" type="button">★</button>
+        </div>
+
+        <h3>Weddle</h3>
+        <div class="category">Sports</div>
+        <p class="description">Identify the mystery NFL player.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://www.weddlegame.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="weddle" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 12. POOPLE -->
+      <article
+        class="game-card"
+        data-id="poople"
+        data-category="word"
+        data-search="poople word logic"
+        style="--game-color:#a16207"
+      >
+        <div class="card-top">
+          <div class="game-icon">P</div>
+          <button class="favorite-button" data-favorite="poople" type="button">★</button>
+        </div>
+
+        <h3>Poople</h3>
+        <div class="category">Word & Logic</div>
+        <p class="description">A quick daily word game.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://poople.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="poople" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 13. MAPTAP -->
+      <article
+        class="game-card"
+        data-id="maptap"
+        data-category="geography"
+        data-search="maptap geography map globe"
+        style="--game-color:#0d9488"
+      >
+        <div class="card-top">
+          <div class="game-icon">⌖</div>
+          <button class="favorite-button" data-favorite="maptap" type="button">★</button>
+        </div>
+
+        <h3>MapTap</h3>
+        <div class="category">Geography</div>
+        <p class="description">Pin locations on the globe as accurately as possible.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://maptap.gg/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="maptap" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 14. CONTEXTO -->
+      <article
+        class="game-card"
+        data-id="contexto"
+        data-category="word"
+        data-search="contexto word logic semantic"
+        style="--game-color:#9333ea"
+      >
+        <div class="card-top">
+          <div class="game-icon">◎</div>
+          <button class="favorite-button" data-favorite="contexto" type="button">★</button>
+        </div>
+
+        <h3>Contexto</h3>
+        <div class="category">Word & Logic</div>
+        <p class="description">Find the secret word using semantic similarity.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://contexto.me/en/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="contexto" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 15. DUOTRIGORDLE -->
+      <article
+        class="game-card"
+        data-id="duotrigordle"
+        data-category="word"
+        data-search="duotrigordle word logic wordle"
+        style="--game-color:#4f46e5"
+      >
+        <div class="card-top">
+          <div class="game-icon">32</div>
+          <button class="favorite-button" data-favorite="duotrigordle" type="button">★</button>
+        </div>
+
+        <h3>Duotrigordle</h3>
+        <div class="category">Word & Logic</div>
+        <p class="description">Solve thirty-two Wordle boards with shared guesses.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://duotrigordle.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="duotrigordle" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 16. MINUTE CRYPTIC -->
+      <article
+        class="game-card"
+        data-id="minutecryptic"
+        data-category="word"
+        data-search="minute cryptic crossword word logic"
+        style="--game-color:#0f766e"
+      >
+        <div class="card-top">
+          <div class="game-icon">✦</div>
+          <button class="favorite-button" data-favorite="minutecryptic" type="button">★</button>
+        </div>
+
+        <h3>Minute Cryptic</h3>
+        <div class="category">Word & Logic</div>
+        <p class="description">Solve one clever cryptic clue every day.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://www.minutecryptic.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="minutecryptic" type="button">✓</button>
+        </div>
+      </article>
+
+      <!-- 17. IMMACULATE GRID -->
+      <article
+        class="game-card"
+        data-id="immaculate"
+        data-category="sports"
+        data-search="immaculate grid sports baseball basketball football hockey"
+        style="--game-color:#0369a1"
+      >
+        <div class="card-top">
+          <div class="game-icon">#</div>
+          <button class="favorite-button" data-favorite="immaculate" type="button">★</button>
+        </div>
+
+        <h3>Immaculate Grid</h3>
+        <div class="category">Sports</div>
+        <p class="description">Fill a sports grid with players matching both criteria.</p>
+
+        <div class="card-buttons">
+          <a
+            class="play-button"
+            href="https://www.sports-reference.com/immaculate-grid/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Play ↗</a>
+
+          <button class="complete-button" data-complete="immaculate" type="button">✓</button>
+        </div>
+      </article>
+
+    </main>
 
     <div class="empty-message" id="emptyMessage">
       No games match your search or selected filter.
     </div>
 
+    <!-- FEEDBACK FORM AT BOTTOM -->
     <section class="feedback-section">
       <h2 class="feedback-heading">
         💬 Help Improve Daily Game Hub
@@ -730,9 +1125,24 @@
           </label>
 
           <select id="feedbackGame">
-            <option value="">
-              No specific game
-            </option>
+            <option value="">No specific game</option>
+            <option value="Wordle">Wordle</option>
+            <option value="Connections">Connections</option>
+            <option value="Strands">Strands</option>
+            <option value="Krillion">Krillion</option>
+            <option value="GuessList">GuessList</option>
+            <option value="Framed">Framed</option>
+            <option value="Worldle">Worldle</option>
+            <option value="Globle">Globle</option>
+            <option value="Box Office Game">Box Office Game</option>
+            <option value="Poeltl">Poeltl</option>
+            <option value="Weddle">Weddle</option>
+            <option value="Poople">Poople</option>
+            <option value="MapTap">MapTap</option>
+            <option value="Contexto">Contexto</option>
+            <option value="Duotrigordle">Duotrigordle</option>
+            <option value="Minute Cryptic">Minute Cryptic</option>
+            <option value="Immaculate Grid">Immaculate Grid</option>
           </select>
         </div>
 
@@ -745,21 +1155,16 @@
             id="feedbackMessage"
             maxlength="2000"
             required
-            placeholder="Describe the bug or suggestion..."
+            placeholder="Describe the bug, suggestion, or game request..."
           ></textarea>
 
-          <div
-            class="character-count"
-            id="characterCount"
-          >
+          <div class="character-count" id="characterCount">
             0 / 2000
           </div>
         </div>
 
         <div class="form-field">
-          <label for="feedbackName">
-            Name (optional)
-          </label>
+          <label for="feedbackName">Name (optional)</label>
 
           <input
             id="feedbackName"
@@ -771,9 +1176,7 @@
         </div>
 
         <div class="form-field">
-          <label for="feedbackEmail">
-            Email (optional)
-          </label>
+          <label for="feedbackEmail">Email (optional)</label>
 
           <input
             id="feedbackEmail"
@@ -785,9 +1188,7 @@
         </div>
 
         <div class="honeypot" aria-hidden="true">
-          <label for="companyWebsite">
-            Company website
-          </label>
+          <label for="companyWebsite">Company website</label>
 
           <input
             id="companyWebsite"
@@ -816,9 +1217,9 @@
     </section>
 
     <p class="footer">
-      Favorites and daily completion checkmarks are stored
-      locally in this browser. Feedback is sent to the Daily
-      Game Hub review database.
+      Favorites and daily completion checkmarks are stored locally
+      in this browser. Feedback is sent to the Daily Game Hub review
+      database.
     </p>
   </div>
 
@@ -828,179 +1229,6 @@
 
     const SUPABASE_PUBLISHABLE_KEY =
       "sb_publishable_v-YaLSlXnipQLhgN5-lHcw_ovmUbwvU";
-
-    const games = [
-      {
-        id: "wordle",
-        name: "Wordle",
-        category: "word",
-        categoryLabel: "Word & Logic",
-        description: "Guess the five-letter word in six tries.",
-        icon: "W",
-        color: "#6aaa64",
-        url: "https://www.nytimes.com/games/wordle/index.html"
-      },
-      {
-        id: "connections",
-        name: "Connections",
-        category: "word",
-        categoryLabel: "Word & Logic",
-        description: "Group sixteen words by their hidden connections.",
-        icon: "▦",
-        color: "#8b5cf6",
-        url: "https://www.nytimes.com/games/connections"
-      },
-      {
-        id: "strands",
-        name: "Strands",
-        category: "word",
-        categoryLabel: "Word & Logic",
-        description: "Find themed words hidden in a letter grid.",
-        icon: "〰",
-        color: "#38bdf8",
-        url: "https://www.nytimes.com/games/strands"
-      },
-      {
-        id: "krillion",
-        name: "Krillion",
-        category: "trivia",
-        categoryLabel: "Trivia",
-        description: "Daily trivia where rarer answers matter.",
-        icon: "K",
-        color: "#0891b2",
-        url: "https://krillion.io/"
-      },
-      {
-        id: "guesslist",
-        name: "GuessList",
-        category: "trivia",
-        categoryLabel: "Trivia",
-        description: "Guess entries from a ranked list.",
-        icon: "100",
-        color: "#f97316",
-        url: "https://playguesslist.com/game"
-      },
-      {
-        id: "framed",
-        name: "Framed",
-        category: "movies",
-        categoryLabel: "Movies",
-        description: "Identify the movie from a sequence of frames.",
-        icon: "🎬",
-        color: "#dc2626",
-        url: "https://framed.wtf/"
-      },
-      {
-        id: "worldle",
-        name: "Worldle",
-        category: "geography",
-        categoryLabel: "Geography",
-        description: "Guess the country from its silhouette.",
-        icon: "🌍",
-        color: "#16a34a",
-        url: "https://worldle.teuteuf.fr/"
-      },
-      {
-        id: "globle",
-        name: "Globle",
-        category: "geography",
-        categoryLabel: "Geography",
-        description: "Use hotter and colder guesses to find the country.",
-        icon: "🌐",
-        color: "#2563eb",
-        url: "https://globle-game.com/"
-      },
-      {
-        id: "boxoffice",
-        name: "Box Office Game",
-        category: "movies",
-        categoryLabel: "Movies",
-        description: "Guess movies from a past box-office weekend.",
-        icon: "🎟",
-        color: "#db2777",
-        url: "https://boxofficega.me/"
-      },
-      {
-        id: "poeltl",
-        name: "Poeltl",
-        category: "sports",
-        categoryLabel: "Sports",
-        description: "Identify the mystery NBA player.",
-        icon: "🏀",
-        color: "#ea580c",
-        url: "https://poeltl.nbpa.com/"
-      },
-      {
-        id: "weddle",
-        name: "Weddle",
-        category: "sports",
-        categoryLabel: "Sports",
-        description: "Identify the mystery NFL player.",
-        icon: "🏈",
-        color: "#15803d",
-        url: "https://www.weddlegame.com/"
-      },
-      {
-        id: "poople",
-        name: "Poople",
-        category: "word",
-        categoryLabel: "Word & Logic",
-        description: "A quick daily word game.",
-        icon: "P",
-        color: "#a16207",
-        url: "https://poople.io/"
-      },
-      {
-        id: "maptap",
-        name: "MapTap",
-        category: "geography",
-        categoryLabel: "Geography",
-        description: "Pin locations on the globe accurately.",
-        icon: "⌖",
-        color: "#0d9488",
-        url: "https://maptap.gg/"
-      },
-      {
-        id: "contexto",
-        name: "Contexto",
-        category: "word",
-        categoryLabel: "Word & Logic",
-        description: "Find the secret word using semantic similarity.",
-        icon: "◎",
-        color: "#9333ea",
-        url: "https://contexto.me/en/"
-      },
-      {
-        id: "duotrigordle",
-        name: "Duotrigordle",
-        category: "word",
-        categoryLabel: "Word & Logic",
-        description: "Solve thirty-two Wordle boards.",
-        icon: "32",
-        color: "#4f46e5",
-        url: "https://duotrigordle.com/"
-      },
-      {
-        id: "minutecryptic",
-        name: "Minute Cryptic",
-        category: "word",
-        categoryLabel: "Word & Logic",
-        description: "Solve one clever cryptic clue every day.",
-        icon: "✦",
-        color: "#0f766e",
-        url: "https://www.minutecryptic.com/"
-      },
-      {
-        id: "immaculate",
-        name: "Immaculate Grid",
-        category: "sports",
-        categoryLabel: "Sports",
-        description: "Fill a grid with matching sports players.",
-        icon: "#",
-        color: "#0369a1",
-        url: "https://www.sports-reference.com/immaculate-grid/"
-      }
-    ];
 
     const today =
       new Date().toLocaleDateString("en-CA");
@@ -1018,30 +1246,13 @@
 
     try {
       completedGames =
-        JSON.parse(
-          localStorage.getItem(completedStorageKey)
-        ) || [];
+        JSON.parse(localStorage.getItem(completedStorageKey)) || [];
 
       favoriteGames =
-        JSON.parse(
-          localStorage.getItem(favoritesStorageKey)
-        ) || [];
+        JSON.parse(localStorage.getItem(favoritesStorageKey)) || [];
     } catch (error) {
       completedGames = [];
       favoriteGames = [];
-    }
-
-    function escapeHtml(value) {
-      return String(value).replace(
-        /[&<>"']/g,
-        character => ({
-          "&": "&",
-          "<": "<",
-          ">": ">",
-          "\"": """,
-          "'": "'"
-        })[character]
-      );
     }
 
     function saveLocalData() {
@@ -1056,119 +1267,8 @@
           JSON.stringify(favoriteGames)
         );
       } catch (error) {
-        console.error(
-          "Local browser storage failed:",
-          error
-        );
+        console.error("Local storage failed:", error);
       }
-    }
-
-    function createGameCard(game) {
-      return `
-        <article
-          class="game-card"
-          data-id="${escapeHtml(game.id)}"
-          data-category="${escapeHtml(game.category)}"
-          data-search="${escapeHtml(
-            (
-              game.name +
-              " " +
-              game.categoryLabel +
-              " " +
-              game.description
-            ).toLowerCase()
-          )}"
-          style="--game-color:${escapeHtml(game.color)}"
-        >
-          <div class="card-top">
-            <div class="game-icon">
-              ${escapeHtml(game.icon)}
-            </div>
-
-            <button
-              class="favorite-button"
-              type="button"
-              data-favorite="${escapeHtml(game.id)}"
-              aria-label="Favorite ${escapeHtml(game.name)}"
-            >
-              ★
-            </button>
-          </div>
-
-          <h3>${escapeHtml(game.name)}</h3>
-
-          <div class="category">
-            ${escapeHtml(game.categoryLabel)}
-          </div>
-
-          <p class="description">
-            ${escapeHtml(game.description)}
-          </p>
-
-          <div class="card-buttons">
-            <a
-              class="play-button"
-              href="${escapeHtml(game.url)}"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Play ↗
-            </a>
-
-            <button
-              class="complete-button"
-              type="button"
-              data-complete="${escapeHtml(game.id)}"
-              aria-label="Mark ${escapeHtml(game.name)} complete"
-            >
-              ✓
-            </button>
-          </div>
-        </article>
-      `;
-    }
-
-    function renderGameCards() {
-      const gameGrid =
-        document.getElementById("gameGrid");
-
-      gameGrid.innerHTML =
-        games.map(createGameCard).join("");
-
-      document
-        .querySelectorAll("[data-complete]")
-        .forEach(button => {
-          button.addEventListener("click", () => {
-            toggleCompleted(button.dataset.complete);
-          });
-        });
-
-      document
-        .querySelectorAll("[data-favorite]")
-        .forEach(button => {
-          button.addEventListener("click", () => {
-            toggleFavorite(button.dataset.favorite);
-          });
-        });
-    }
-
-    function populateFeedbackGames() {
-      const select =
-        document.getElementById("feedbackGame");
-
-      [...games]
-        .sort((first, second) =>
-          first.name.localeCompare(second.name)
-        )
-        .forEach(game => {
-          const option =
-            document.createElement("option");
-
-          option.value = game.name;
-          option.textContent = game.name;
-
-          select.appendChild(option);
-        });
     }
 
     function toggleCompleted(gameId) {
@@ -1196,34 +1296,28 @@
     }
 
     function updateProgress() {
+      const cards =
+        Array.from(document.querySelectorAll(".game-card"));
+
       const completedCount =
-        games.filter(game =>
-          completedGames.includes(game.id)
+        cards.filter(card =>
+          completedGames.includes(card.dataset.id)
         ).length;
 
+      const totalGames = cards.length;
+
       const percentage =
-        games.length === 0
+        totalGames === 0
           ? 0
-          : Math.round(
-              completedCount / games.length * 100
-            );
+          : Math.round((completedCount / totalGames) * 100);
 
-      document.getElementById(
-        "progressCount"
-      ).textContent =
-        completedCount +
-        " of " +
-        games.length +
-        " completed";
+      document.getElementById("progressCount").textContent =
+        completedCount + " of " + totalGames + " completed";
 
-      document.getElementById(
-        "percentage"
-      ).textContent =
+      document.getElementById("percentage").textContent =
         percentage + "%";
 
-      document.getElementById(
-        "progressFill"
-      ).style.width =
+      document.getElementById("progressFill").style.width =
         percentage + "%";
     }
 
@@ -1251,7 +1345,7 @@
       cards.forEach(card => {
         const gameId = card.dataset.id;
         const category = card.dataset.category;
-        const searchText = card.dataset.search;
+        const searchText = card.dataset.search.toLowerCase();
 
         let visible =
           searchText.includes(searchValue);
@@ -1292,12 +1386,8 @@
         }
       });
 
-      document.getElementById(
-        "emptyMessage"
-      ).style.display =
-        visibleCount === 0
-          ? "block"
-          : "none";
+      document.getElementById("emptyMessage").style.display =
+        visibleCount === 0 ? "block" : "none";
     }
 
     function updatePage() {
@@ -1325,31 +1415,33 @@
     }
 
     function openRandomGame() {
-      let availableGames =
-        games.filter(game =>
-          !completedGames.includes(game.id)
+      const cards =
+        Array.from(document.querySelectorAll(".game-card"));
+
+      let availableCards =
+        cards.filter(card =>
+          !completedGames.includes(card.dataset.id)
         );
 
-      if (availableGames.length === 0) {
-        availableGames = games;
+      if (availableCards.length === 0) {
+        availableCards = cards;
       }
 
-      const randomGame =
-        availableGames[
-          Math.floor(
-            Math.random() * availableGames.length
-          )
-        ];
-
-      if (!randomGame) {
+      if (availableCards.length === 0) {
         return;
       }
 
-      window.open(
-        randomGame.url,
-        "_blank",
-        "noopener,noreferrer"
-      );
+      const randomCard =
+        availableCards[
+          Math.floor(Math.random() * availableCards.length)
+        ];
+
+      const playLink =
+        randomCard.querySelector(".play-button");
+
+      if (playLink) {
+        playLink.click();
+      }
     }
 
     function setFeedbackStatus(message, type = "") {
@@ -1357,11 +1449,7 @@
         document.getElementById("feedbackStatus");
 
       status.textContent = message;
-
-      status.classList.remove(
-        "success",
-        "error"
-      );
+      status.classList.remove("success", "error");
 
       if (type) {
         status.classList.add(type);
@@ -1385,9 +1473,7 @@
       event.preventDefault();
 
       const submitButton =
-        document.getElementById(
-          "submitFeedbackButton"
-        );
+        document.getElementById("submitFeedbackButton");
 
       const message =
         document
@@ -1449,9 +1535,7 @@
       submitButton.disabled = true;
       submitButton.textContent = "Sending...";
 
-      setFeedbackStatus(
-        "Submitting your feedback..."
-      );
+      setFeedbackStatus("Submitting your feedback...");
 
       try {
         const response = await fetch(
@@ -1482,8 +1566,7 @@
           );
 
           throw new Error(
-            "Supabase returned status " +
-            response.status
+            "Supabase returned status " + response.status
           );
         }
 
@@ -1513,20 +1596,31 @@
         );
       } finally {
         submitButton.disabled = false;
-        submitButton.textContent =
-          "Submit Feedback";
+        submitButton.textContent = "Submit Feedback";
       }
     }
 
-    renderGameCards();
-    populateFeedbackGames();
+    document
+      .querySelectorAll("[data-complete]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          toggleCompleted(button.dataset.complete);
+        });
+      });
+
+    document
+      .querySelectorAll("[data-favorite]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          toggleFavorite(button.dataset.favorite);
+        });
+      });
 
     document
       .querySelectorAll("[data-filter]")
       .forEach(button => {
         button.addEventListener("click", () => {
-          currentFilter =
-            button.dataset.filter;
+          currentFilter = button.dataset.filter;
 
           document
             .querySelectorAll("[data-filter]")
@@ -1549,9 +1643,7 @@
             button.dataset.feedbackType;
 
           document
-            .querySelectorAll(
-              "[data-feedback-type]"
-            )
+            .querySelectorAll("[data-feedback-type]")
             .forEach(typeButton => {
               typeButton.classList.toggle(
                 "selected",
@@ -1563,24 +1655,15 @@
 
     document
       .getElementById("searchInput")
-      .addEventListener(
-        "input",
-        applyFilters
-      );
+      .addEventListener("input", applyFilters);
 
     document
       .getElementById("randomButton")
-      .addEventListener(
-        "click",
-        openRandomGame
-      );
+      .addEventListener("click", openRandomGame);
 
     document
       .getElementById("feedbackForm")
-      .addEventListener(
-        "submit",
-        submitFeedback
-      );
+      .addEventListener("submit", submitFeedback);
 
     document
       .getElementById("feedbackMessage")
@@ -1588,8 +1671,7 @@
         document.getElementById(
           "characterCount"
         ).textContent =
-          event.target.value.length +
-          " / 2000";
+          event.target.value.length + " / 2000";
       });
 
     document.getElementById(
@@ -1609,5 +1691,6 @@
   </script>
 </body>
 </html>
+
 
 
