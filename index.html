@@ -371,14 +371,18 @@
     }
 
     .result-summary {
-      display: none;
-      margin-top: 10px;
-      padding: 9px;
-      color: #cbd5e1;
-      font-size: 12px;
-      border-radius: 10px;
-      background: var(--panel-light);
-    }
+  display: none;
+  margin-top: 10px;
+  padding: 9px;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 10px;
+  background: var(--panel-light);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 
     .empty-message {
       display: none;
@@ -2517,11 +2521,13 @@
             Result shown to friends
           </label>
 
-          <input
-            id="resultText"
-            type="text"
-            maxlength="200"
-            placeholder="Example: 4/6 or 42,650 points"
+          <textarea
+  id="resultText"
+  maxlength="2000"
+  rows="8"
+  placeholder="Paste your result here..."
+></textarea>
+
           >
         </div>
 
