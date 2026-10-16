@@ -1,1 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080c18">
+  <title>Daily Game Hub</title>
+
+  <style>
+    :root {
+      --bg: #080c18;
+      --panel: #111827;
+      --panel2: #182234;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --line: #263348;
+      --accent: #7c3aed;
+      --good: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(124, 58, 237, 0.3), transparent 30%),
+        radial-gradient(circle at 100% 35%, rgba(14, 165, 233, 0.18), transparent 28%),
+        var(--bg);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .wrap {
+      width: min(1180px, 100%);
+      margin: auto;
+      padding: 28px 20px 70px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 5px 0 0;
+      color: var(--muted);
+    }
+
+    .hero {
+      margin: 26px 0;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(135deg, #0f172a, #312e81);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    .hero-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      opacity: 0.72;
+    }
+
+    .hero h2 {
+      margin: 7px 0 5px;
+      font-size: 31px;
+    }
+
+    .hero-description {
+      color: #cbd5e1;
+    }
+
+    .percentage {
+      font-size: 42px;
+      font-weight: 900;
+    }
+
+    .progress-track {
+      height: 12px;
+      margin-top: 22px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .progress-bar {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #34d399, #22d3ee);
+      transition: width 0.35s ease;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 24px 0 16px;
+    }
+
+    .search {
+      flex: 1;
+      min-width: 230px;
+      padding: 12px 14px;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      outline: none;
+      background: var(--panel);
+    }
+
+    .search:focus {
+      border-color: #8b5cf6;
+    }
+
+    .chip {
+      padding: 9px 13px;
+      color: var(--muted);
+      font-weight: 750;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+    }
+
+    .chip.active {
+      color: #0f172a;
+      border-color: #f8fafc;
+      background: #f8fafc;
+    }
+
+    .random-button {
+      color: white;
+      border: 1px solid #ffffff2e;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .game-card {
+      --game-color: #7c3aed;
+
+      position: relative;
+      display: flex;
+      min-height: 215px;
+      flex-direction: column;
+      padding: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .game-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 5px;
+      background: var(--game-color);
+    }
+
+    .game-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+    }
+
+    .game-card.completed {
+      border-color: rgba(16, 185, 129, 0.8);
+    }
+
+    .game-card.completed::after {
+      content: "✓";
+      position: absolute;
+      top: 13px;
+      right: 13px;
+      display: grid;
+      width: 25px;
+      height: 25px;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      border-radius: 50%;
+      background: var(--good);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+
+    .game-icon {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      place-items: center;
+      font-size: 21px;
+      font-weight: 900;
+      border-radius: 15px;
+      background: var(--panel2);
+    }
+
+    .favorite-button {
+      padding: 4px;
+      color: #64748b;
+      font-size: 22px;
+      border: 0;
+      background: transparent;
+    }
+
+    .favorite-button.favorite {
+      color: #f59e0b;
+    }
+
+    .game-card h3 {
+      margin: 17px 0 5px;
+      font-size: 18px;
+    }
+
+    .category {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .description {
+      flex: 1;
+      margin: 10px 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .play-button,
+    .complete-button {
+      padding: 10px;
+      font-weight: 900;
+      border: 0;
+      border-radius: 11px;
+    }
+
+    .play-button {
+      flex: 1;
+      color: white;
+      background: var(--game-color);
+    }
+
+    .complete-button {
+      width: 43px;
+      color: white;
+      background: var(--panel2);
+    }
+
+    .completed .complete-button {
+      background: var(--good);
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 45px 20px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 20px;
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 10;
+      max-width: calc(100% - 40px);
+      padding: 13px 17px;
+      color: white;
+      border-radius: 13px;
+      background: #0f172a;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      transform: translateY(80px);
+      transition: 0.24s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 950px) {
+      .grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .wrap {
+        padding: 20px 14px 55px;
+      }
+
+      .hero h2 {
+        font-size: 25px;
+      }
+
+      .percentage {
+        font-size: 34px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .hero {
+        padding: 20px;
+      }
+
+      .hero-row {
+        align-items: flex-start;
+      }
+
+      .hero-description {
+        display: block;
+        max-width: 210px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .game-card {
+        min-height: 195px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>◆ Daily Game Hub</h1>
+        <p id="currentDate"></p>
+      </div>
+
+      <button class="chip random-button" id="randomButton">
+        🎲 Random
+      </button>
+    </header>
+
+    <section class="hero">
+      <div class="hero-row">
+        <div>
+          <div class="eyebrow">TODAY'S PROGRESS</div>
+          <h2 id="progressCount">0 of 17 completed</h2>
+          <span class="hero-description">
+            Your favorite daily games in one place.
+          </span>
+        </div>
+
+        <div class="percentage" id="percentage">0%</div>
+      </div>
+
+      <div class="progress-track">
+        <span class="progress-bar" id="progressBar"></span>
+      </div>
+    </section>
+
+    <section class="controls">
+      <input
+        class="search"
+        id="searchInput"
+        type="search"
+        placeholder="Search games or categories..."
+        autocomplete="off"
+      >
+
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="favorites">★ Favorites</button>
+      <button class="chip" data-filter="not-played">Not Played</button>
+      <button class="chip" data-filter="completed">Completed</button>
+    </section>
+
+    <main class="grid" id="gameGrid"></main>
+
+    <p class="footer-note">
+      Progress and favorites are saved in this browser on this device.
+      Games open on their original websites in a new tab.
+    </p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const games = [
+      {
+        id: "wordle",
+        name: "Wordle",
+        url: "https://www.nytimes.com/games/wordle/index.html",
+        category: "Word & Logic",
+        description: "Guess the five-letter word in six tries.",
+        icon: "W",
+        color: "#6aaa64"
+      },
+      {
+        id: "connections",
+        name: "Connections",
+        url: "https://www.nytimes.com/games/connections",
+        category: "Word & Logic",
+        description: "Group sixteen words by their hidden connections.",
+        icon: "▦",
+        color: "#8b5cf6"
+      },
+      {
+        id: "strands",
+        name: "Strands",
+        url: "https://www.nytimes.com/games/strands",
+        category: "Word & Logic",
+        description: "Find themed words hidden in a winding letter grid.",
+        icon: "〰",
+        color: "#38bdf8"
+      },
+      {
+        id: "krillion",
+        name: "Krillion",
+        url: "https://krillion.io/",
+        category: "Trivia",
+        description: "A daily trivia game that rewards rarer answers.",
+        icon: "⚓",
+        color: "#0891b2"
+      },
+      {
+        id: "guesslist",
+        name: "GuessList",
+        url: "https://playguesslist.com/game",
+        category: "Trivia",
+        description: "Guess entries from a ranked list.",
+        icon: "100",
+        color: "#f97316"
+      },
+      {
+        id: "framed",
+        name: "Framed",
+        url: "https://framed.wtf/",
+        category: "Movies",
+        description: "Identify the movie from a sequence of film frames.",
+        icon: "🎬",
+        color: "#dc2626"
+      },
+      {
+        id: "worldle",
+        name: "Worldle",
+        url: "https://worldle.teuteuf.fr/",
+        category: "Geography",
+        description: "Guess the country or territory from its silhouette.",
+        icon: "◒",
+        color: "#16a34a"
+      },
+      {
+        id: "globle",
+        name: "Globle",
+        url: "https://globle-game.com/",
+        category: "Geography",
+        description: "Use hotter and colder guesses to find the country.",
+        icon: "🌐",
+        color: "#2563eb"
+      },
+      {
+        id: "box-office-game",
+        name: "Box Office Game",
+        url: "https://boxofficega.me/",
+        category: "Movies",
+        description: "Guess films from a previous box-office weekend.",
+        icon: "🎟",
+        color: "#db2777"
+      },
+      {
+        id: "poeltl",
+        name: "Poeltl",
+        url: "https://poeltl.nbpa.com/",
+        category: "Sports",
+        description: "Identify the mystery NBA player.",
+        icon: "🏀",
+        color: "#ea580c"
+      },
+      {
+        id: "weddle",
+        name: "Weddle",
+        url: "https://www.weddlegame.com/",
+        category: "Sports",
+        description: "Identify the mystery NFL player.",
+        icon: "🏈",
+        color: "#15803d"
+      },
+      {
+        id: "poople",
+        name: "Poople",
+        url: "https://poople.io/",
+        category: "Word & Logic",
+        description: "A quick daily word game.",
+        icon: "P",
+        color: "#a16207"
+      },
+      {
+        id: "maptap",
+        name: "MapTap",
+        url: "https://maptap.gg/",
+        category: "Geography",
+        description: "Pin locations on the globe as accurately as possible.",
+        icon: "⌖",
+        color: "#0d9488"
+      },
+      {
+        id: "contexto",
+        name: "Contexto",
+        url: "https://contexto.me/en/",
+        category: "Word & Logic",
+        description: "Find the secret word using semantic similarity.",
+        icon: "◎",
+        color: "#9333ea"
+      },
+      {
+        id: "duotrigordle",
+        name: "Duotrigordle",
+        url: "https://duotrigordle.com/",
+        category: "Word & Logic",
+        description: "Solve thirty-two Wordle boards with shared guesses.",
+        icon: "32",
+        color: "#4f46e5"
+      },
+      {
+        id: "minute-cryptic",
+        name: "Minute Cryptic",
+        url: "https://www.minutecryptic.com/",
+        category: "Word & Logic",
+        description: "Solve one clever cryptic clue each day.",
+        icon: "✦",
+        color: "#0f766e"
+      },
+      {
+        id: "immaculate-grid",
+        name: "Immaculate Grid",
+        url: "https://www.sports-reference.com/immaculate-grid/",
+        category: "Sports",
+        description: "Fill a sports grid with players matching both criteria.",
+        icon: "#",
+        color: "#0369a1"
+      }
+    ];
+
+    const storageKey = "daily-game-hub-v1";
+
+    const todayKey = new Date().toLocaleDateString("en-CA");
+
+    let activeFilter = "all";
+
+    let appData = loadData();
+
+    function getDefaultData() {
+      return {
+        favorites: [
+          "wordle",
+          "connections",
+          "worldle",
+          "immaculate-grid"
+        ],
+        completed: {},
+        history: []
+      };
+    }
+
+    function loadData() {
+      try {
+        const savedData = localStorage.getItem(storageKey);
+
+        if (!savedData) {
+          return getDefaultData();
+        }
+
+        return {
+          ...getDefaultData(),
+          ...JSON.parse(savedData)
+        };
+      } catch (error) {
+        return getDefaultData();
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(storageKey, JSON.stringify(appData));
+    }
+
+    function getTodayCompleted() {
+      if (!Array.isArray(appData.completed[todayKey])) {
+        appData.completed[todayKey] = [];
+      }
+
+      return appData.completed[todayKey];
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&",
+        "<": "<",
+        ">": ">",
+        "\"": """,
+        "'": "'"
+      })[character]);
+    }
+
+    function isFavorite(gameId) {
+      return appData.favorites.includes(gameId);
+    }
+
+    function isCompleted(gameId) {
+      return getTodayCompleted().includes(gameId);
+    }
+
+    function toggleFavorite(gameId) {
+      if (isFavorite(gameId)) {
+        appData.favorites = appData.favorites.filter(id => id !== gameId);
+        showToast("Removed from favorites");
+      } else {
+        appData.favorites.push(gameId);
+        showToast("Added to favorites");
+      }
+
+      saveData();
+      render();
+    }
+
+    function toggleCompleted(gameId) {
+      const completedToday = getTodayCompleted();
+
+      if (completedToday.includes(gameId)) {
+        appData.completed[todayKey] =
+          completedToday.filter(id => id !== gameId);
+
+        showToast("Completion removed");
+      } else {
+        completedToday.push(gameId);
+        showToast("Marked complete for today");
+      }
+
+      saveData();
+      render();
+    }
+
+    function playGame(gameId) {
+      const game = games.find(item => item.id === gameId);
+
+      if (!game) {
+        showToast("That game could not be found");
+        return;
+      }
+
+      appData.history.unshift({
+        gameId: game.id,
+        launchedAt: new Date().toISOString()
+      });
+
+      appData.history = appData.history.slice(0, 500);
+
+      saveData();
+
+      const openedWindow = window.open(
+        game.url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      if (!openedWindow) {
+        showToast("Safari blocked the new tab. Allow pop-ups for this site.");
+      }
+    }
+
+    function playRandomGame() {
+      const unfinishedGames = games.filter(game => !isCompleted(game.id));
+
+      const availableGames =
+        unfinishedGames.length > 0 ? unfinishedGames : games;
+
+      const randomGame =
+        availableGames[
+          Math.floor(Math.random() * availableGames.length)
+        ];
+
+      playGame(randomGame.id);
+    }
+
+    function getVisibleGames() {
+      const searchValue =
+        document.getElementById("searchInput").value
+          .trim()
+          .toLowerCase();
+
+      let visibleGames = games.filter(game => {
+        const searchableText =
+          `${game.name} ${game.category} ${game.description}`.toLowerCase();
+
+        return searchableText.includes(searchValue);
+      });
+
+      if (activeFilter === "favorites") {
+        visibleGames = visibleGames.filter(game => isFavorite(game.id));
+      }
+
+      if (activeFilter === "completed") {
+        visibleGames = visibleGames.filter(game => isCompleted(game.id));
+      }
+
+      if (activeFilter === "not-played") {
+        visibleGames = visibleGames.filter(game => !isCompleted(game.id));
+      }
+
+      return visibleGames;
+    }
+
+    function createGameCard(game) {
+      const favoriteClass = isFavorite(game.id) ? "favorite" : "";
+      const completedClass = isCompleted(game.id) ? "completed" : "";
+
+      return `
+        <article
+          class="game-card ${completedClass}"
+          style="--game-color: ${game.color}"
+        >
+          <div class="card-top">
+            <div class="game-icon">
+              ${escapeHtml(game.icon)}
+            </div>
+
+            <button
+              class="favorite-button ${favoriteClass}"
+              onclick="toggleFavorite('${game.id}')"
+              aria-label="Toggle favorite for ${escapeHtml(game.name)}"
+              title="Toggle favorite"
+            >
+              ★
+            </button>
+          </div>
+
+          <h3>${escapeHtml(game.name)}</h3>
+
+          <div class="category">
+            ${escapeHtml(game.category)}
+          </div>
+
+          <p class="description">
+            ${escapeHtml(game.description)}
+          </p>
+
+          <div class="card-actions">
+            <button
+              class="play-button"
+              onclick="playGame('${game.id}')"
+            >
+              Play ↗
+            </button>
+
+            <button
+              class="complete-button"
+              onclick="toggleCompleted('${game.id}')"
+              aria-label="Toggle completion for ${escapeHtml(game.name)}"
+              title="Mark completed"
+            >
+              ✓
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function updateProgress() {
+      const completedCount = getTodayCompleted().length;
+      const percentage = Math.round(
+        (completedCount / games.length) * 100
+      );
+
+      document.getElementById("progressCount").textContent =
+        `${completedCount} of ${games.length} completed`;
+
+      document.getElementById("percentage").textContent =
+        `${percentage}%`;
+
+      document.getElementById("progressBar").style.width =
+        `${percentage}%`;
+    }
+
+    function render() {
+      const visibleGames = getVisibleGames();
+      const gameGrid = document.getElementById("gameGrid");
+
+      if (visibleGames.length === 0) {
+        gameGrid.innerHTML = `
+          <div class="empty">
+            No games match this search or filter.
+          </div>
+        `;
+      } else {
+        gameGrid.innerHTML =
+          visibleGames.map(createGameCard).join("");
+      }
+
+      updateProgress();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      clearTimeout(window.toastTimer);
+
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2400);
+    }
+
+    document.getElementById("currentDate").textContent =
+      new Date().toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+
+    document.getElementById("searchInput")
+      .addEventListener("input", render);
+
+    document.getElementById("randomButton")
+      .addEventListener("click", playRandomGame);
+
+    document.querySelectorAll("[data-filter]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          activeFilter = button.dataset.filter;
+
+          document.querySelectorAll("[data-filter]")
+            .forEach(filterButton => {
+              filterButton.classList.toggle(
+                "active",
+                filterButton === button
+              );
+            });
+
+          render();
+        });
+      });
+
+    render();
+  </script>
+</body>
+</html>
 
