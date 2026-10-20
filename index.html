@@ -439,6 +439,24 @@
   line-height: 1.4;
 }
 
+    .friend-results-toggle {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 10px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--panel-light);
+}
+
+.friend-results-toggle:hover {
+  color: white;
+  border-color: #64748b;
+}
+
 
     .empty-message {
       display: none;
@@ -5089,14 +5107,25 @@ await loadStreaks();
           );
 
 
-          /*
-           * Add each friend's score.
+                    /*
+           * Add friend scores.
+           * Show the first 3 automatically.
+           * If there are more than 3,
+           * add a View More button.
            */
 
+          const visibleLimit =
+            3;
+
+
           for (
-            const friendScore
-            of gameScores
+            let index = 0;
+            index < gameScores.length;
+            index += 1
           ) {
+            const friendScore =
+              gameScores[index];
+
 
             const friendProfile =
               await getCachedProfile(
@@ -5117,6 +5146,18 @@ await loadStreaks();
 
             resultRow.className =
               "friend-result-row";
+
+
+            if (
+              index >= visibleLimit
+            ) {
+              resultRow.classList.add(
+                "hidden"
+              );
+
+              resultRow.dataset.extraResult =
+                "true";
+            }
 
 
             const nameElement =
@@ -5153,6 +5194,93 @@ await loadStreaks();
 
             friendResults.appendChild(
               resultRow
+            );
+          }
+
+
+          /*
+           * Only add an expand button
+           * when there are more than
+           * 3 friend results.
+           */
+
+          if (
+            gameScores.length >
+            visibleLimit
+          ) {
+            const hiddenCount =
+              gameScores.length -
+              visibleLimit;
+
+
+            const toggleButton =
+              document.createElement(
+                "button"
+              );
+
+
+            toggleButton.type =
+              "button";
+
+            toggleButton.className =
+              "friend-results-toggle";
+
+            toggleButton.textContent =
+              "View " +
+              hiddenCount +
+              (
+                hiddenCount === 1
+                  ? " more result"
+                  : " more results"
+              ) +
+              " ▾";
+
+
+            let expanded =
+              false;
+
+
+            toggleButton.addEventListener(
+              "click",
+              () => {
+                expanded =
+                  !expanded;
+
+
+                friendResults
+                  .querySelectorAll(
+                    '[data-extra-result="true"]'
+                  )
+                  .forEach(
+                    result => {
+                      result.classList.toggle(
+                        "hidden",
+                        !expanded
+                      );
+                    }
+                  );
+
+
+                if (expanded) {
+                  toggleButton.textContent =
+                    "Show less ▴";
+                } else {
+                  toggleButton.textContent =
+                    "View " +
+                    hiddenCount +
+                    (
+                      hiddenCount === 1
+                        ? " more result"
+                        : " more results"
+                    ) +
+                    " ▾";
+                }
+              }
+            );
+
+
+            friendResults.appendChild(
+              toggleButton
             );
           }
 
