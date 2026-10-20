@@ -3016,11 +3016,18 @@ const SCROLL_OFFSET_KEY =
         null
       );
 
-    let currentFilter =
+    const savedFilter =
   localStorage.getItem(
     ACTIVE_FILTER_KEY
-  ) ||
-  "favorites";
+  );
+
+let currentFilter =
+  savedFilter ||
+  (
+    favoriteGames.length > 0
+      ? "favorites"
+      : "all"
+  );
 
     let selectedFeedbackType =
       "bug";
@@ -4328,6 +4335,36 @@ function startGameOrderSync() {
             }
 
             saveLocal();
+            if (
+  currentFilter ===
+    "favorites" &&
+  favoriteGames.length === 0
+) {
+  currentFilter =
+    "all";
+
+  localStorage.setItem(
+    ACTIVE_FILTER_KEY,
+    currentFilter
+  );
+
+  document
+    .querySelectorAll(
+      "[data-filter]"
+    )
+    .forEach(
+      filterButton => {
+        filterButton
+          .classList
+          .toggle(
+            "active",
+            filterButton.dataset
+              .filter ===
+              currentFilter
+          );
+      }
+    );
+}
             updateLocalUI();
           }
         );
