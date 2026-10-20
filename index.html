@@ -203,6 +203,98 @@
       border-color: #8b5cf6;
     }
 
+    .arrange-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.arrange-button {
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.arrange-button:hover {
+  color: white;
+  border-color: #64748b;
+}
+
+.arrange-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.arrange-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--panel-light);
+}
+
+.arrange-item.dragging {
+  opacity: 0.45;
+  border-color: #8b5cf6;
+}
+
+.arrange-handle {
+  padding: 4px;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.arrange-handle:active {
+  cursor: grabbing;
+}
+
+.arrange-name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arrange-move {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  color: white;
+  font-weight: 900;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #334155;
+}
+
+.arrange-move:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.arrange-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.arrange-actions .button {
+  flex: 1;
+}
+
     .filter-scroll {
       display: flex;
       gap: 8px;
@@ -714,6 +806,34 @@
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .arrange-row {
+  justify-content: stretch;
+}
+
+.arrange-button {
+  width: 100%;
+}
+
+.arrange-item {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 7px;
+  padding: 9px 8px;
+}
+
+.arrange-handle {
+  font-size: 18px;
+}
+
+.arrange-move {
+  width: 36px;
+  height: 36px;
+}
+
+.arrange-actions {
+  flex-direction: column;
+}
+      
     }
 .friend-results {
       display: none;
@@ -841,6 +961,16 @@
       placeholder="Search games..."
       autocomplete="off"
     >
+
+    <div class="arrange-row">
+  <button
+    class="arrange-button"
+    id="arrangeGamesButton"
+    type="button"
+  >
+    ↕ Arrange Games
+  </button>
+</div>
 
     <div class="filter-scroll">
       <button class="filter-button" data-filter="all">
@@ -2654,6 +2784,64 @@
     </div>
   </div>
 
+  <div
+  class="modal"
+  id="arrangeModal"
+>
+  <div class="modal-card">
+
+    <div class="modal-top">
+      <div>
+        <h2>
+          Arrange Games
+        </h2>
+
+        <p class="status">
+          Drag games on a computer or use the arrows on any device.
+        </p>
+      </div>
+
+      <button
+        class="close-button"
+        data-close="arrangeModal"
+        type="button"
+        aria-label="Close arrange games window"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div
+      class="arrange-list"
+      id="arrangeList"
+    ></div>
+
+    <div class="arrange-actions">
+      <button
+        class="button secondary"
+        id="resetGameOrderButton"
+        type="button"
+      >
+        Reset to Default
+      </button>
+
+      <button
+        class="button"
+        id="saveGameOrderButton"
+        type="button"
+      >
+        Save Order
+      </button>
+    </div>
+
+    <p
+      class="status"
+      id="arrangeStatus"
+      aria-live="polite"
+    ></p>
+
+  </div>
+</div>
 
   <script>
     const SUPABASE_URL =
@@ -2673,6 +2861,9 @@
 
     const SESSION_KEY =
       "dailyGameHubSession";
+
+    const GAME_ORDER_KEY =
+  "dailyGameHubOrder";
 
     let completedGames =
       safeParse(
@@ -2700,6 +2891,20 @@
 
     let selectedScoreGame =
       "";
+
+    let defaultGameOrder =
+  [];
+
+let currentGameOrder =
+  safeParse(
+    localStorage.getItem(
+      GAME_ORDER_KEY
+    ),
+    []
+  );
+
+let draggedGameId =
+  null;
 
 
     function safeParse(
@@ -2968,6 +3173,567 @@
 
       return responseData;
     }
+
+    function captureDefaultGameOrder() {
+  defaultGameOrder =
+    cards().map(
+      card =>
+        card.dataset.id
+    );
+
+  if (
+    !Array.isArray(
+      currentGameOrder
+    ) ||
+    currentGameOrder.length === 0
+  ) {
+    currentGameOrder =
+      [...defaultGameOrder];
+  }
+}
+
+
+function normalizeGameOrder(
+  savedOrder
+) {
+  const validGameIds =
+    new Set(
+      defaultGameOrder
+    );
+
+  const normalizedOrder =
+    Array.isArray(savedOrder)
+      ? savedOrder.filter(
+          gameId =>
+            validGameIds.has(
+              gameId
+            )
+        )
+      : [];
+
+
+  for (
+    const gameId
+    of defaultGameOrder
+  ) {
+    if (
+      !normalizedOrder.includes(
+        gameId
+      )
+    ) {
+      normalizedOrder.push(
+        gameId
+      );
+    }
+  }
+
+
+  return normalizedOrder;
+}
+
+
+function applyGameOrder(
+  order
+) {
+  const normalizedOrder =
+    normalizeGameOrder(
+      order
+    );
+
+  const gameGrid =
+    document.getElementById(
+      "gameGrid"
+    );
+
+
+  normalizedOrder.forEach(
+    gameId => {
+      const gameCard =
+        document.querySelector(
+          '.game-card[data-id="' +
+          gameId +
+          '"]'
+        );
+
+      if (gameCard) {
+        gameGrid.appendChild(
+          gameCard
+        );
+      }
+    }
+  );
+
+
+  currentGameOrder =
+    normalizedOrder;
+
+  localStorage.setItem(
+    GAME_ORDER_KEY,
+    JSON.stringify(
+      currentGameOrder
+    )
+  );
+}
+
+
+function getGameName(
+  gameId
+) {
+  const gameCard =
+    document.querySelector(
+      '.game-card[data-id="' +
+      gameId +
+      '"]'
+    );
+
+  return (
+    gameCard?.dataset.name ||
+    gameId
+  );
+}
+
+
+function moveArrangeItem(
+  gameId,
+  direction
+) {
+  const currentIndex =
+    currentGameOrder.indexOf(
+      gameId
+    );
+
+  const newIndex =
+    currentIndex +
+    direction;
+
+
+  if (
+    currentIndex < 0 ||
+    newIndex < 0 ||
+    newIndex >=
+      currentGameOrder.length
+  ) {
+    return;
+  }
+
+
+  const reordered =
+    [...currentGameOrder];
+
+  const movedGame =
+    reordered.splice(
+      currentIndex,
+      1
+    )[0];
+
+  reordered.splice(
+    newIndex,
+    0,
+    movedGame
+  );
+
+
+  currentGameOrder =
+    reordered;
+
+  renderArrangeList();
+}
+
+
+function renderArrangeList() {
+  const arrangeList =
+    document.getElementById(
+      "arrangeList"
+    );
+
+  arrangeList.innerHTML =
+    "";
+
+
+  currentGameOrder.forEach(
+    (
+      gameId,
+      index
+    ) => {
+      const row =
+        document.createElement(
+          "div"
+        );
+
+      row.className =
+        "arrange-item";
+
+      row.draggable =
+        true;
+
+      row.dataset.gameId =
+        gameId;
+
+
+      const handle =
+        document.createElement(
+          "span"
+        );
+
+      handle.className =
+        "arrange-handle";
+
+      handle.textContent =
+        "☰";
+
+      handle.title =
+        "Drag to rearrange";
+
+
+      const gameName =
+        document.createElement(
+          "span"
+        );
+
+      gameName.className =
+        "arrange-name";
+
+      gameName.textContent =
+        getGameName(
+          gameId
+        );
+
+
+      const moveUpButton =
+        document.createElement(
+          "button"
+        );
+
+      moveUpButton.type =
+        "button";
+
+      moveUpButton.className =
+        "arrange-move";
+
+      moveUpButton.textContent =
+        "↑";
+
+      moveUpButton.disabled =
+        index === 0;
+
+      moveUpButton.setAttribute(
+        "aria-label",
+        "Move " +
+        getGameName(gameId) +
+        " up"
+      );
+
+      moveUpButton.addEventListener(
+        "click",
+        () => {
+          moveArrangeItem(
+            gameId,
+            -1
+          );
+        }
+      );
+
+
+      const moveDownButton =
+        document.createElement(
+          "button"
+        );
+
+      moveDownButton.type =
+        "button";
+
+      moveDownButton.className =
+        "arrange-move";
+
+      moveDownButton.textContent =
+        "↓";
+
+      moveDownButton.disabled =
+        index ===
+        currentGameOrder.length -
+        1;
+
+      moveDownButton.setAttribute(
+        "aria-label",
+        "Move " +
+        getGameName(gameId) +
+        " down"
+      );
+
+      moveDownButton.addEventListener(
+        "click",
+        () => {
+          moveArrangeItem(
+            gameId,
+            1
+          );
+        }
+      );
+
+
+      row.addEventListener(
+        "dragstart",
+        event => {
+          draggedGameId =
+            gameId;
+
+          row.classList.add(
+            "dragging"
+          );
+
+          event.dataTransfer
+            .setData(
+              "text/plain",
+              gameId
+            );
+
+          event.dataTransfer
+            .effectAllowed =
+              "move";
+        }
+      );
+
+
+      row.addEventListener(
+        "dragend",
+        () => {
+          draggedGameId =
+            null;
+
+          row.classList.remove(
+            "dragging"
+          );
+
+          document
+            .querySelectorAll(
+              ".arrange-item"
+            )
+            .forEach(item => {
+              item.classList.remove(
+                "dragging"
+              );
+            });
+        }
+      );
+
+
+      row.addEventListener(
+        "dragover",
+        event => {
+          event.preventDefault();
+
+          event.dataTransfer
+            .dropEffect =
+              "move";
+        }
+      );
+
+
+      row.addEventListener(
+        "drop",
+        event => {
+          event.preventDefault();
+
+          const droppedGameId =
+            row.dataset.gameId;
+
+          const sourceGameId =
+            draggedGameId ||
+            event.dataTransfer
+              .getData(
+                "text/plain"
+              );
+
+
+          if (
+            !sourceGameId ||
+            sourceGameId ===
+              droppedGameId
+          ) {
+            return;
+          }
+
+
+          const sourceIndex =
+            currentGameOrder
+              .indexOf(
+                sourceGameId
+              );
+
+          const targetIndex =
+            currentGameOrder
+              .indexOf(
+                droppedGameId
+              );
+
+
+          if (
+            sourceIndex < 0 ||
+            targetIndex < 0
+          ) {
+            return;
+          }
+
+
+          const reordered =
+            [...currentGameOrder];
+
+          const movedGame =
+            reordered.splice(
+              sourceIndex,
+              1
+            )[0];
+
+          reordered.splice(
+            targetIndex,
+            0,
+            movedGame
+          );
+
+
+          currentGameOrder =
+            reordered;
+
+          renderArrangeList();
+        }
+      );
+
+
+      row.append(
+        handle,
+        gameName,
+        moveUpButton,
+        moveDownButton
+      );
+
+      arrangeList.appendChild(
+        row
+      );
+    }
+  );
+}
+
+
+async function loadGameOrder() {
+  if (!session) {
+    applyGameOrder(
+      currentGameOrder
+    );
+
+    return;
+  }
+
+
+  try {
+    const preferenceRows =
+      await request(
+        "/rest/v1/game_preferences" +
+        "?user_id=eq." +
+        encodeURIComponent(
+          session.user.id
+        ) +
+        "&select=game_order",
+        {
+          headers:
+            authHeaders()
+        }
+      );
+
+
+    if (
+      preferenceRows &&
+      preferenceRows.length > 0 &&
+      Array.isArray(
+        preferenceRows[0]
+          .game_order
+      )
+    ) {
+      currentGameOrder =
+        preferenceRows[0]
+          .game_order;
+    }
+
+
+    applyGameOrder(
+      currentGameOrder
+    );
+
+    renderArrangeList();
+
+  } catch (error) {
+    console.error(
+      "Game order loading failed:",
+      error
+    );
+
+    applyGameOrder(
+      currentGameOrder
+    );
+  }
+}
+
+
+async function saveGameOrder() {
+  applyGameOrder(
+    currentGameOrder
+  );
+
+
+  if (!session) {
+    setStatus(
+      arrangeStatus,
+      "Order saved on this device. Log in to sync it to other devices.",
+      "success"
+    );
+
+    return;
+  }
+
+
+  try {
+    setStatus(
+      arrangeStatus,
+      "Saving game order..."
+    );
+
+
+    await request(
+      "/rest/v1/game_preferences" +
+      "?on_conflict=user_id",
+      {
+        method: "POST",
+
+        headers:
+          authHeaders(
+            "resolution=merge-duplicates,return=minimal"
+          ),
+
+        body:
+          JSON.stringify({
+            user_id:
+              session.user.id,
+
+            game_order:
+              currentGameOrder
+          })
+      }
+    );
+
+
+    setStatus(
+      arrangeStatus,
+      "Game order saved.",
+      "success"
+    );
+
+  } catch (error) {
+    setStatus(
+      arrangeStatus,
+      error.message,
+      "error"
+    );
+  }
+}
 
 
     function getFilterLabel() {
@@ -3461,6 +4227,64 @@
         }
       );
 
+    document
+  .getElementById(
+    "arrangeGamesButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+      renderArrangeList();
+
+      setStatus(
+        arrangeStatus,
+        ""
+      );
+
+      document
+        .getElementById(
+          "arrangeModal"
+        )
+        .classList
+        .add("open");
+    }
+  );
+
+
+document
+  .getElementById(
+    "saveGameOrderButton"
+  )
+  .addEventListener(
+    "click",
+    async () => {
+      await saveGameOrder();
+
+      updateLocalUI();
+    }
+  );
+
+
+document
+  .getElementById(
+    "resetGameOrderButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+      currentGameOrder =
+        [...defaultGameOrder];
+
+      renderArrangeList();
+
+      setStatus(
+        arrangeStatus,
+        "Default order restored. Select Save Order to keep it.",
+        "success"
+      );
+    }
+  );
+
 
     function showSessionUI() {
       const signedIn =
@@ -3536,6 +4360,7 @@
       loadFriends();
       loadTodayScores();
       loadStreaks();
+      loadGameorder();
       }
     }
 
@@ -5534,8 +6359,12 @@ await loadStreaks();
           );
 
 
-    updateLocalUI();
-    showSessionUI();
+    captureDefaultGameOrder();
+applyGameOrder(
+  currentGameOrder
+);
+updateLocalUI();
+showSessionUI();
   </script>
 </body>
 </html>
