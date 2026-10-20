@@ -2865,6 +2865,9 @@
     const GAME_ORDER_KEY =
   "dailyGameHubOrder";
 
+    const ACTIVE_FILTER_KEY =
+  "dailyGameHubActiveFilter";
+
     let completedGames =
       safeParse(
         localStorage.getItem(COMPLETED_KEY),
@@ -2884,7 +2887,10 @@
       );
 
     let currentFilter =
-      "favorites";
+  localStorage.getItem(
+    ACTIVE_FILTER_KEY
+  ) ||
+  "favorites";
 
     let selectedFeedbackType =
       "bug";
@@ -2904,6 +2910,9 @@ let currentGameOrder =
   );
 
 let draggedGameId =
+  null;
+
+    let gameOrderSyncTimer =
   null;
 
 
@@ -3735,6 +3744,115 @@ async function saveGameOrder() {
   }
 }
 
+   async function syncGameOrderFromSupabase() {
+  if (!session) {
+    return;
+  }
+
+  try {
+    const preferenceRows =
+      await request(
+        "/rest/v1/game_preferences" +
+        "?user_id=eq." +
+        encodeURIComponent(
+          session.user.id
+        ) +
+        "&select=game_order",
+        {
+          headers:
+            authHeaders()
+        }
+      );
+
+    if (
+      !preferenceRows ||
+      preferenceRows.length === 0 ||
+      !Array.isArray(
+        preferenceRows[0].game_order
+      )
+    ) {
+      return;
+    }
+
+    const remoteOrder =
+      normalizeGameOrder(
+        preferenceRows[0].game_order
+      );
+
+    const localOrderText =
+      JSON.stringify(
+        currentGameOrder
+      );
+
+    const remoteOrderText =
+      JSON.stringify(
+        remoteOrder
+      );
+
+    if (
+      remoteOrderText !==
+      localOrderText
+    ) {
+      applyGameOrder(
+        remoteOrder
+      );
+
+      updateLocalUI();
+
+      if (
+        document
+          .getElementById(
+            "arrangeModal"
+          )
+          .classList
+          .contains("open")
+      ) {
+        renderArrangeList();
+
+        setStatus(
+          arrangeStatus,
+          "Game order updated from another device.",
+          "success"
+        );
+      }
+    }
+  } catch (error) {
+    console.error(
+      "Game order sync failed:",
+      error
+    );
+  }
+}
+
+
+function startGameOrderSync() {
+  if (gameOrderSyncTimer) {
+    clearInterval(
+      gameOrderSyncTimer
+    );
+  }
+
+  if (!session) {
+    gameOrderSyncTimer =
+      null;
+
+    return;
+  }
+
+  gameOrderSyncTimer =
+    setInterval(
+      () => {
+        if (
+          document.visibilityState ===
+          "visible"
+        ) {
+          syncGameOrderFromSupabase();
+        }
+      },
+      5000
+    );
+} 
+
 
     function getFilterLabel() {
       const labels = {
@@ -4094,6 +4212,11 @@ async function saveGameOrder() {
             currentFilter =
               button.dataset.filter;
 
+            localStorage.setItem(
+  ACTIVE_FILTER_KEY,
+  currentFilter
+);
+
             document
               .querySelectorAll(
                 "[data-filter]"
@@ -4285,6 +4408,26 @@ document
     }
   );
 
+    window.addEventListener(
+  "focus",
+  () => {
+    syncGameOrderFromSupabase();
+  }
+);
+
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (
+      document.visibilityState ===
+      "visible"
+    ) {
+      syncGameOrderFromSupabase();
+    }
+  }
+);
+
 
     function showSessionUI() {
       const signedIn =
@@ -4361,6 +4504,7 @@ document
       loadTodayScores();
       loadStreaks();
       loadGameorder();
+      startGameOrderSync();
       }
     }
 
@@ -4557,6 +4701,15 @@ document
           localStorage.removeItem(
             SESSION_KEY
           );
+
+          if (gameOrderSyncTimer) {
+  clearInterval(
+    gameOrderSyncTimer
+  );
+
+  gameOrderSyncTimer =
+    null;
+}
 
           showSessionUI();
 
@@ -6363,6 +6516,18 @@ await loadStreaks();
 applyGameOrder(
   currentGameOrder
 );
+
+    document
+  .querySelectorAll(
+    "[data-filter]"
+  )
+  .forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.filter ===
+        currentFilter
+    );
+  });
 updateLocalUI();
 showSessionUI();
   </script>
