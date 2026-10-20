@@ -802,9 +802,21 @@
         font-size: 21px;
       }
 
-      .header-actions {
-        flex-direction: column;
-      }
+      header {
+  align-items: flex-start;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.header-actions .button {
+  padding: 8px 10px;
+  font-size: 12px;
+}
 
       .games,
       .feedback-types {
@@ -847,58 +859,66 @@
 .arrange-actions {
   flex-direction: column;
 }
+
+     .result-summary,
+.friend-result-score {
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.friend-results {
+  padding: 10px;
+}
+
+.friend-result-row {
+  padding: 10px 0;
+} 
+
+      .modal {
+  padding: 10px;
+}
+
+.modal-card {
+  width: 100%;
+  max-height: 92vh;
+  padding: 18px;
+  border-radius: 16px;
+}
+
+#resultText {
+  min-height: 180px;
+  font-size: 16px;
+}
+
+      .play-button,
+.complete-button,
+.result-button {
+  min-height: 44px;
+}
+
+.complete-button {
+  width: 46px;
+}
+
+.result-button {
+  margin-top: 2px;
+}
+
+      .filter-scroll {
+  margin-left: -12px;
+  margin-right: -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  scroll-padding-left: 12px;
+}
+
+.filter-button {
+  min-height: 40px;
+}
       
     }
-.friend-results {
-      display: none;
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: rgba(15, 23, 42, 0.65);
-    }
 
-    .friend-results.visible {
-      display: block;
-    }
-
-    .friend-results-title {
-      margin-bottom: 7px;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .friend-result-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 0;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-    }
-
-    .friend-result-row:last-child {
-      padding-bottom: 0;
-      border-bottom: 0;
-    }
-
-    .friend-result-name {
-      min-width: 0;
-      overflow: hidden;
-      color: #cbd5e1;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .friend-result-score {
-      flex: 0 0 auto;
-      color: white;
-      font-weight: 900;
-    }
 
   </style>
 </head>
