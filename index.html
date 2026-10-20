@@ -6059,13 +6059,13 @@ function calculateStreak(
         todaysScores =
   scoreRows || [];
 
-                const mySubmittedGames =
+                
+        const submittedGameIds =
           (scoreRows || [])
             .filter(
               score =>
                 score.user_id ===
-                session.user.id &&
-                score.completed === true
+                session.user.id
             )
             .map(
               score =>
@@ -6073,33 +6073,17 @@ function calculateStreak(
             );
 
 
-        let playedStateChanged =
-          false;
+        completedGames =
+          Array.from(
+            new Set([
+              ...completedGames,
+              ...submittedGameIds
+            ])
+          );
 
 
-        mySubmittedGames.forEach(
-          gameId => {
-            if (
-              !completedGames.includes(
-                gameId
-              )
-            ) {
-              completedGames.push(
-                gameId
-              );
-
-              playedStateChanged =
-                true;
-            }
-          }
-        );
-
-
-        if (playedStateChanged) {
-          saveLocal();
-          updateLocalUI();
-        }
-
+        saveLocal();
+        updateLocalUI();
 
                 const scoreHistory =
           await request(
