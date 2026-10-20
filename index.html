@@ -317,6 +317,18 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+    
+    .streak {
+  display: none;
+  margin-top: 7px;
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.streak.visible {
+  display: block;
+}
 
     .description {
       flex: 1;
@@ -3502,9 +3514,10 @@
             session.user.email ||
             "Signed in";
 
-        loadProfile();
-        loadFriends();
-        loadTodayScores();
+       loadProfile();
+      loadFriends();
+      loadTodayScores();
+      loadStreaks();
       }
     }
 
@@ -4611,12 +4624,13 @@ document
             }
 
             setStatus(
-              scoreStatus,
-              "Result saved.",
-              "success"
-            );
+  scoreStatus,
+  "Result saved.",
+  "success"
+);
 
-            await loadTodayScores();
+await loadTodayScores();
+await loadStreaks();
           } catch (error) {
             setStatus(
               scoreStatus,
@@ -4652,6 +4666,186 @@ document
       }
 
       return "Completed";
+    }
+
+        async function loadStreaks() {
+      if (!session) {
+        return;
+      }
+
+      try {
+        const scoreHistory =
+          await request(
+            "/rest/v1/daily_scores" +
+            "?user_id=eq." +
+            encodeURIComponent(
+              session.user.id
+            ) +
+            "&select=" +
+            "game_id,play_date",
+            {
+              headers:
+                authHeaders()
+            }
+          );
+
+
+        const datesByGame =
+          new Map();
+
+
+        for (
+          const score
+          of scoreHistory || []
+        ) {
+          if (
+            !datesByGame.has(
+              score.game_id
+            )
+          ) {
+            datesByGame.set(
+              score.game_id,
+              new Set()
+            );
+          }
+
+          datesByGame
+            .get(score.game_id)
+            .add(score.play_date);
+        }
+
+
+        cards().forEach(card => {
+          const gameId =
+            card.dataset.id;
+
+
+          let streakElement =
+            card.querySelector(
+              ".streak"
+            );
+
+
+          if (!streakElement) {
+            streakElement =
+              document.createElement(
+                "div"
+              );
+
+            streakElement.className =
+              "streak";
+
+
+            const category =
+              card.querySelector(
+                ".category"
+              );
+
+
+            category.insertAdjacentElement(
+              "afterend",
+              streakElement
+            );
+          }
+
+
+          const gameDates =
+            datesByGame.get(
+              gameId
+            ) ||
+            new Set();
+
+
+          let streak =
+            0;
+
+
+          const currentDate =
+            new Date(
+              TODAY +
+              "T12:00:00"
+            );
+
+
+          /*
+           * If today's result hasn't been
+           * submitted yet, allow the current
+           * streak to continue from yesterday.
+           */
+
+          const todayString =
+            currentDate
+              .toLocaleDateString(
+                "en-CA"
+              );
+
+
+          if (
+            !gameDates.has(
+              todayString
+            )
+          ) {
+            currentDate.setDate(
+              currentDate.getDate() - 1
+            );
+          }
+
+
+          while (true) {
+            const dateString =
+              currentDate
+                .toLocaleDateString(
+                  "en-CA"
+                );
+
+
+            if (
+              !gameDates.has(
+                dateString
+              )
+            ) {
+              break;
+            }
+
+
+            streak += 1;
+
+
+            currentDate.setDate(
+              currentDate.getDate() - 1
+            );
+          }
+
+
+          if (streak > 0) {
+            streakElement.textContent =
+              "🔥 " +
+              streak +
+              (
+                streak === 1
+                  ? " day"
+                  : " days"
+              );
+
+            streakElement.classList.add(
+              "visible"
+            );
+          } else {
+            streakElement.textContent =
+              "";
+
+            streakElement.classList.remove(
+              "visible"
+            );
+          }
+        });
+
+      } catch (error) {
+        console.error(
+          "Streak loading failed:",
+          error
+        );
+      }
     }
 
 
