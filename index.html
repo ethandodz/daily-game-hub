@@ -4435,6 +4435,14 @@ document.addEventListener(
           session?.access_token &&
           session?.user
         );
+      if (!signedIn) {
+  document
+    .getElementById(
+      "accountButton"
+    )
+    .textContent =
+      "Account";
+}
 
       document
         .getElementById(
@@ -4764,6 +4772,13 @@ async function loadProfile() {
             .textContent =
               profile.display_name ||
               "@" + profile.username;
+          document
+  .getElementById(
+    "accountButton"
+  )
+  .textContent =
+    "👤 @" +
+    profile.username;
         } else {
           document
             .getElementById(
