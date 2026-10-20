@@ -127,21 +127,12 @@
     }
 
     .progress-card {
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #0f172a,
-          #312e81
-        );
-
-      box-shadow:
-        0 18px 45px rgba(0, 0, 0, 0.24);
-    }
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+}
 
     .progress-top {
       display: flex;
@@ -168,13 +159,14 @@
     }
 
     .percentage {
-      font-size: 40px;
-      font-weight: 900;
-    }
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--muted);
+}
 
     .progress-track {
-      height: 11px;
-      margin-top: 20px;
+      height: 6px;
+      margin-top: 12px;
       overflow: hidden;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.15);
@@ -786,15 +778,17 @@
     <section class="progress-card">
       <div class="progress-top">
         <div>
-          <div class="eyebrow">TODAY'S PROGRESS</div>
+          <div class="eyebrow">
+  TODAY · FAVORITES
+</div>
 
-          <h2 id="progressCount">
-            0 of 19 completed
-          </h2>
+<h2 id="progressCount">
+  0 of 0 played today
+</h2>
 
-          <p class="progress-message">
-            Play, track, and compare daily games.
-          </p>
+<p class="progress-message">
+  Track what you play and share your results.
+</p>
         </div>
 
         <div class="percentage" id="percentage">
@@ -819,8 +813,12 @@
     >
 
     <div class="filter-scroll">
-      <button class="filter-button active" data-filter="all">
+      <button class="filter-button" data-filter="all">
         All
+      </button>
+
+      <button class="filter-button active" data-filter="favorites">
+         ★ Favorites
       </button>
 
       <button class="filter-button" data-filter="word">
@@ -841,10 +839,6 @@
 
       <button class="filter-button" data-filter="trivia">
         🧠 Trivia
-      </button>
-
-      <button class="filter-button" data-filter="favorites">
-        ★ Favorites
       </button>
 
       <button class="filter-button" data-filter="unfinished">
@@ -2669,7 +2663,7 @@
       );
 
     let currentFilter =
-      "all";
+      "favorites";
 
     let selectedFeedbackType =
       "bug";
@@ -2946,55 +2940,142 @@
     }
 
 
-function updateLocalUI() {
-      cards().forEach(card => {
+    function getFilterLabel() {
+      const labels = {
+        all: "All Games",
+        favorites: "Favorites",
+        word: "Word & Logic",
+        geography: "Geography",
+        movies: "Movies",
+        sports: "Sports",
+        trivia: "Trivia",
+        unfinished: "Not Played",
+        completed: "Played"
+      };
+
+      return labels[currentFilter] || "Games";
+    }
+
+
+    function getScopedCards() {
+      const searchValue =
+        document
+          .getElementById(
+            "searchInput"
+          )
+          .value
+          .trim()
+          .toLowerCase();
+
+      const categoryFilters = [
+        "word",
+        "geography",
+        "movies",
+        "sports",
+        "trivia"
+      ];
+
+      return cards().filter(card => {
         const gameId =
           card.dataset.id;
 
-        card.classList.toggle(
-          "completed",
-          completedGames.includes(gameId)
-        );
+        const category =
+          card.dataset.category;
 
-        const favoriteButton =
-          card.querySelector(
-            ".favorite-button"
+        const searchText =
+          card.dataset.search
+            .toLowerCase();
+
+        let included =
+          searchText.includes(
+            searchValue
           );
 
-        favoriteButton.classList.toggle(
-          "favorite",
-          favoriteGames.includes(gameId)
-        );
-      });
+        if (
+          categoryFilters.includes(
+            currentFilter
+          ) &&
+          category !== currentFilter
+        ) {
+          included = false;
+        }
 
-      const completedCount =
-        cards().filter(card =>
+        if (
+          currentFilter ===
+            "favorites" &&
+          !favoriteGames.includes(
+            gameId
+          )
+        ) {
+          included = false;
+        }
+
+        if (
+          currentFilter ===
+            "completed" &&
+          !completedGames.includes(
+            gameId
+          )
+        ) {
+          included = false;
+        }
+
+        if (
+          currentFilter ===
+            "unfinished" &&
+          completedGames.includes(
+            gameId
+          )
+        ) {
+          included = false;
+        }
+
+        return included;
+      });
+    }
+
+
+    function updateProgress() {
+      const scopedCards =
+        getScopedCards();
+
+      const totalGames =
+        scopedCards.length;
+
+      const playedCount =
+        scopedCards.filter(card =>
           completedGames.includes(
             card.dataset.id
           )
         ).length;
 
-      const totalGames =
-        cards().length;
-
       const percentage =
         totalGames === 0
           ? 0
           : Math.round(
-              completedCount /
+              playedCount /
               totalGames *
               100
             );
+
+      document
+        .querySelector(
+          ".eyebrow"
+        )
+        .textContent =
+          "TODAY · " +
+          getFilterLabel()
+            .toUpperCase();
 
       document
         .getElementById(
           "progressCount"
         )
         .textContent =
-          completedCount +
+          playedCount +
           " of " +
           totalGames +
-          " completed";
+          " played today";
 
       document
         .getElementById(
@@ -3010,10 +3091,37 @@ function updateLocalUI() {
         .style
         .width =
           percentage + "%";
-
-      applyFilters();
     }
 
+
+    function updateLocalUI() {
+      cards().forEach(card => {
+        const gameId =
+          card.dataset.id;
+
+        card.classList.toggle(
+          "completed",
+          completedGames.includes(
+            gameId
+          )
+        );
+
+        const favoriteButton =
+          card.querySelector(
+            ".favorite-button"
+          );
+
+        favoriteButton.classList.toggle(
+          "favorite",
+          favoriteGames.includes(
+            gameId
+          )
+        );
+      });
+
+      applyFilters();
+      updateProgress();
+    }
 
     function applyFilters() {
       const searchValue =
@@ -3206,20 +3314,20 @@ function updateLocalUI() {
                 }
               );
 
-            applyFilters();
+            updateLocalUI();
           }
         );
       });
 
 
     document
-      .getElementById(
-        "searchInput"
-      )
-      .addEventListener(
-        "input",
-        applyFilters
-      );
+  .getElementById(
+    "searchInput"
+  )
+  .addEventListener(
+    "input",
+    updateLocalUI
+  );
 
 
     document
