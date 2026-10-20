@@ -2912,6 +2912,9 @@
     let selectedScoreGame =
       "";
 
+    let todaysScores =
+  [];
+
     let defaultGameOrder =
   [];
 
@@ -5485,32 +5488,73 @@ document
                 ".game-card"
               );
 
-            document
-              .getElementById(
-                "scoreTitle"
-              )
-              .textContent =
-                "Enter " +
-                gameCard.dataset.name +
-                " Result";
+            const existingScore =
+  todaysScores.find(
+    score =>
+      score.user_id ===
+        session.user.id &&
+      score.game_id ===
+        selectedScoreGame
+  );
 
             document
-              .getElementById(
-                "resultText"
-              )
-              .value = "";
+  .getElementById(
+    "scoreTitle"
+  )
+  .textContent =
+    existingScore
+      ? "Edit " +
+        gameCard.dataset.name +
+        " Result"
+      : "Enter " +
+        gameCard.dataset.name +
+        " Result";
 
-            document
-              .getElementById(
-                "numericScore"
-              )
-              .value = "";
 
-            document
-              .getElementById(
-                "scoreUnit"
-              )
-              .value = "";
+            if (existingScore) {
+  document
+    .getElementById(
+      "resultText"
+    )
+    .value =
+      existingScore.result_text ||
+      "";
+
+  document
+    .getElementById(
+      "numericScore"
+    )
+    .value =
+      existingScore.numeric_score ??
+      "";
+
+  document
+    .getElementById(
+      "scoreUnit"
+    )
+    .value =
+      existingScore.score_unit ||
+      "";
+
+} else {
+  document
+    .getElementById(
+      "resultText"
+    )
+    .value = "";
+
+  document
+    .getElementById(
+      "numericScore"
+    )
+    .value = "";
+
+  document
+    .getElementById(
+      "scoreUnit"
+    )
+    .value = "";
+}
 
             setStatus(
               scoreStatus,
@@ -5969,6 +6013,10 @@ function calculateStreak(
             }
           );
 
+        todaysScores =
+  scoreRows || [];
+
+
                 const scoreHistory =
           await request(
             "/rest/v1/daily_scores" +
@@ -6037,6 +6085,16 @@ function calculateStreak(
                 score.game_id ===
                   gameId
             );
+
+          const resultButton =
+  card.querySelector(
+    ".result-button"
+  );
+
+resultButton.textContent =
+  myScore
+    ? "✏️ Edit Result"
+    : "Enter Result";
 
 
           if (myScore) {
