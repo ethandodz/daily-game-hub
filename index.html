@@ -2882,6 +2882,12 @@
     const ACTIVE_FILTER_KEY =
   "dailyGameHubActiveFilter";
 
+    const SCROLL_GAME_KEY =
+  "dailyGameHubScrollGame";
+
+const SCROLL_OFFSET_KEY =
+  "dailyGameHubScrollOffset";
+
     const SCROLL_POSITION_KEY =
   "dailyGameHubScrollPosition";
 
@@ -4540,10 +4546,7 @@ document.addEventListener(
       loadGameorder();
       startGameOrderSync();
 
-        setTimeout(
-  restoreScrollPosition,
-  500
-);
+   
       }
     }
 
@@ -5923,6 +5926,12 @@ await loadStreaks();
           }
         });
 
+                requestAnimationFrame(
+          () => {
+            restoreGamePosition();
+          }
+        );
+
       } catch (error) {
         console.error(
           "Streak loading failed:",
@@ -6548,6 +6557,12 @@ resultButton.textContent =
             "</p>";
         }
 
+                requestAnimationFrame(
+          () => {
+            restoreGamePosition();
+          }
+        );
+
       } catch (error) {
         console.error(
           "Score loading failed:",
@@ -6781,27 +6796,72 @@ applyGameOrder(
     );
   });
 
-    let saveScrollTimeout =
+    let scrollSaveTimer =
   null;
+
+
+function saveCurrentGamePosition() {
+  const visibleCards =
+    cards().filter(card => {
+      if (
+        card.style.display ===
+        "none"
+      ) {
+        return false;
+      }
+
+      const rect =
+        card.getBoundingClientRect();
+
+      return (
+        rect.bottom > 0 &&
+        rect.top <
+          window.innerHeight
+      );
+    });
+
+
+  if (
+    visibleCards.length === 0
+  ) {
+    return;
+  }
+
+
+  const currentCard =
+    visibleCards[0];
+
+
+  const rect =
+    currentCard
+      .getBoundingClientRect();
+
+
+  sessionStorage.setItem(
+    SCROLL_GAME_KEY,
+    currentCard.dataset.id
+  );
+
+
+  sessionStorage.setItem(
+    SCROLL_OFFSET_KEY,
+    String(
+      rect.top
+    )
+  );
+}
 
 
 window.addEventListener(
   "scroll",
   () => {
     clearTimeout(
-      saveScrollTimeout
+      scrollSaveTimer
     );
 
-    saveScrollTimeout =
+    scrollSaveTimer =
       setTimeout(
-        () => {
-          sessionStorage.setItem(
-            SCROLL_POSITION_KEY,
-            String(
-              window.scrollY
-            )
-          );
-        },
+        saveCurrentGamePosition,
         100
       );
   },
@@ -6810,48 +6870,63 @@ window.addEventListener(
   }
 );
 
-
-function restoreScrollPosition() {
-  const savedPosition =
+    function restoreGamePosition() {
+  const gameId =
     sessionStorage.getItem(
-      SCROLL_POSITION_KEY
+      SCROLL_GAME_KEY
     );
 
-  if (
-    savedPosition === null
-  ) {
+  if (!gameId) {
     return;
   }
 
-  const position =
+
+  const savedOffset =
     Number(
-      savedPosition
+      sessionStorage.getItem(
+        SCROLL_OFFSET_KEY
+      ) || 0
     );
 
+
+  const gameCard =
+    document.querySelector(
+      '.game-card[data-id="' +
+      gameId +
+      '"]'
+    );
+
+
   if (
-    !Number.isFinite(
-      position
-    )
+    !gameCard ||
+    gameCard.style.display ===
+      "none"
   ) {
     return;
   }
 
-  requestAnimationFrame(
-    () => {
-      requestAnimationFrame(
-        () => {
-          window.scrollTo(
-            0,
-            position
-          );
-        }
-      );
-    }
+
+  const currentTop =
+    gameCard
+      .getBoundingClientRect()
+      .top;
+
+
+  window.scrollBy(
+    0,
+    currentTop -
+    savedOffset
   );
 }
+
+
 updateLocalUI();
 showSessionUI();
-restoreScrollPosition();
+    requestAnimationFrame(
+  () => {
+    restoreGamePosition();
+  }
+);
   </script>
 </body>
 </html>
