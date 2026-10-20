@@ -6059,6 +6059,47 @@ function calculateStreak(
         todaysScores =
   scoreRows || [];
 
+                const mySubmittedGames =
+          (scoreRows || [])
+            .filter(
+              score =>
+                score.user_id ===
+                session.user.id &&
+                score.completed === true
+            )
+            .map(
+              score =>
+                score.game_id
+            );
+
+
+        let playedStateChanged =
+          false;
+
+
+        mySubmittedGames.forEach(
+          gameId => {
+            if (
+              !completedGames.includes(
+                gameId
+              )
+            ) {
+              completedGames.push(
+                gameId
+              );
+
+              playedStateChanged =
+                true;
+            }
+          }
+        );
+
+
+        if (playedStateChanged) {
+          saveLocal();
+          updateLocalUI();
+        }
+
 
                 const scoreHistory =
           await request(
