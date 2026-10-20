@@ -4401,9 +4401,15 @@ document
       await saveGameOrder();
 
       updateLocalUI();
+
+      document
+        .getElementById(
+          "arrangeModal"
+        )
+        .classList
+        .remove("open");
     }
   );
-
 
 document
   .getElementById(
