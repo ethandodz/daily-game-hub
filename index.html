@@ -2882,6 +2882,9 @@
     const ACTIVE_FILTER_KEY =
   "dailyGameHubActiveFilter";
 
+    const SCROLL_POSITION_KEY =
+  "dailyGameHubScrollPosition";
+
     let completedGames =
       safeParse(
         localStorage.getItem(COMPLETED_KEY),
@@ -4536,6 +4539,11 @@ document.addEventListener(
       loadStreaks();
       loadGameorder();
       startGameOrderSync();
+
+        setTimeout(
+  restoreScrollPosition,
+  500
+);
       }
     }
 
@@ -6772,8 +6780,78 @@ applyGameOrder(
         currentFilter
     );
   });
+
+    let saveScrollTimeout =
+  null;
+
+
+window.addEventListener(
+  "scroll",
+  () => {
+    clearTimeout(
+      saveScrollTimeout
+    );
+
+    saveScrollTimeout =
+      setTimeout(
+        () => {
+          sessionStorage.setItem(
+            SCROLL_POSITION_KEY,
+            String(
+              window.scrollY
+            )
+          );
+        },
+        100
+      );
+  },
+  {
+    passive: true
+  }
+);
+
+
+function restoreScrollPosition() {
+  const savedPosition =
+    sessionStorage.getItem(
+      SCROLL_POSITION_KEY
+    );
+
+  if (
+    savedPosition === null
+  ) {
+    return;
+  }
+
+  const position =
+    Number(
+      savedPosition
+    );
+
+  if (
+    !Number.isFinite(
+      position
+    )
+  ) {
+    return;
+  }
+
+  requestAnimationFrame(
+    () => {
+      requestAnimationFrame(
+        () => {
+          window.scrollTo(
+            0,
+            position
+          );
+        }
+      );
+    }
+  );
+}
 updateLocalUI();
 showSessionUI();
+restoreScrollPosition();
   </script>
 </body>
 </html>
