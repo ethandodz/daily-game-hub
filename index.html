@@ -466,6 +466,52 @@
       background: #334155;
     }
 
+    .history-button {
+  grid-column: 1 / -1;
+  padding: 9px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+}
+
+.history-button:hover {
+  color: white;
+  border-color: #64748b;
+}
+
+.history-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.history-entry {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-light);
+}
+
+.history-date {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.history-result {
+  color: white;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
     .result-summary {
   display: none;
   margin-top: 10px;
@@ -2871,6 +2917,47 @@
     <p
       class="status"
       id="arrangeStatus"
+      aria-live="polite"
+    ></p>
+
+  </div>
+</div>
+
+  <div
+  class="modal"
+  id="historyModal"
+>
+  <div class="modal-card">
+
+    <div class="modal-top">
+      <div>
+        <h2 id="historyTitle">
+          Game History
+        </h2>
+
+        <p class="status">
+          Your previous submitted results.
+        </p>
+      </div>
+
+      <button
+        class="close-button"
+        data-close="historyModal"
+        type="button"
+        aria-label="Close history"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div
+      class="history-list"
+      id="historyList"
+    ></div>
+
+    <p
+      class="status"
+      id="historyStatus"
       aria-live="polite"
     ></p>
 
@@ -5492,6 +5579,268 @@ async function loadProfile() {
       }
     }
 
+    function addHistoryButtons() {
+  cards().forEach(card => {
+    if (
+      card.querySelector(
+        ".history-button"
+      )
+    ) {
+      return;
+    }
+
+    const gameId =
+      card.dataset.id;
+
+    const historyButton =
+      document.createElement(
+        "button"
+      );
+
+    historyButton.type =
+      "button";
+
+    historyButton.className =
+      "history-button";
+
+    historyButton.textContent =
+      "📅 History";
+
+    historyButton.addEventListener(
+      "click",
+      () => {
+        if (!session) {
+          document
+            .getElementById(
+              "accountModal"
+            )
+            .classList
+            .add("open");
+
+          setStatus(
+            authStatus,
+            "Log in to view your result history.",
+            "error"
+          );
+
+          return;
+        }
+
+        openGameHistory(
+          gameId
+        );
+      }
+    );
+
+    const cardButtons =
+      card.querySelector(
+        ".card-buttons"
+      );
+
+    cardButtons.appendChild(
+      historyButton
+    );
+  });
+}
+
+    function formatHistoryDate(
+  dateString
+) {
+  if (
+    dateString === TODAY
+  ) {
+    return "Today";
+  }
+
+  const historyDate =
+    new Date(
+      dateString +
+      "T12:00:00"
+    );
+
+  const yesterday =
+    new Date(
+      TODAY +
+      "T12:00:00"
+    );
+
+  yesterday.setDate(
+    yesterday.getDate() - 1
+  );
+
+  if (
+    dateString ===
+    yesterday.toLocaleDateString(
+      "en-CA"
+    )
+  ) {
+    return "Yesterday";
+  }
+
+  return historyDate
+    .toLocaleDateString(
+      undefined,
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      }
+    );
+}
+
+
+async function openGameHistory(
+  gameId
+) {
+  const gameCard =
+    document.querySelector(
+      '.game-card[data-id="' +
+      gameId +
+      '"]'
+    );
+
+  const gameName =
+    gameCard?.dataset.name ||
+    gameId;
+
+
+  document
+    .getElementById(
+      "historyTitle"
+    )
+    .textContent =
+      gameName +
+      " History";
+
+
+  const historyList =
+    document.getElementById(
+      "historyList"
+    );
+
+  historyList.innerHTML =
+    "";
+
+
+  setStatus(
+    historyStatus,
+    "Loading history..."
+  );
+
+
+  document
+    .getElementById(
+      "historyModal"
+    )
+    .classList
+    .add("open");
+
+
+  try {
+    const historyRows =
+      await request(
+        "/rest/v1/daily_scores" +
+        "?user_id=eq." +
+        encodeURIComponent(
+          session.user.id
+        ) +
+        "&game_id=eq." +
+        encodeURIComponent(
+          gameId
+        ) +
+        "&select=" +
+        "play_date," +
+        "result_text," +
+        "numeric_score," +
+        "score_unit" +
+        "&order=play_date.desc" +
+        "&limit=30",
+        {
+          headers:
+            authHeaders()
+        }
+      );
+
+
+    if (
+      !historyRows ||
+      historyRows.length === 0
+    ) {
+      setStatus(
+        historyStatus,
+        "No submitted results yet."
+      );
+
+      return;
+    }
+
+
+    setStatus(
+      historyStatus,
+      ""
+    );
+
+
+    historyRows.forEach(
+      score => {
+        const historyEntry =
+          document.createElement(
+            "div"
+          );
+
+        historyEntry.className =
+          "history-entry";
+
+
+        const historyDate =
+          document.createElement(
+            "div"
+          );
+
+        historyDate.className =
+          "history-date";
+
+        historyDate.textContent =
+          formatHistoryDate(
+            score.play_date
+          );
+
+
+        const historyResult =
+          document.createElement(
+            "div"
+          );
+
+        historyResult.className =
+          "history-result";
+
+        historyResult.textContent =
+          formatScore(
+            score
+          );
+
+
+        historyEntry.append(
+          historyDate,
+          historyResult
+        );
+
+
+        historyList.appendChild(
+          historyEntry
+        );
+      }
+    );
+
+  } catch (error) {
+    setStatus(
+      historyStatus,
+      error.message,
+      "error"
+    );
+  }
+}
+
 document
       .querySelectorAll(
         "[data-result]"
@@ -6825,6 +7174,7 @@ resultButton.textContent =
 
 
     captureDefaultGameOrder();
+    addHistoryButtons();
 applyGameOrder(
   currentGameOrder
 );
