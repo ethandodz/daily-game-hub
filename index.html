@@ -521,6 +521,20 @@
   font-weight: 700;
 }
 
+  .friend-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.friend-result-streak {
+  flex: 0 0 auto;
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 800;
+}  
+
 .friend-result-score {
   width: 100%;
   color: white;
@@ -5859,7 +5873,76 @@ await loadStreaks();
       }
     }
 
+function calculateStreak(
+  dateValues
+) {
+  const dates =
+    new Set(
+      dateValues || []
+    );
 
+  let streak =
+    0;
+
+  const currentDate =
+    new Date(
+      TODAY +
+      "T12:00:00"
+    );
+
+  const todayString =
+    currentDate
+      .toLocaleDateString(
+        "en-CA"
+      );
+
+
+  /*
+   * A streak stays active during
+   * today even if the player has
+   * not submitted today's result yet.
+   */
+
+  if (
+    !dates.has(
+      todayString
+    )
+  ) {
+    currentDate.setDate(
+      currentDate.getDate() - 1
+    );
+  }
+
+
+  while (true) {
+    const dateString =
+      currentDate
+        .toLocaleDateString(
+          "en-CA"
+        );
+
+
+    if (
+      !dates.has(
+        dateString
+      )
+    ) {
+      break;
+    }
+
+
+    streak += 1;
+
+
+    currentDate.setDate(
+      currentDate.getDate() - 1
+    );
+  }
+
+
+  return streak;
+}
+    
     async function loadTodayScores() {
       if (!session) {
         return;
@@ -5880,6 +5963,19 @@ await loadStreaks();
             "numeric_score," +
             "score_unit," +
             "completed",
+            {
+              headers:
+                authHeaders()
+            }
+          );
+
+                const scoreHistory =
+          await request(
+            "/rest/v1/daily_scores" +
+            "?select=" +
+            "user_id," +
+            "game_id," +
+            "play_date",
             {
               headers:
                 authHeaders()
@@ -6125,6 +6221,29 @@ await loadStreaks();
                 friendScore.user_id
               );
 
+                        const friendGameDates =
+              (scoreHistory || [])
+                .filter(
+                  historicalScore =>
+                    historicalScore
+                      .user_id ===
+                      friendScore.user_id &&
+                    historicalScore
+                      .game_id ===
+                      friendScore.game_id
+                )
+                .map(
+                  historicalScore =>
+                    historicalScore
+                      .play_date
+                );
+
+
+            const friendStreak =
+              calculateStreak(
+                friendGameDates
+              );
+
 
             const displayName =
               friendProfile.display_name ||
@@ -6153,6 +6272,15 @@ await loadStreaks();
             }
 
 
+                       const resultHeader =
+              document.createElement(
+                "div"
+              );
+
+            resultHeader.className =
+              "friend-result-header";
+
+
             const nameElement =
               document.createElement(
                 "div"
@@ -6163,6 +6291,43 @@ await loadStreaks();
 
             nameElement.textContent =
               displayName;
+
+
+            const streakElement =
+              document.createElement(
+                "span"
+              );
+
+            streakElement.className =
+              "friend-result-streak";
+
+
+            if (
+              friendStreak > 0
+            ) {
+              streakElement.textContent =
+                "🔥 " +
+                friendStreak +
+                (
+                  friendStreak === 1
+                    ? " day"
+                    : " days"
+                );
+            }
+
+
+            resultHeader.append(
+              nameElement
+            );
+
+
+            if (
+              friendStreak > 0
+            ) {
+              resultHeader.append(
+                streakElement
+              );
+            }
 
 
             const scoreElement =
@@ -6180,7 +6345,7 @@ await loadStreaks();
 
 
             resultRow.append(
-              nameElement,
+              resultHeader,
               scoreElement
             );
 
