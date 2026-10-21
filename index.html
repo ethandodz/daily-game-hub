@@ -3542,6 +3542,23 @@ function applyGameOrder(
   );
 }
 
+    function getCategoryLabel(
+  category
+) {
+  const labels = {
+    word: "Word & Logic",
+    geography: "Geography",
+    movies: "Movies",
+    sports: "Sports",
+    trivia: "Trivia",
+    other: "Other"
+  };
+
+  return (
+    labels[category] ||
+    "Other"
+  );
+}
 
 function getGameName(
   gameId
@@ -5312,8 +5329,13 @@ document.addEventListener(
       loadTodayScores();
       loadStreaks();
       loadGameOrder();
-      loadUserGameLibrary();
-      startGameOrderSync();
+
+loadGameCatalog()
+  .then(
+    loadUserGameLibrary
+  );
+
+startGameOrderSync();
         
 
    
@@ -6241,6 +6263,548 @@ async function loadProfile() {
         );
       }
     }
+
+    function openScoreModalForGame(
+  gameCard
+) {
+  if (!session) {
+    document
+      .getElementById(
+        "accountModal"
+      )
+      .classList
+      .add("open");
+
+    setStatus(
+      authStatus,
+      "Log in before entering a shared result.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  selectedScoreGame =
+    gameCard.dataset.id;
+
+
+  const existingScore =
+    todaysScores.find(
+      score =>
+        score.user_id ===
+          session.user.id &&
+        score.game_id ===
+          selectedScoreGame
+    );
+
+
+  document
+    .getElementById(
+      "scoreTitle"
+    )
+    .textContent =
+      existingScore
+        ? "Edit " +
+          gameCard.dataset.name +
+          " Result"
+        : "Enter " +
+          gameCard.dataset.name +
+          " Result";
+
+
+  document
+    .getElementById(
+      "resultText"
+    )
+    .value =
+      existingScore?.result_text ||
+      "";
+
+
+  document
+    .getElementById(
+      "numericScore"
+    )
+    .value =
+      existingScore?.numeric_score ??
+      "";
+
+
+  document
+    .getElementById(
+      "scoreUnit"
+    )
+    .value =
+      existingScore?.score_unit ||
+      "";
+
+
+  setStatus(
+    scoreStatus,
+    ""
+  );
+
+
+  document
+    .getElementById(
+      "scoreModal"
+    )
+    .classList
+    .add("open");
+}
+
+    function createGameCard(
+  game
+) {
+  const existingCard =
+    document.querySelector(
+      '.game-card[data-id="' +
+      game.game_key +
+      '"]'
+    );
+
+
+  /*
+   * Do not duplicate one of the
+   * existing hard-coded cards.
+   */
+  if (existingCard) {
+    return existingCard;
+  }
+
+
+  const card =
+    document.createElement(
+      "article"
+    );
+
+
+  card.className =
+    "game-card";
+
+
+  card.dataset.id =
+    game.game_key;
+
+  card.dataset.name =
+    game.name;
+
+  card.dataset.category =
+    game.category || "other";
+
+  card.dataset.search =
+    [
+      game.name,
+      game.category,
+      game.description
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+
+  card.style.setProperty(
+    "--game-color",
+    game.color ||
+      "#7c3aed"
+  );
+
+
+  const cardTop =
+    document.createElement(
+      "div"
+    );
+
+  cardTop.className =
+    "card-top";
+
+
+  const icon =
+    document.createElement(
+      "div"
+    );
+
+  icon.className =
+    "game-icon";
+
+  icon.textContent =
+    game.icon ||
+    "🎮";
+
+
+  const favoriteButton =
+    document.createElement(
+      "button"
+    );
+
+  favoriteButton.type =
+    "button";
+
+  favoriteButton.className =
+    "favorite-button";
+
+  favoriteButton.dataset.favorite =
+    game.game_key;
+
+  favoriteButton.textContent =
+    "★";
+
+  favoriteButton.setAttribute(
+    "aria-label",
+    "Favorite " +
+    game.name
+  );
+
+
+  favoriteButton.addEventListener(
+    "click",
+    () => {
+      const gameId =
+        game.game_key;
+
+
+      if (
+        favoriteGames.includes(
+          gameId
+        )
+      ) {
+        favoriteGames =
+          favoriteGames.filter(
+            id =>
+              id !== gameId
+          );
+      } else {
+        favoriteGames.push(
+          gameId
+        );
+      }
+
+
+      saveLocal();
+      saveFavorites();
+      updateLocalUI();
+    }
+  );
+
+
+  cardTop.append(
+    icon,
+    favoriteButton
+  );
+
+
+  const title =
+    document.createElement(
+      "h3"
+    );
+
+  title.textContent =
+    game.name;
+
+
+  const category =
+    document.createElement(
+      "div"
+    );
+
+  category.className =
+    "category";
+
+  category.textContent =
+    getCategoryLabel(
+      game.category
+    );
+
+
+  const description =
+    document.createElement(
+      "p"
+    );
+
+  description.className =
+    "description";
+
+  description.textContent =
+    game.description ||
+    "A custom daily game.";
+
+
+  const cardButtons =
+    document.createElement(
+      "div"
+    );
+
+  cardButtons.className =
+    "card-buttons";
+
+
+  const playButton =
+    document.createElement(
+      "a"
+    );
+
+  playButton.className =
+    "play-button";
+
+  playButton.href =
+    game.url;
+
+  playButton.target =
+    "_blank";
+
+  playButton.rel =
+    "noopener noreferrer";
+
+  playButton.textContent =
+    "Play ↗";
+
+
+  const completeButton =
+    document.createElement(
+      "button"
+    );
+
+  completeButton.type =
+    "button";
+
+  completeButton.className =
+    "complete-button";
+
+  completeButton.dataset.complete =
+    game.game_key;
+
+  completeButton.textContent =
+    "✓";
+
+  completeButton.setAttribute(
+    "aria-label",
+    "Mark " +
+    game.name +
+    " complete"
+  );
+
+
+  completeButton.addEventListener(
+    "click",
+    () => {
+      const gameId =
+        game.game_key;
+
+
+      if (
+        completedGames.includes(
+          gameId
+        )
+      ) {
+        completedGames =
+          completedGames.filter(
+            id =>
+              id !== gameId
+          );
+      } else {
+        completedGames.push(
+          gameId
+        );
+      }
+
+
+      saveLocal();
+      updateLocalUI();
+    }
+  );
+
+
+  const resultButton =
+    document.createElement(
+      "button"
+    );
+
+  resultButton.type =
+    "button";
+
+  resultButton.className =
+    "result-button";
+
+  resultButton.dataset.result =
+    game.game_key;
+
+  resultButton.textContent =
+    "Enter Result";
+
+  resultButton.addEventListener(
+    "click",
+    () => {
+      openScoreModalForGame(
+        card
+      );
+    }
+  );
+
+
+  const historyButton =
+    document.createElement(
+      "button"
+    );
+
+  historyButton.type =
+    "button";
+
+  historyButton.className =
+    "history-button";
+
+  historyButton.textContent =
+    "📅 History";
+
+
+  historyButton.addEventListener(
+    "click",
+    () => {
+      if (!session) {
+        document
+          .getElementById(
+            "accountModal"
+          )
+          .classList
+          .add("open");
+
+        setStatus(
+          authStatus,
+          "Log in to view your result history.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      openGameHistory(
+        game.game_key
+      );
+    }
+  );
+
+
+  cardButtons.append(
+    playButton,
+    completeButton,
+    resultButton,
+    historyButton
+  );
+
+
+  const resultSummary =
+    document.createElement(
+      "div"
+    );
+
+  resultSummary.className =
+    "result-summary";
+
+  resultSummary.dataset
+    .resultSummary =
+      game.game_key;
+
+
+  card.append(
+    cardTop,
+    title,
+    category,
+    description,
+    cardButtons,
+    resultSummary
+  );
+
+
+  document
+    .getElementById(
+      "gameGrid"
+    )
+    .appendChild(
+      card
+    );
+
+
+  return card;
+}
+
+    async function loadGameCatalog() {
+  if (!session) {
+    return;
+  }
+
+
+  try {
+    const gameRows =
+      await request(
+        "/rest/v1/games" +
+        "?select=" +
+        "game_key," +
+        "name," +
+        "url," +
+        "category," +
+        "description," +
+        "icon," +
+        "color," +
+        "is_official," +
+        "created_by" +
+        "&order=created_at.asc",
+        {
+          headers:
+            authHeaders()
+        }
+      ) || [];
+
+
+    gameRows.forEach(
+      game => {
+        createGameCard(
+          game
+        );
+      }
+    );
+
+
+    /*
+     * Add any database-generated
+     * cards to the current order.
+     */
+    cards().forEach(card => {
+      if (
+        !defaultGameOrder.includes(
+          card.dataset.id
+        )
+      ) {
+        defaultGameOrder.push(
+          card.dataset.id
+        );
+      }
+
+      if (
+        !currentGameOrder.includes(
+          card.dataset.id
+        )
+      ) {
+        currentGameOrder.push(
+          card.dataset.id
+        );
+      }
+    });
+
+
+    applyGameOrder(
+      currentGameOrder
+    );
+
+    updateLocalUI();
+
+  } catch (error) {
+    console.error(
+      "Game catalog loading failed:",
+      error
+    );
+  }
+}
 
     function addHistoryButtons() {
   cards().forEach(card => {
