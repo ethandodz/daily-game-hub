@@ -3774,7 +3774,7 @@ async function loadGameOrder() {
         encodeURIComponent(
           session.user.id
         ) +
-        "&select=game_order",
+        "&select=game_order,favorite_games",
         {
           headers:
             authHeaders()
@@ -3795,12 +3795,62 @@ async function loadGameOrder() {
           .game_order;
     }
 
+    const remoteFavorites =
+  preferenceRows?.[0]
+    ?.favorite_games;
+
+
+if (
+  Array.isArray(
+    remoteFavorites
+  )
+) {
+  if (
+    remoteFavorites.length === 0 &&
+    favoriteGames.length > 0
+  ) {
+    await saveFavorites();
+  } else {
+    favoriteGames =
+      remoteFavorites;
+
+    localStorage.setItem(
+      FAVORITES_KEY,
+      JSON.stringify(
+        favoriteGames
+      )
+    );
+  }
+}
+
+    if (
+  preferenceRows &&
+  preferenceRows.length > 0 &&
+  Array.isArray(
+    preferenceRows[0]
+      .favorite_games
+  )
+) {
+  favoriteGames =
+    preferenceRows[0]
+      .favorite_games;
+
+  localStorage.setItem(
+    FAVORITES_KEY,
+    JSON.stringify(
+      favoriteGames
+    )
+  );
+}
+
 
     applyGameOrder(
       currentGameOrder
     );
 
     renderArrangeList();
+
+    updateLocalUI();
 
   } catch (error) {
     console.error(
@@ -3851,13 +3901,16 @@ async function saveGameOrder() {
           ),
 
         body:
-          JSON.stringify({
-            user_id:
-              session.user.id,
+  JSON.stringify({
+    user_id:
+      session.user.id,
 
-            game_order:
-              currentGameOrder
-          })
+    game_order:
+      currentGameOrder,
+
+    favorite_games:
+      favoriteGames
+  })
       }
     );
 
@@ -3877,6 +3930,49 @@ async function saveGameOrder() {
   }
 }
 
+    async function saveFavorites() {
+  localStorage.setItem(
+    FAVORITES_KEY,
+    JSON.stringify(
+      favoriteGames
+    )
+  );
+
+  if (!session) {
+    return;
+  }
+
+  try {
+    await request(
+      "/rest/v1/game_preferences" +
+      "?on_conflict=user_id",
+      {
+        method: "POST",
+
+        headers:
+          authHeaders(
+            "resolution=merge-duplicates,return=minimal"
+          ),
+
+        body:
+          JSON.stringify({
+            user_id:
+              session.user.id,
+
+            favorite_games:
+              favoriteGames
+          })
+      }
+    );
+
+  } catch (error) {
+    console.error(
+      "Favorite sync failed:",
+      error
+    );
+  }
+}
+
    async function syncGameOrderFromSupabase() {
   if (!session) {
     return;
@@ -3890,7 +3986,7 @@ async function saveGameOrder() {
         encodeURIComponent(
           session.user.id
         ) +
-        "&select=game_order",
+        "&select=game_order,favorite_games",
         {
           headers:
             authHeaders()
@@ -3949,6 +4045,45 @@ async function saveGameOrder() {
         );
       }
     }
+const remoteFavorites =
+  preferenceRows?.[0]
+    ?.favorite_games;
+
+
+if (
+  Array.isArray(
+    remoteFavorites
+  )
+) {
+  const localFavoritesText =
+    JSON.stringify(
+      [...favoriteGames].sort()
+    );
+
+  const remoteFavoritesText =
+    JSON.stringify(
+      [...remoteFavorites].sort()
+    );
+
+
+  if (
+    localFavoritesText !==
+    remoteFavoritesText
+  ) {
+    favoriteGames =
+      remoteFavorites;
+
+    localStorage.setItem(
+      FAVORITES_KEY,
+      JSON.stringify(
+        favoriteGames
+      )
+    );
+
+    updateLocalUI();
+  }
+}
+    
   } catch (error) {
     console.error(
       "Game order sync failed:",
@@ -4328,6 +4463,7 @@ function startGameOrderSync() {
             }
 
             saveLocal();
+            saveFavorites();
             updateLocalUI();
           }
         );
