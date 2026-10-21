@@ -4364,18 +4364,19 @@ applyGameOrder(
     return;
   }
 
-      const onboardingOpen =
-  document
-    .getElementById(
-      "onboardingModal"
-    )
-    .classList
-    .contains("open");
+
+  const onboardingOpen =
+    document
+      .getElementById(
+        "onboardingModal"
+      )
+      .classList
+      .contains("open");
 
 
-if (onboardingOpen) {
-  return;
-}
+  if (onboardingOpen) {
+    return;
+  }
 
 
   const arrangeModalOpen =
@@ -4387,16 +4388,35 @@ if (onboardingOpen) {
       .contains("open");
 
 
-  /*
-   * Do not overwrite an order
-   * while the user is arranging it.
-   */
   if (arrangeModalOpen) {
     return;
   }
 
 
+  /*
+   * Remember which game is currently
+   * visible before the library sync
+   * rearranges the DOM.
+   */
+  saveCurrentGamePosition();
+
+
   await loadUserGameLibrary();
+
+
+  /*
+   * Put the user back on the same
+   * game after the DOM has updated.
+   */
+  requestAnimationFrame(
+    () => {
+      requestAnimationFrame(
+        () => {
+          restoreGamePosition();
+        }
+      );
+    }
+  );
 
 
   if (
@@ -6050,6 +6070,8 @@ document
     window.addEventListener(
   "focus",
   () => {
+    saveCurrentGamePosition();
+
     syncUserGameLibrary();
   }
 );
