@@ -206,7 +206,6 @@
     .arrange-row {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
   margin-bottom: 10px;
 }
 
@@ -294,66 +293,6 @@
 
 .arrange-actions .button {
   flex: 1;
-}
-
-    .manage-list {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.manage-game {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 11px;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  background: var(--panel-light);
-}
-
-.manage-game-info {
-  min-width: 0;
-}
-
-.manage-game-name {
-  color: white;
-  font-weight: 800;
-}
-
-.manage-game-category {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.manage-game-button {
-  flex: 0 0 auto;
-  min-width: 78px;
-  padding: 8px 10px;
-  color: white;
-  font-size: 12px;
-  font-weight: 800;
-  border: 0;
-  border-radius: 9px;
-}
-
-.manage-game-button.remove {
-  background: #475569;
-}
-
-.manage-game-button.add {
-  background: var(--green);
-}
-
-.manage-section-title {
-  margin: 20px 0 8px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
     .filter-scroll {
@@ -941,11 +880,12 @@
       }
 
       .arrange-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  justify-content: stretch;
 }
 
+.arrange-button {
+  width: 100%;
+}
 
 .arrange-item {
   grid-template-columns: auto minmax(0, 1fr) auto auto;
@@ -1110,14 +1050,6 @@
   >
     ↕ Arrange Games
   </button>
-
-      <button
-  class="arrange-button"
-  id="manageGamesButton"
-  type="button"
->
-  ＋ Manage Games
-</button>
 </div>
 
     <div class="filter-scroll">
@@ -3032,60 +2964,6 @@
   </div>
 </div>
 
-  <div
-  class="modal"
-  id="manageGamesModal"
->
-  <div class="modal-card">
-
-    <div class="modal-top">
-      <div>
-        <h2>
-          Manage Games
-        </h2>
-
-        <p class="status">
-          Choose which games appear in your Daily Game Hub.
-        </p>
-      </div>
-
-      <button
-        class="close-button"
-        data-close="manageGamesModal"
-        type="button"
-        aria-label="Close Manage Games"
-      >
-        ✕
-      </button>
-    </div>
-
-    <div class="manage-section-title">
-      My Games
-    </div>
-
-    <div
-      class="manage-list"
-      id="myGamesList"
-    ></div>
-
-    <div class="manage-section-title">
-      Available Games
-    </div>
-
-    <div
-      class="manage-list"
-      id="availableGamesList"
-    ></div>
-
-    <p
-      class="status"
-      id="manageGamesStatus"
-      aria-live="polite"
-    ></p>
-
-  </div>
-</div>
-
   <script>
     const SUPABASE_URL =
       "https://ibffwmegxjymmulfgoqu.supabase.co";
@@ -3169,9 +3047,6 @@ let draggedGameId =
 
     let gameOrderSyncTimer =
   null;
-
-    let userGameLibrary =
-  [];
 
 
     function safeParse(
@@ -3989,287 +3864,6 @@ if (
   }
 }
 
-    async function loadUserGameLibrary() {
-  if (!session) {
-    return;
-  }
-
-  try {
-    userGameLibrary =
-      await request(
-        "/rest/v1/user_games" +
-        "?user_id=eq." +
-        encodeURIComponent(
-          session.user.id
-        ) +
-        "&select=" +
-        "game_key," +
-        "is_visible," +
-        "is_favorite," +
-        "sort_order" +
-        "&order=sort_order.asc",
-        {
-          headers:
-            authHeaders()
-        }
-      ) || [];
-
-    applyUserGameVisibility();
-    renderManageGames();
-    updateLocalUI();
-
-  } catch (error) {
-    console.error(
-      "Game library loading failed:",
-      error
-    );
-  }
-}
-
-    function applyUserGameVisibility() {
-  if (
-    !session ||
-    userGameLibrary.length === 0
-  ) {
-    return;
-  }
-
-  const visibleGames =
-    new Set(
-      userGameLibrary
-        .filter(
-          game =>
-            game.is_visible
-        )
-        .map(
-          game =>
-            game.game_key
-        )
-    );
-
-  cards().forEach(card => {
-    card.dataset.userVisible =
-      visibleGames.has(
-        card.dataset.id
-      )
-        ? "true"
-        : "false";
-  });
-}
-
-    async function setGameVisibility(
-  gameId,
-  isVisible
-) 
-   function renderManageGames() {
-  const myGamesList =
-    document.getElementById(
-      "myGamesList"
-    );
-
-  const availableGamesList =
-    document.getElementById(
-      "availableGamesList"
-    );
-
-  if (
-    !myGamesList ||
-    !availableGamesList
-  ) {
-    return;
-  }
-
-  myGamesList.innerHTML =
-    "";
-
-  availableGamesList.innerHTML =
-    "";
-
-  userGameLibrary.forEach(
-    libraryGame => {
-      const card =
-        document.querySelector(
-          '.game-card[data-id="' +
-          libraryGame.game_key +
-          '"]'
-        );
-
-      if (!card) {
-        return;
-      }
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-      row.className =
-        "manage-game";
-
-      const info =
-        document.createElement(
-          "div"
-        );
-
-      info.className =
-        "manage-game-info";
-
-      const name =
-        document.createElement(
-          "div"
-        );
-
-      name.className =
-        "manage-game-name";
-
-      name.textContent =
-        card.dataset.name;
-
-      const category =
-        document.createElement(
-          "div"
-        );
-
-      category.className =
-        "manage-game-category";
-
-      category.textContent =
-        card.querySelector(
-          ".category"
-        )?.textContent
-          ?.trim() ||
-        "";
-
-      info.append(
-        name,
-        category
-      );
-
-      const actionButton =
-        document.createElement(
-          "button"
-        );
-
-      actionButton.type =
-        "button";
-
-      actionButton.className =
-        "manage-game-button " +
-        (
-          libraryGame.is_visible
-            ? "remove"
-            : "add"
-        );
-
-      actionButton.textContent =
-        libraryGame.is_visible
-          ? "Remove"
-          : "+ Add";
-
-      actionButton.addEventListener(
-        "click",
-        () => {
-          setGameVisibility(
-            libraryGame.game_key,
-            !libraryGame.is_visible
-          );
-        }
-      );
-
-      row.append(
-        info,
-        actionButton
-      );
-
-      if (
-        libraryGame.is_visible
-      ) {
-        myGamesList.appendChild(
-          row
-        );
-      } else {
-        availableGamesList
-          .appendChild(
-            row
-          );
-      }
-    }
-  );
-
-  if (
-    myGamesList
-      .children
-      .length === 0
-  ) {
-    myGamesList.innerHTML =
-      '<p class="status">' +
-      "You have not added any games yet." +
-      "</p>";
-  }
-
-  if (
-    availableGamesList
-      .children
-      .length === 0
-  ) {
-    availableGamesList.innerHTML =
-      '<p class="status">' +
-      "All available games are already in your library." +
-      "</p>";
-  }
-} 
-    
-    {
-  if (!session) {
-    return;
-  }
-
-  try {
-    await request(
-      "/rest/v1/user_games" +
-      "?user_id=eq." +
-      encodeURIComponent(
-        session.user.id
-      ) +
-      "&game_key=eq." +
-      encodeURIComponent(
-        gameId
-      ),
-      {
-        method:
-          "PATCH",
-
-        headers:
-          authHeaders(
-            "return=minimal"
-          ),
-
-        body:
-          JSON.stringify({
-            is_visible:
-              isVisible
-          })
-      }
-    );
-
-    await loadUserGameLibrary();
-
-    setStatus(
-      manageGamesStatus,
-      isVisible
-        ? "Game added."
-        : "Game removed.",
-      "success"
-    );
-
-  } catch (error) {
-    setStatus(
-      manageGamesStatus,
-      error.message,
-      "error"
-    );
-  }
-}
 
 async function saveGameOrder() {
   applyGameOrder(
@@ -4580,14 +4174,6 @@ function startGameOrderSync() {
           );
 
         if (
-  session &&
-  card.dataset.userVisible ===
-    "false"
-) {
-  included = false;
-}
-
-        if (
           categoryFilters.includes(
             currentFilter
           ) &&
@@ -4755,14 +4341,6 @@ function startGameOrderSync() {
           searchText.includes(
             searchValue
           );
-
-        if (
-  session &&
-  card.dataset.userVisible ===
-    "false"
-) {
-  visible = false;
-}
 
         if (
           categoryFilters.includes(
@@ -5064,46 +4642,6 @@ function startGameOrderSync() {
     }
   );
 
-   document
-  .getElementById(
-    "manageGamesButton"
-  )
-  .addEventListener(
-    "click",
-    () => {
-      if (!session) {
-        document
-          .getElementById(
-            "accountModal"
-          )
-          .classList
-          .add("open");
-
-        setStatus(
-          authStatus,
-          "Log in to manage your games.",
-          "error"
-        );
-
-        return;
-      }
-
-      renderManageGames();
-
-      setStatus(
-        manageGamesStatus,
-        ""
-      );
-
-      document
-        .getElementById(
-          "manageGamesModal"
-        )
-        .classList
-        .add("open");
-    }
-  ); 
-
 
 document
   .getElementById(
@@ -5249,9 +4787,7 @@ document.addEventListener(
       loadTodayScores();
       loadStreaks();
       loadGameOrder();
-      loadUserGameLibrary();
       startGameOrderSync();
-        
 
    
       }
@@ -7925,5 +7461,4 @@ showSessionUI();
   </script>
 </body>
 </html>
-
 
