@@ -1268,6 +1268,171 @@
       display: none !important;
     }
 
+    body.signed-out #friendResultsSection,
+    body.signed-out #activitySection .activity-stats,
+    body.signed-out #activitySection h3 {
+      display: none !important;
+    }
+
+    /* Social: friends' results by game */
+
+    .social-results {
+      display: grid;
+      gap: 10px;
+    }
+
+    .social-game {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-light);
+    }
+
+    .social-game-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 4px;
+    }
+
+    .social-game-name {
+      font-weight: 800;
+    }
+
+    .social-game .friend-result-row:first-of-type {
+      border-top: 1px solid var(--divider);
+      margin-top: 6px;
+    }
+
+    /* Activity */
+
+    .activity-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat-tile {
+      min-width: 0;
+      padding: 14px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-light);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 6px;
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .stat-sub {
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activity-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .activity-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .activity-icon {
+      display: grid;
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      font-size: 16px;
+      font-weight: 900;
+      border-radius: 10px;
+      background: var(--panel);
+    }
+
+    .activity-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-name {
+      overflow: hidden;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activity-sub {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .activity-streak {
+      flex: 0 0 auto;
+      color: var(--streak);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .activity-day {
+      margin: 10px 0 0;
+    }
+
+    .activity-result {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      color: var(--text);
+      text-align: left;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .activity-result-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .activity-result-header .activity-name {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-result-text {
+      margin-top: 10px;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -1527,6 +1692,20 @@
       data-tab-view="social"
     >
 
+    <section
+      class="section"
+      id="friendResultsSection"
+    >
+      <h2>
+        🏆 Friends’ Results Today
+      </h2>
+
+      <div
+        class="social-results"
+        id="friendScores"
+      ></div>
+    </section>
+
 <section
       class="section"
       id="friendsSection"
@@ -1595,15 +1774,6 @@
           class="friend-list"
           id="friendList"
         ></div>
-
-        <h3>
-          Friends’ Results Today
-        </h3>
-
-        <div
-          class="friend-list"
-          id="friendScores"
-        ></div>
       </div>
     </section>
 
@@ -1614,15 +1784,57 @@
       id="activityView"
       data-tab-view="activity"
     >
-      <section class="section">
+      <section
+        class="section"
+        id="activitySection"
+      >
         <h2>
           📈 Activity
         </h2>
 
-        <p class="intro">
-          Your streaks and recent results will show up here soon.
-          For now, use 📅 History on any game card.
-        </p>
+        <div class="activity-stats">
+          <div class="stat-tile">
+            <div class="stat-label">Played today</div>
+            <div class="stat-value" id="statPlayedToday">–</div>
+            <div class="stat-sub" id="statPlayedTodaySub"></div>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-label">Top streak</div>
+            <div class="stat-value" id="statTopStreak">–</div>
+            <div class="stat-sub" id="statTopStreakSub"></div>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-label">Results</div>
+            <div class="stat-value" id="statResults">–</div>
+            <div class="stat-sub">logged</div>
+          </div>
+        </div>
+
+        <h3>
+          🔥 Streaks
+        </h3>
+
+        <div
+          class="activity-list"
+          id="activityStreaks"
+        ></div>
+
+        <h3>
+          🗓️ Recent Results
+        </h3>
+
+        <div
+          class="activity-list"
+          id="activityRecent"
+        ></div>
+
+        <p
+          class="status"
+          id="activityStatus"
+          aria-live="polite"
+        ></p>
       </section>
     </div>
 
@@ -5305,7 +5517,12 @@ document.addEventListener(
 loadGameCatalog()
   .then(
     loadUserGameLibrary
-  );
+  )
+  .then(() => {
+    if (currentTab === "activity") {
+      loadActivity();
+    }
+  });
 
 startLibrarySync();
 
@@ -8936,10 +9153,12 @@ resultButton.textContent =
             "No friend results yet today." +
             "</p>";
         } else {
-          friendScoreList.innerHTML =
-            '<p class="status">' +
-            "Today’s friend results are shown under each game above." +
-            "</p>";
+          await renderSocialFriendResults(
+            friendScoreList,
+            friendScores,
+            scoreHistory,
+            getCachedProfile
+          );
         }
 
                 requestAnimationFrame(
@@ -9306,6 +9525,509 @@ window.addEventListener(
 }
 
 
+    function getCatalogGame(gameId) {
+      return gameCatalog.get(gameId) || {
+        game_key: gameId,
+        name: getGameName(gameId),
+        icon: "🎮"
+      };
+    }
+
+
+    function createGameBadge(gameId) {
+      const game =
+        getCatalogGame(gameId);
+
+      const badge =
+        document.createElement("div");
+
+      badge.className =
+        "activity-icon";
+
+      badge.textContent =
+        game.icon || "🎮";
+
+      return badge;
+    }
+
+
+    /*
+     * Order game keys like the user's library,
+     * with games outside the library last.
+     */
+    function sortByGameOrder(gameIds) {
+      const position = gameId => {
+        const index =
+          currentGameOrder.indexOf(gameId);
+
+        return index === -1
+          ? Number.MAX_SAFE_INTEGER
+          : index;
+      };
+
+      return [...gameIds].sort(
+        (a, b) => position(a) - position(b)
+      );
+    }
+
+
+    /*
+     * Social tab: today's friend results grouped by game.
+     * Uses the same rows as the results under each game card.
+     */
+    async function renderSocialFriendResults(
+      container,
+      friendScores,
+      scoreHistory,
+      getProfile
+    ) {
+      const scoresByGame =
+        new Map();
+
+      for (const score of friendScores) {
+        if (!scoresByGame.has(score.game_id)) {
+          scoresByGame.set(score.game_id, []);
+        }
+
+        scoresByGame.get(score.game_id).push(score);
+      }
+
+      const fragment =
+        document.createDocumentFragment();
+
+      for (
+        const gameId
+        of sortByGameOrder(scoresByGame.keys())
+      ) {
+        const block =
+          document.createElement("div");
+
+        block.className =
+          "social-game";
+
+        const header =
+          document.createElement("div");
+
+        header.className =
+          "social-game-header";
+
+        const name =
+          document.createElement("div");
+
+        name.className =
+          "social-game-name";
+
+        name.textContent =
+          getCatalogGame(gameId).name;
+
+        header.append(
+          createGameBadge(gameId),
+          name
+        );
+
+        block.appendChild(header);
+
+        for (const friendScore of scoresByGame.get(gameId)) {
+          const friendProfile =
+            await getProfile(friendScore.user_id);
+
+          const friendStreak =
+            calculateStreak(
+              (scoreHistory || [])
+                .filter(
+                  row =>
+                    row.user_id === friendScore.user_id &&
+                    row.game_id === friendScore.game_id
+                )
+                .map(row => row.play_date)
+            );
+
+          const resultRow =
+            document.createElement("div");
+
+          resultRow.className =
+            "friend-result-row";
+
+          const resultHeader =
+            document.createElement("div");
+
+          resultHeader.className =
+            "friend-result-header";
+
+          const nameElement =
+            document.createElement("div");
+
+          nameElement.className =
+            "friend-result-name";
+
+          nameElement.textContent =
+            friendProfile.display_name ||
+            "@" + friendProfile.username;
+
+          resultHeader.append(nameElement);
+
+          if (friendStreak > 0) {
+            const streakElement =
+              document.createElement("span");
+
+            streakElement.className =
+              "friend-result-streak";
+
+            streakElement.textContent =
+              "🔥 " +
+              friendStreak +
+              (friendStreak === 1 ? " day" : " days");
+
+            resultHeader.append(streakElement);
+          }
+
+          const scoreElement =
+            document.createElement("div");
+
+          scoreElement.className =
+            "friend-result-score";
+
+          scoreElement.textContent =
+            formatScore(friendScore);
+
+          resultRow.append(
+            resultHeader,
+            scoreElement
+          );
+
+          block.appendChild(resultRow);
+        }
+
+        fragment.appendChild(block);
+      }
+
+      container.innerHTML = "";
+      container.appendChild(fragment);
+    }
+
+
+    function longestStreak(dateValues) {
+      const days =
+        [...new Set(dateValues)]
+          .map(date =>
+            Math.round(
+              new Date(date + "T12:00:00").getTime() /
+              86400000
+            )
+          )
+          .sort((a, b) => a - b);
+
+      let best = 0;
+      let run = 0;
+
+      days.forEach((day, index) => {
+        run =
+          index > 0 && day - days[index - 1] === 1
+            ? run + 1
+            : 1;
+
+        best = Math.max(best, run);
+      });
+
+      return best;
+    }
+
+
+    function formatDays(count) {
+      return count + (count === 1 ? " day" : " days");
+    }
+
+
+    let activityLoaded =
+      false;
+
+
+    /*
+     * Activity tab: summary, active streaks and recent results.
+     * Read-only; streaks count submitted results only.
+     */
+    async function loadActivity() {
+      const streakList =
+        document.getElementById("activityStreaks");
+
+      const recentList =
+        document.getElementById("activityRecent");
+
+      if (!session) {
+        activityLoaded = false;
+        streakList.innerHTML = "";
+        recentList.innerHTML = "";
+
+        setStatus(
+          activityStatus,
+          "Log in to see your streaks and recent results."
+        );
+
+        return;
+      }
+
+      if (!activityLoaded) {
+        setStatus(activityStatus, "Loading activity...");
+      }
+
+      const recentStart =
+        new Date(TODAY + "T12:00:00");
+
+      recentStart.setDate(recentStart.getDate() - 13);
+
+      try {
+        const [allScores, recentScores] =
+          await Promise.all([
+            request(
+              "/rest/v1/daily_scores" +
+              "?user_id=eq." +
+              encodeURIComponent(session.user.id) +
+              "&select=game_id,play_date",
+              {
+                headers: authHeaders()
+              }
+            ),
+            request(
+              "/rest/v1/daily_scores" +
+              "?user_id=eq." +
+              encodeURIComponent(session.user.id) +
+              "&play_date=gte." +
+              recentStart.toLocaleDateString("en-CA") +
+              "&select=" +
+              "game_id," +
+              "play_date," +
+              "result_text," +
+              "numeric_score," +
+              "score_unit" +
+              "&order=play_date.desc",
+              {
+                headers: authHeaders()
+              }
+            )
+          ]);
+
+        // Summary tiles
+        const libraryGames =
+          new Set(
+            userGameLibrary
+              .filter(row => row.is_visible !== false)
+              .map(row => row.game_key)
+          );
+
+        const playedToday =
+          completedGames.filter(
+            gameId => libraryGames.has(gameId)
+          ).length;
+
+        document.getElementById("statPlayedToday").textContent =
+          String(playedToday);
+
+        document.getElementById("statPlayedTodaySub").textContent =
+          "of " + libraryGames.size + " games";
+
+        const datesByGame =
+          new Map();
+
+        for (const score of allScores || []) {
+          if (!datesByGame.has(score.game_id)) {
+            datesByGame.set(score.game_id, []);
+          }
+
+          datesByGame.get(score.game_id).push(score.play_date);
+        }
+
+        const streaks =
+          [...datesByGame.entries()]
+            .map(([gameId, dates]) => ({
+              gameId,
+              current: calculateStreak(dates),
+              best: longestStreak(dates)
+            }))
+            .filter(streak => streak.current > 0)
+            .sort(
+              (a, b) =>
+                b.current - a.current ||
+                b.best - a.best
+            );
+
+        document.getElementById("statTopStreak").textContent =
+          streaks.length ? "🔥 " + streaks[0].current : "0";
+
+        document.getElementById("statTopStreakSub").textContent =
+          streaks.length
+            ? getCatalogGame(streaks[0].gameId).name
+            : "days";
+
+        document.getElementById("statResults").textContent =
+          String((allScores || []).length);
+
+        // Active streaks
+        streakList.innerHTML = "";
+
+        if (streaks.length === 0) {
+          streakList.innerHTML =
+            '<p class="status">' +
+            "No active streaks yet. Submit a result to start one." +
+            "</p>";
+        }
+
+        for (const streak of streaks) {
+          const row =
+            document.createElement("div");
+
+          row.className =
+            "activity-row";
+
+          const info =
+            document.createElement("div");
+
+          info.className =
+            "activity-info";
+
+          const name =
+            document.createElement("div");
+
+          name.className =
+            "activity-name";
+
+          name.textContent =
+            getCatalogGame(streak.gameId).name;
+
+          const best =
+            document.createElement("div");
+
+          best.className =
+            "activity-sub";
+
+          best.textContent =
+            "Best: " + formatDays(streak.best);
+
+          info.append(name, best);
+
+          const current =
+            document.createElement("div");
+
+          current.className =
+            "activity-streak";
+
+          current.textContent =
+            "🔥 " + formatDays(streak.current);
+
+          row.append(
+            createGameBadge(streak.gameId),
+            info,
+            current
+          );
+
+          streakList.appendChild(row);
+        }
+
+        // Recent results, grouped by day
+        recentList.innerHTML = "";
+
+        if (!recentScores || recentScores.length === 0) {
+          recentList.innerHTML =
+            '<p class="status">' +
+            "No results in the last two weeks." +
+            "</p>";
+        }
+
+        let currentDay =
+          null;
+
+        for (const score of recentScores || []) {
+          if (score.play_date !== currentDay) {
+            currentDay = score.play_date;
+
+            const dayLabel =
+              document.createElement("div");
+
+            dayLabel.className =
+              "history-date activity-day";
+
+            dayLabel.textContent =
+              formatHistoryDate(score.play_date);
+
+            recentList.appendChild(dayLabel);
+          }
+
+          const resultButton =
+            document.createElement("button");
+
+          resultButton.type =
+            "button";
+
+          resultButton.className =
+            "activity-result";
+
+          const header =
+            document.createElement("div");
+
+          header.className =
+            "activity-result-header";
+
+          const name =
+            document.createElement("div");
+
+          name.className =
+            "activity-name";
+
+          name.textContent =
+            getCatalogGame(score.game_id).name;
+
+          const historyHint =
+            document.createElement("span");
+
+          historyHint.className =
+            "activity-sub";
+
+          historyHint.textContent =
+            "History ›";
+
+          header.append(
+            createGameBadge(score.game_id),
+            name,
+            historyHint
+          );
+
+          const resultText =
+            document.createElement("div");
+
+          resultText.className =
+            "activity-result-text";
+
+          resultText.textContent =
+            formatScore(score);
+
+          resultButton.append(header, resultText);
+
+          resultButton.addEventListener(
+            "click",
+            () => {
+              openGameHistory(score.game_id);
+            }
+          );
+
+          recentList.appendChild(resultButton);
+        }
+
+        activityLoaded = true;
+        setStatus(activityStatus, "");
+      } catch (error) {
+        console.error(
+          "Activity loading failed:",
+          error
+        );
+
+        setStatus(
+          activityStatus,
+          "Activity could not be loaded.",
+          "error"
+        );
+      }
+    }
+
+
     const ACTIVE_TAB_KEY =
       "dailyGameHubActiveTab";
 
@@ -9381,6 +10103,13 @@ window.addEventListener(
         0,
         tabScrollPositions[tab] || 0
       );
+
+      if (
+        tab === "activity" &&
+        (!session || userGameLibrary.length)
+      ) {
+        loadActivity();
+      }
     }
 
 
