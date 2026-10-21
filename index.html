@@ -1521,16 +1521,21 @@
     }
 
     .game-card:not(.expanded) {
-      min-height: 0;
+      min-height: auto;
       aspect-ratio: 1 / 1;
       padding: 11px;
       border-top-width: 4px;
       border-radius: 16px;
     }
 
+    /* Never squeeze the name or streak; the card grows instead */
+    .game-card:not(.expanded) > * {
+      flex-shrink: 0;
+    }
+
     .game-card:not(.expanded) .game-icon {
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       font-size: 16px;
       border-radius: 10px;
     }
@@ -1540,7 +1545,7 @@
     }
 
     .game-card:not(.expanded) h3 {
-      margin: 8px 0 0;
+      margin: 6px 0 0;
       overflow: hidden;
       font-size: 15px;
       line-height: 1.2;
@@ -1549,7 +1554,7 @@
     }
 
     .game-card:not(.expanded) .streak.visible {
-      margin-top: 3px;
+      margin-top: 1px;
       font-size: 11px;
     }
 
@@ -1562,9 +1567,9 @@
     }
 
     .game-card:not(.expanded) .card-buttons {
-      gap: 6px;
+      gap: 5px;
       margin-top: auto;
-      padding-top: 8px;
+      padding-top: 6px;
     }
 
     .game-card:not(.expanded) .play-button {
@@ -1575,7 +1580,7 @@
 
     .game-card:not(.expanded) .result-button {
       grid-column: auto;
-      min-height: 38px;
+      min-height: 36px;
       margin-top: 0;
       padding: 7px 4px;
       overflow: hidden;
@@ -1586,17 +1591,17 @@
 
     .game-card:not(.expanded) .complete-button {
       width: 38px;
-      min-height: 38px;
+      min-height: 36px;
       padding: 0;
     }
 
     .game-card:not(.expanded) .play-button {
-      min-height: 40px;
+      min-height: 38px;
     }
 
     .game-card.completed:not(.expanded)::after {
-      top: 34px;
-      left: 34px;
+      top: 32px;
+      left: 32px;
       right: auto;
       width: 18px;
       height: 18px;
