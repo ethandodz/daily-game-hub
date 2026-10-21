@@ -7179,7 +7179,8 @@ async function loadProfile() {
 }
 
     function createGameCard(
-  game
+  game,
+  forceRecreate = false
 ) {
   const existingCard =
     document.querySelector(
@@ -7193,7 +7194,10 @@ async function loadProfile() {
    * Do not duplicate one of the
    * existing hard-coded cards.
    */
-  if (existingCard) {
+ if (
+  existingCard &&
+  !forceRecreate
+) {
   existingCard.dataset.createdBy =
     game.created_by || "";
 
@@ -7203,6 +7207,14 @@ async function loadProfile() {
       : "false";
 
   return existingCard;
+}
+
+
+if (
+  existingCard &&
+  forceRecreate
+) {
+  existingCard.remove();
 }
 
 
@@ -7596,12 +7608,14 @@ card.dataset.official =
 
 
     gameRows.forEach(
-      game => {
-        createGameCard(
-          game
-        );
-      }
+  game => {
+    createGameCard(
+      game,
+      game.game_key ===
+        "wordle"
     );
+  }
+);
 
 
     /*
