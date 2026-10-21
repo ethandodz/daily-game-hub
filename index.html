@@ -356,6 +356,60 @@
   text-transform: uppercase;
 }
 
+    .onboarding-games {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.onboarding-game {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-light);
+  cursor: pointer;
+}
+
+.onboarding-game.selected {
+  border-color: var(--green);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.onboarding-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--green);
+}
+
+.onboarding-game-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.onboarding-game-name {
+  font-weight: 800;
+  color: white;
+}
+
+.onboarding-game-category {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.onboarding-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.onboarding-actions .button {
+  flex: 1;
+}
+
     .filter-scroll {
       display: flex;
       gap: 8px;
@@ -3233,6 +3287,59 @@
   </div>
 </div>
 
+  <div
+  class="modal"
+  id="onboardingModal"
+>
+  <div class="modal-card">
+
+    <div class="modal-top">
+      <div>
+        <h2>
+          Choose Your Games
+        </h2>
+
+        <p class="status">
+          Pick the daily games you want in your Game Hub.
+          You can change these later.
+        </p>
+      </div>
+    </div>
+
+    <div
+      class="onboarding-games"
+      id="onboardingGames"
+    ></div>
+
+    <div class="onboarding-actions">
+
+      <button
+        class="button secondary"
+        id="selectAllGamesButton"
+        type="button"
+      >
+        Select All
+      </button>
+
+      <button
+        class="button"
+        id="finishOnboardingButton"
+        type="button"
+      >
+        Start Playing
+      </button>
+
+    </div>
+
+    <p
+      class="status"
+      id="onboardingStatus"
+      aria-live="polite"
+    ></p>
+
+  </div>
+</div>
+
   <script>
     const SUPABASE_URL =
       "https://ibffwmegxjymmulfgoqu.supabase.co";
@@ -3325,6 +3432,9 @@ let draggedGameId =
 
 let selectedCustomGameKey =
   null;
+
+    let onboardingSelectedGames =
+  new Set();
 
 
     function safeParse(
@@ -4107,6 +4217,41 @@ function renderArrangeList() {
         }
       ) || [];
 
+    if (
+  userGameLibrary.length === 0
+) {
+  onboardingSelectedGames =
+    new Set();
+
+
+  renderOnboardingGames();
+
+
+  document
+    .getElementById(
+      "selectAllGamesButton"
+    )
+    .textContent =
+      "Select All";
+
+
+  setStatus(
+    onboardingStatus,
+    ""
+  );
+
+
+  document
+    .getElementById(
+      "onboardingModal"
+    )
+    .classList
+    .add("open");
+
+
+  return;
+}
+
     favoriteGames =
   userGameLibrary
     .filter(
@@ -4471,6 +4616,289 @@ applyGameOrder(
   } catch (error) {
     setStatus(
       manageGamesStatus,
+      error.message,
+      "error"
+    );
+  }
+}
+
+    function renderOnboardingGames() {
+  const container =
+    document.getElementById(
+      "onboardingGames"
+    );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  container.innerHTML =
+    "";
+
+
+  const catalogGames =
+    Array.from(
+      gameCatalog.values()
+    )
+      .filter(
+        game =>
+          game.is_official
+      );
+
+
+  catalogGames.forEach(
+    game => {
+      const row =
+        document.createElement(
+          "label"
+        );
+
+      row.className =
+        "onboarding-game";
+
+
+      const checkbox =
+        document.createElement(
+          "input"
+        );
+
+      checkbox.type =
+        "checkbox";
+
+      checkbox.className =
+        "onboarding-checkbox";
+
+      checkbox.value =
+        game.game_key;
+
+      checkbox.checked =
+        onboardingSelectedGames.has(
+          game.game_key
+        );
+
+
+      const info =
+        document.createElement(
+          "div"
+        );
+
+      info.className =
+        "onboarding-game-info";
+
+
+      const name =
+        document.createElement(
+          "div"
+        );
+
+      name.className =
+        "onboarding-game-name";
+
+      name.textContent =
+        game.name;
+
+
+      const category =
+        document.createElement(
+          "div"
+        );
+
+      category.className =
+        "onboarding-game-category";
+
+      category.textContent =
+        getCategoryLabel(
+          game.category
+        );
+
+
+      info.append(
+        name,
+        category
+      );
+
+
+      checkbox.addEventListener(
+        "change",
+        () => {
+          if (checkbox.checked) {
+            onboardingSelectedGames.add(
+              game.game_key
+            );
+          } else {
+            onboardingSelectedGames.delete(
+              game.game_key
+            );
+          }
+
+
+          row.classList.toggle(
+            "selected",
+            checkbox.checked
+          );
+        }
+      );
+
+
+      row.classList.toggle(
+        "selected",
+        checkbox.checked
+      );
+
+
+      row.append(
+        checkbox,
+        info
+      );
+
+
+      container.appendChild(
+        row
+      );
+    }
+  );
+}
+
+    function selectAllOnboardingGames() {
+  const officialGames =
+    Array.from(
+      gameCatalog.values()
+    )
+      .filter(
+        game =>
+          game.is_official
+      );
+
+
+  if (
+    onboardingSelectedGames.size ===
+    officialGames.length
+  ) {
+    onboardingSelectedGames.clear();
+  } else {
+    onboardingSelectedGames =
+      new Set(
+        officialGames.map(
+          game =>
+            game.game_key
+        )
+      );
+  }
+
+
+  renderOnboardingGames();
+
+
+  document
+    .getElementById(
+      "selectAllGamesButton"
+    )
+    .textContent =
+      onboardingSelectedGames.size ===
+        officialGames.length
+        ? "Clear All"
+        : "Select All";
+}
+
+    async function finishGameOnboarding() {
+  if (!session) {
+    return;
+  }
+
+
+  const selectedGames =
+    Array.from(
+      onboardingSelectedGames
+    );
+
+
+  if (
+    selectedGames.length === 0
+  ) {
+    setStatus(
+      onboardingStatus,
+      "Choose at least one game.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  try {
+    setStatus(
+      onboardingStatus,
+      "Setting up your games..."
+    );
+
+
+    const libraryRows =
+      selectedGames.map(
+        (
+          gameKey,
+          index
+        ) => ({
+          user_id:
+            session.user.id,
+
+          game_key:
+            gameKey,
+
+          is_visible:
+            true,
+
+          is_favorite:
+            false,
+
+          sort_order:
+            index + 1
+        })
+      );
+
+
+    await request(
+      "/rest/v1/user_games",
+      {
+        method: "POST",
+
+        headers:
+          authHeaders(
+            "return=minimal"
+          ),
+
+        body:
+          JSON.stringify(
+            libraryRows
+          )
+      }
+    );
+
+
+    onboardingSelectedGames.clear();
+
+
+    await loadUserGameLibrary();
+
+
+    document
+      .getElementById(
+        "onboardingModal"
+      )
+      .classList
+      .remove("open");
+
+
+    setStatus(
+      onboardingStatus,
+      ""
+    );
+
+
+  } catch (error) {
+    setStatus(
+      onboardingStatus,
       error.message,
       "error"
     );
@@ -5528,6 +5956,25 @@ document
   .addEventListener(
     "click",
     createCustomGame
+  );
+
+    document
+  .getElementById(
+    "selectAllGamesButton"
+  )
+  .addEventListener(
+    "click",
+    selectAllOnboardingGames
+  );
+
+
+document
+  .getElementById(
+    "finishOnboardingButton"
+  )
+  .addEventListener(
+    "click",
+    finishGameOnboarding
   );
 
 
