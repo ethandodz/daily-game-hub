@@ -4217,36 +4217,52 @@ function renderArrangeList() {
         }
       ) || [];
 
-    if (
+   if (
   userGameLibrary.length === 0
 ) {
-  onboardingSelectedGames =
-    new Set();
-
-
-  renderOnboardingGames();
-
-
-  document
-    .getElementById(
-      "selectAllGamesButton"
-    )
-    .textContent =
-      "Select All";
-
-
-  setStatus(
-    onboardingStatus,
-    ""
-  );
-
-
-  document
-    .getElementById(
+  const onboardingModal =
+    document.getElementById(
       "onboardingModal"
-    )
-    .classList
-    .add("open");
+    );
+
+
+  /*
+   * Only initialize onboarding
+   * the first time it opens.
+   *
+   * Do not clear selections during
+   * background syncs.
+   */
+  if (
+    !onboardingModal
+      .classList
+      .contains("open")
+  ) {
+    onboardingSelectedGames =
+      new Set();
+
+
+    renderOnboardingGames();
+
+
+    document
+      .getElementById(
+        "selectAllGamesButton"
+      )
+      .textContent =
+        "Select All";
+
+
+    setStatus(
+      onboardingStatus,
+      ""
+    );
+
+
+    onboardingModal
+      .classList
+      .add("open");
+  }
 
 
   return;
@@ -4347,6 +4363,19 @@ applyGameOrder(
   if (!session) {
     return;
   }
+
+      const onboardingOpen =
+  document
+    .getElementById(
+      "onboardingModal"
+    )
+    .classList
+    .contains("open");
+
+
+if (onboardingOpen) {
+  return;
+}
 
 
   const arrangeModalOpen =
