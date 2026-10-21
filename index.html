@@ -3107,9 +3107,9 @@
 
     <div class="modal-top">
       <div>
-        <h2>
-          Add Custom Game
-        </h2>
+        <h2 id="customGameModalTitle">
+  Add Custom Game
+</h2>
 
         <p class="status">
           Add another daily game to your personal dashboard.
@@ -3214,12 +3214,12 @@
 
       <div class="field full">
         <button
-          class="button"
-          id="saveCustomGameButton"
-          type="button"
-        >
-          Add Game
-        </button>
+  class="button"
+  id="saveCustomGameButton"
+  type="button"
+>
+  Add Game
+</button>
       </div>
 
     </div>
@@ -3319,6 +3319,12 @@ let draggedGameId =
 
     let userGameLibrary =
   [];
+
+    let gameCatalog =
+  new Map();
+
+let selectedCustomGameKey =
+  null;
 
 
     function safeParse(
@@ -4486,10 +4492,65 @@ function renderManageGames() {
         }
       );
 
-      row.append(
-        info,
-        actionButton
+      const actionContainer =
+  document.createElement(
+    "div"
+  );
+
+actionContainer.className =
+  "friend-actions";
+
+
+const catalogGame =
+  gameCatalog.get(
+    libraryGame.game_key
+  );
+
+
+if (
+  catalogGame &&
+  !catalogGame.is_official &&
+  catalogGame.created_by ===
+    session?.user?.id
+) {
+  const editButton =
+    document.createElement(
+      "button"
+    );
+
+  editButton.type =
+    "button";
+
+  editButton.className =
+    "small-button";
+
+  editButton.textContent =
+    "Edit";
+
+  editButton.addEventListener(
+    "click",
+    () => {
+      openCustomGameEditor(
+        libraryGame.game_key
       );
+    }
+  );
+
+  actionContainer.appendChild(
+    editButton
+  );
+}
+
+
+actionContainer.appendChild(
+  actionButton
+);
+
+
+row.append(
+  info,
+  actionContainer
+);
 
       if (
         libraryGame.is_visible
@@ -5348,6 +5409,54 @@ function startGameOrderSync() {
   .addEventListener(
     "click",
     () => {
+
+      selectedCustomGameKey =
+  null;
+
+document
+  .getElementById(
+    "customGameModalTitle"
+  )
+  .textContent =
+    "Add Custom Game";
+
+document
+  .getElementById(
+    "saveCustomGameButton"
+  )
+  .textContent =
+    "Add Game";
+
+document
+  .getElementById(
+    "customGameName"
+  )
+  .value = "";
+
+document
+  .getElementById(
+    "customGameUrl"
+  )
+  .value = "";
+
+document
+  .getElementById(
+    "customGameCategory"
+  )
+  .value =
+    "word";
+
+document
+  .getElementById(
+    "customGameIcon"
+  )
+  .value = "";
+
+document
+  .getElementById(
+    "customGameDescription"
+  )
+  .value = "";
       setStatus(
         addGameStatus,
         ""
@@ -6576,8 +6685,16 @@ async function loadProfile() {
    * existing hard-coded cards.
    */
   if (existingCard) {
-    return existingCard;
-  }
+  existingCard.dataset.createdBy =
+    game.created_by || "";
+
+  existingCard.dataset.official =
+    game.is_official
+      ? "true"
+      : "false";
+
+  return existingCard;
+}
 
 
   const card =
@@ -6598,6 +6715,14 @@ async function loadProfile() {
 
   card.dataset.category =
     game.category || "other";
+
+      card.dataset.createdBy =
+  game.created_by || "";
+
+card.dataset.official =
+  game.is_official
+    ? "true"
+    : "false";
 
   card.dataset.search =
     [
@@ -6961,6 +7086,16 @@ async function loadProfile() {
         }
       ) || [];
 
+    gameCatalog =
+  new Map(
+    gameRows.map(
+      game => [
+        game.game_key,
+        game
+      ]
+    )
+  );
+
 
     gameRows.forEach(
       game => {
@@ -7010,6 +7145,99 @@ async function loadProfile() {
       error
     );
   }
+}
+
+    function openCustomGameEditor(
+  gameKey
+) {
+  const game =
+    gameCatalog.get(
+      gameKey
+    );
+
+
+  if (
+    !game ||
+    game.is_official ||
+    game.created_by !==
+      session?.user?.id
+  ) {
+    return;
+  }
+
+
+  selectedCustomGameKey =
+    gameKey;
+
+
+  document
+    .getElementById(
+      "customGameModalTitle"
+    )
+    .textContent =
+      "Edit Custom Game";
+
+
+  document
+    .getElementById(
+      "saveCustomGameButton"
+    )
+    .textContent =
+      "Save Changes";
+
+
+  document
+    .getElementById(
+      "customGameName"
+    )
+    .value =
+      game.name || "";
+
+
+  document
+    .getElementById(
+      "customGameUrl"
+    )
+    .value =
+      game.url || "";
+
+
+  document
+    .getElementById(
+      "customGameCategory"
+    )
+    .value =
+      game.category || "other";
+
+
+  document
+    .getElementById(
+      "customGameIcon"
+    )
+    .value =
+      game.icon || "";
+
+
+  document
+    .getElementById(
+      "customGameDescription"
+    )
+    .value =
+      game.description || "";
+
+
+  setStatus(
+    addGameStatus,
+    ""
+  );
+
+
+  document
+    .getElementById(
+      "addGameModal"
+    )
+    .classList
+    .add("open");
 }
 
     async function createCustomGame() {
@@ -7090,6 +7318,193 @@ async function loadProfile() {
 
     return;
   }
+
+     if (selectedCustomGameKey) {
+  try {
+    setStatus(
+      addGameStatus,
+      "Saving changes..."
+    );
+
+
+    await request(
+      "/rest/v1/games" +
+      "?game_key=eq." +
+      encodeURIComponent(
+        selectedCustomGameKey
+      ),
+      {
+        method: "PATCH",
+
+        headers:
+          authHeaders(
+            "return=minimal"
+          ),
+
+        body:
+          JSON.stringify({
+            name:
+              gameName,
+
+            url:
+              gameUrl,
+
+            category:
+              gameCategory,
+
+            description:
+              gameDescription,
+
+            icon:
+              gameIcon
+          })
+      }
+    );
+
+
+    const updatedGame = {
+      ...gameCatalog.get(
+        selectedCustomGameKey
+      ),
+
+      name:
+        gameName,
+
+      url:
+        gameUrl,
+
+      category:
+        gameCategory,
+
+      description:
+        gameDescription,
+
+      icon:
+        gameIcon
+    };
+
+
+    gameCatalog.set(
+      selectedCustomGameKey,
+      updatedGame
+    );
+
+
+    const existingCard =
+      document.querySelector(
+        '.game-card[data-id="' +
+        selectedCustomGameKey +
+        '"]'
+      );
+
+
+    if (existingCard) {
+      existingCard.dataset.name =
+        gameName;
+
+      existingCard.dataset.category =
+        gameCategory;
+
+      existingCard.dataset.search =
+        [
+          gameName,
+          gameCategory,
+          gameDescription
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+
+      existingCard
+        .querySelector(
+          ".game-icon"
+        )
+        .textContent =
+          gameIcon;
+
+
+      existingCard
+        .querySelector(
+          "h3"
+        )
+        .textContent =
+          gameName;
+
+
+      existingCard
+        .querySelector(
+          ".category"
+        )
+        .textContent =
+          getCategoryLabel(
+            gameCategory
+          );
+
+
+      existingCard
+        .querySelector(
+          ".description"
+        )
+        .textContent =
+          gameDescription ||
+          "A custom daily game.";
+
+
+      existingCard
+        .querySelector(
+          ".play-button"
+        )
+        .href =
+          gameUrl;
+
+
+      existingCard
+        .querySelector(
+          ".favorite-button"
+        )
+        .setAttribute(
+          "aria-label",
+          "Favorite " +
+          gameName
+        );
+    }
+
+
+    selectedCustomGameKey =
+      null;
+
+
+    setStatus(
+      addGameStatus,
+      "Changes saved.",
+      "success"
+    );
+
+
+    document
+      .getElementById(
+        "addGameModal"
+      )
+      .classList
+      .remove("open");
+
+
+    renderManageGames();
+    renderArrangeList();
+    updateLocalUI();
+
+  } catch (error) {
+    setStatus(
+      addGameStatus,
+      error.message,
+      "error"
+    );
+  }
+
+
+  return;
+} 
 
 
   const gameKey =
