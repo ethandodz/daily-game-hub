@@ -1433,6 +1433,242 @@
       overflow-wrap: anywhere;
     }
 
+    /* Compact progress */
+
+    .progress-card {
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border-radius: 14px;
+    }
+
+    .progress-top {
+      align-items: center;
+    }
+
+    .progress-card .eyebrow {
+      font-size: 10px;
+    }
+
+    .progress-card h2 {
+      margin: 3px 0 0;
+      font-size: 17px;
+    }
+
+    .progress-message {
+      display: none;
+    }
+
+    .percentage,
+    .progress-card .percentage {
+      font-size: 15px;
+    }
+
+    .progress-track {
+      height: 5px;
+      margin-top: 9px;
+    }
+
+    /* Compact game cards: 2 across on phones */
+
+    .games {
+      grid-template-columns:
+        repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 520px) {
+      .games {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .card-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .expand-button {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      margin: -4px -6px 0 0;
+      color: var(--muted);
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+    }
+
+    .expand-button svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .expand-button .icon-close,
+    .game-card.expanded .expand-button .icon-open {
+      display: none;
+    }
+
+    .game-card.expanded .expand-button .icon-close {
+      display: block;
+    }
+
+    .game-card:not(.expanded) {
+      min-height: 0;
+      aspect-ratio: 1 / 1;
+      padding: 11px;
+      border-top-width: 4px;
+      border-radius: 16px;
+    }
+
+    .game-card:not(.expanded) .game-icon {
+      width: 34px;
+      height: 34px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+
+    .game-card:not(.expanded) .favorite-button {
+      font-size: 19px;
+    }
+
+    .game-card:not(.expanded) h3 {
+      margin: 8px 0 0;
+      overflow: hidden;
+      font-size: 15px;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .game-card:not(.expanded) .streak.visible {
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    .game-card:not(.expanded) .category,
+    .game-card:not(.expanded) .description,
+    .game-card:not(.expanded) .history-button,
+    .game-card:not(.expanded) .result-summary,
+    .game-card:not(.expanded) .friend-results {
+      display: none !important;
+    }
+
+    .game-card:not(.expanded) .card-buttons {
+      gap: 6px;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .game-card:not(.expanded) .play-button {
+      grid-column: 1 / -1;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    .game-card:not(.expanded) .result-button {
+      grid-column: auto;
+      min-height: 38px;
+      margin-top: 0;
+      padding: 7px 4px;
+      overflow: hidden;
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .game-card:not(.expanded) .complete-button {
+      width: 38px;
+      min-height: 38px;
+      padding: 0;
+    }
+
+    .game-card:not(.expanded) .play-button {
+      min-height: 40px;
+    }
+
+    .game-card.completed:not(.expanded)::after {
+      top: 34px;
+      left: 34px;
+      right: auto;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+      border: 2px solid var(--panel);
+    }
+
+    /* Expanded card: full screen detail */
+
+    .game-card.expanded {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding:
+        calc(18px + env(safe-area-inset-top))
+        calc(18px + env(safe-area-inset-right))
+        calc(28px + env(safe-area-inset-bottom))
+        calc(18px + env(safe-area-inset-left));
+      border-radius: 0;
+      border-width: 0;
+      border-top-width: 6px;
+    }
+
+    .game-card.expanded .description {
+      flex: 0 0 auto;
+    }
+
+    .game-card.expanded.completed::after {
+      top: calc(16px + env(safe-area-inset-top));
+      right: 100px;
+    }
+
+    .game-card.expanded .expand-button {
+      width: 40px;
+      height: 40px;
+      margin: 0;
+      color: var(--text);
+      background: var(--panel-light);
+    }
+
+    body.card-open {
+      overflow: hidden;
+    }
+
+    body.card-open::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 24;
+      background: var(--overlay);
+    }
+
+    @media (min-width: 700px) {
+      .game-card.expanded {
+        inset: 5vh auto auto 50%;
+        width: min(620px, 92vw);
+        max-height: 90vh;
+        padding: 22px;
+        border-width: 1px;
+        border-top-width: 6px;
+        border-radius: 20px;
+        transform: translateX(-50%);
+      }
+
+      .game-card.expanded.completed::after {
+        top: 20px;
+      }
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -6716,9 +6952,55 @@ card.dataset.official =
 
 
 
+  const expandButton =
+    document.createElement(
+      "button"
+    );
+
+  expandButton.type =
+    "button";
+
+  expandButton.className =
+    "expand-button";
+
+  expandButton.setAttribute(
+    "aria-label",
+    "Open " +
+    game.name
+  );
+
+  expandButton.innerHTML =
+    '<svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>' +
+    '<svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  expandButton.addEventListener(
+    "click",
+    () => {
+      setCardExpanded(
+        card,
+        !card.classList.contains(
+          "expanded"
+        )
+      );
+    }
+  );
+
+  const cardActions =
+    document.createElement(
+      "div"
+    );
+
+  cardActions.className =
+    "card-top-actions";
+
+  cardActions.append(
+    favoriteButton,
+    expandButton
+  );
+
   cardTop.append(
     icon,
-    favoriteButton
+    cardActions
   );
 
 
@@ -9525,6 +9807,69 @@ window.addEventListener(
 }
 
 
+    /*
+     * A game card can open full screen to show
+     * everything (description, history, your result,
+     * friends). It is the same card element, so all
+     * existing buttons and live updates keep working.
+     */
+    function setCardExpanded(card, open) {
+      if (open) {
+        document
+          .querySelectorAll(".game-card.expanded")
+          .forEach(otherCard => {
+            if (otherCard !== card) {
+              setCardExpanded(otherCard, false);
+            }
+          });
+      }
+
+      card.classList.toggle("expanded", open);
+
+      document.body.classList.toggle(
+        "card-open",
+        Boolean(
+          document.querySelector(".game-card.expanded")
+        )
+      );
+
+      const expandButton =
+        card.querySelector(".expand-button");
+
+      expandButton.setAttribute(
+        "aria-label",
+        (open ? "Close " : "Open ") +
+        card.dataset.name
+      );
+
+      expandButton.setAttribute(
+        "aria-expanded",
+        String(open)
+      );
+
+      if (open) {
+        card.scrollTop = 0;
+      }
+    }
+
+
+    document.addEventListener(
+      "keydown",
+      event => {
+        if (
+          event.key === "Escape" &&
+          !document.querySelector(".modal.open")
+        ) {
+          document
+            .querySelectorAll(".game-card.expanded")
+            .forEach(card => {
+              setCardExpanded(card, false);
+            });
+        }
+      }
+    );
+
+
     function getCatalogGame(gameId) {
       return gameCatalog.get(gameId) || {
         game_key: gameId,
@@ -10070,6 +10415,12 @@ window.addEventListener(
 
       currentTab = tab;
       document.body.dataset.tab = tab;
+
+      document
+        .querySelectorAll(".game-card.expanded")
+        .forEach(card => {
+          setCardExpanded(card, false);
+        });
 
       try {
         localStorage.setItem(ACTIVE_TAB_KEY, tab);
