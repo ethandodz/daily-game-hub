@@ -935,6 +935,33 @@
       }
     }
 
+    .signed-out-home {
+  padding: 36px 20px;
+  margin: 20px 0;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--panel);
+}
+
+.signed-out-home-icon {
+  margin-bottom: 10px;
+  color: #8b5cf6;
+  font-size: 32px;
+}
+
+.signed-out-home h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.signed-out-home p {
+  max-width: 500px;
+  margin: 0 auto 18px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
     @media (max-width: 700px) {
       .games {
         grid-template-columns:
@@ -1211,6 +1238,32 @@
         ✓ Completed
       </button>
     </div>
+
+    <div
+  class="signed-out-home hidden"
+  id="signedOutHome"
+>
+  <div class="signed-out-home-icon">
+    ◆
+  </div>
+
+  <h2>
+    Your daily games, all in one place.
+  </h2>
+
+  <p>
+    Create an account or log in to choose your games,
+    track results and streaks, and compare scores.
+  </p>
+
+  <button
+    class="button"
+    id="homeLoginButton"
+    type="button"
+  >
+    Log In / Create Account
+  </button>
+</div>
 
     <main class="games" id="gameGrid">
 
@@ -4578,6 +4631,22 @@ document
         }
       );
 
+    document
+  .getElementById(
+    "homeLoginButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+      document
+        .getElementById(
+          "accountModal"
+        )
+        .classList
+        .add("open");
+    }
+  );
+
 
     document
       .getElementById(
@@ -4828,6 +4897,28 @@ document.addEventListener(
           session?.access_token &&
           session?.user
         );
+
+      document
+  .getElementById(
+    "signedOutHome"
+  )
+  .classList
+  .toggle(
+    "hidden",
+    signedIn
+  );
+
+      document
+  .getElementById(
+    "gameGrid"
+  )
+  .classList
+  .toggle(
+    "hidden",
+    !signedIn
+  );
+
+      
       if (!signedIn) {
   document
     .getElementById(
