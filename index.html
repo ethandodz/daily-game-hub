@@ -4202,6 +4202,25 @@ if (
         }
       ) || [];
 
+    favoriteGames =
+  userGameLibrary
+    .filter(
+      game =>
+        game.is_favorite
+    )
+    .map(
+      game =>
+        game.game_key
+    );
+
+
+localStorage.setItem(
+  FAVORITES_KEY,
+  JSON.stringify(
+    favoriteGames
+  )
+);
+
     applyUserGameVisibility();
     renderManageGames();
     updateLocalUI();
@@ -4629,10 +4648,7 @@ async function saveGameOrder() {
       session.user.id,
 
     game_order:
-      currentGameOrder,
-
-    favorite_games:
-      favoriteGames
+      currentGameOrder
   })
       }
     );
@@ -4653,7 +4669,10 @@ async function saveGameOrder() {
   }
 }
 
-    async function saveFavorites() {
+   async function saveFavoriteState(
+  gameId,
+  isFavorite
+) {
   localStorage.setItem(
     FAVORITES_KEY,
     JSON.stringify(
@@ -4661,32 +4680,53 @@ async function saveGameOrder() {
     )
   );
 
+
   if (!session) {
     return;
   }
 
+
   try {
     await request(
-      "/rest/v1/game_preferences" +
-      "?on_conflict=user_id",
+      "/rest/v1/user_games" +
+      "?user_id=eq." +
+      encodeURIComponent(
+        session.user.id
+      ) +
+      "&game_key=eq." +
+      encodeURIComponent(
+        gameId
+      ),
       {
-        method: "POST",
+        method:
+          "PATCH",
 
         headers:
           authHeaders(
-            "resolution=merge-duplicates,return=minimal"
+            "return=minimal"
           ),
 
         body:
           JSON.stringify({
-            user_id:
-              session.user.id,
-
-            favorite_games:
-              favoriteGames
+            is_favorite:
+              isFavorite
           })
       }
     );
+
+
+    const libraryGame =
+      userGameLibrary.find(
+        game =>
+          game.game_key ===
+          gameId
+      );
+
+
+    if (libraryGame) {
+      libraryGame.is_favorite =
+        isFavorite;
+    }
 
   } catch (error) {
     console.error(
@@ -5159,37 +5199,48 @@ document
 
 
     document
-      .querySelectorAll(
-        "[data-favorite]"
-      )
-      .forEach(button => {
-        button.addEventListener(
-          "click",
-          () => {
-            const gameId =
-              button.dataset.favorite;
+  .querySelectorAll(
+    "[data-favorite]"
+  )
+  .forEach(button => {
+    button.addEventListener(
+      "click",
+      async () => {
+        const gameId =
+          button.dataset.favorite;
 
-            if (
-              favoriteGames.includes(
-                gameId
-              )
-            ) {
-              favoriteGames =
-                favoriteGames.filter(
-                  id => id !== gameId
-                );
-            } else {
-              favoriteGames.push(
-                gameId
-              );
-            }
 
-            saveLocal();
-            saveFavorites();
-            updateLocalUI();
-          }
+        const becomingFavorite =
+          !favoriteGames.includes(
+            gameId
+          );
+
+
+        if (becomingFavorite) {
+          favoriteGames.push(
+            gameId
+          );
+        } else {
+          favoriteGames =
+            favoriteGames.filter(
+              id =>
+                id !== gameId
+            );
+        }
+
+
+        saveLocal();
+
+        updateLocalUI();
+
+
+        await saveFavoriteState(
+          gameId,
+          becomingFavorite
         );
-      });
+      }
+    );
+  });
 
 
     document
@@ -6774,35 +6825,44 @@ card.dataset.official =
   );
 
 
-  favoriteButton.addEventListener(
-    "click",
-    () => {
-      const gameId =
-        game.game_key;
+ favoriteButton.addEventListener(
+  "click",
+  async () => {
+    const gameId =
+      game.game_key;
 
 
-      if (
-        favoriteGames.includes(
-          gameId
-        )
-      ) {
-        favoriteGames =
-          favoriteGames.filter(
-            id =>
-              id !== gameId
-          );
-      } else {
-        favoriteGames.push(
-          gameId
+    const becomingFavorite =
+      !favoriteGames.includes(
+        gameId
+      );
+
+
+    if (becomingFavorite) {
+      favoriteGames.push(
+        gameId
+      );
+    } else {
+      favoriteGames =
+        favoriteGames.filter(
+          id =>
+            id !== gameId
         );
-      }
-
-
-      saveLocal();
-      saveFavorites();
-      updateLocalUI();
     }
-  );
+
+
+    saveLocal();
+
+    updateLocalUI();
+
+
+    await saveFavoriteState(
+      gameId,
+      becomingFavorite
+    );
+  }
+);
+
 
 
   cardTop.append(
