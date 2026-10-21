@@ -5141,38 +5141,21 @@ function startGameOrderSync() {
             : "block";
     }
 
-
-    document
-      .querySelectorAll(
-        "[data-complete]"
-      )
-      .forEach(button => {
-        button.addEventListener(
-          "click",
-          () => {
-            const gameId =
-              button.dataset.complete;
-
-            if (
-              completedGames.includes(
-                gameId
-              )
-            ) {
-              completedGames =
-                completedGames.filter(
-                  id => id !== gameId
-                );
-            } else {
-              completedGames.push(
-                gameId
-              );
-            }
-
-            saveLocal();
-            updateLocalUI();
-          }
+document
+  .querySelectorAll(
+    "[data-complete]"
+  )
+  .forEach(button => {
+    button.addEventListener(
+      "click",
+      () => {
+        toggleGameCompleted(
+          button.dataset.complete
         );
-      });
+      }
+    );
+  });
+    
 
 
     document
@@ -5643,6 +5626,7 @@ document.addEventListener(
 
        loadProfile();
       loadFriends();
+        loadDailyGameStatus();
       loadTodayScores();
       loadStreaks();
       loadGameOrder();
@@ -6919,33 +6903,13 @@ card.dataset.official =
 
 
   completeButton.addEventListener(
-    "click",
-    () => {
-      const gameId =
-        game.game_key;
-
-
-      if (
-        completedGames.includes(
-          gameId
-        )
-      ) {
-        completedGames =
-          completedGames.filter(
-            id =>
-              id !== gameId
-          );
-      } else {
-        completedGames.push(
-          gameId
-        );
-      }
-
-
-      saveLocal();
-      updateLocalUI();
-    }
-  );
+  "click",
+  () => {
+    toggleGameCompleted(
+      game.game_key
+    );
+  }
+);
 
 
   const resultButton =
@@ -8529,6 +8493,186 @@ function calculateStreak(
 
 
   return streak;
+}
+
+    async function loadDailyGameStatus() {
+  if (!session) {
+    return;
+  }
+
+
+  try {
+    const statusRows =
+      await request(
+        "/rest/v1/daily_game_status" +
+        "?user_id=eq." +
+        encodeURIComponent(
+          session.user.id
+        ) +
+        "&play_date=eq." +
+        encodeURIComponent(
+          TODAY
+        ) +
+        "&completed=eq.true" +
+        "&select=game_key",
+        {
+          headers:
+            authHeaders()
+        }
+      ) || [];
+
+
+    completedGames =
+      Array.from(
+        new Set(
+          statusRows.map(
+            row =>
+              row.game_key
+          )
+        )
+      );
+
+
+    saveLocal();
+    updateLocalUI();
+
+  } catch (error) {
+    console.error(
+      "Daily game status loading failed:",
+      error
+    );
+  }
+}
+
+    async function toggleGameCompleted(
+  gameId
+) {
+  const currentlyCompleted =
+    completedGames.includes(
+      gameId
+    );
+
+
+  /*
+   * Logged-out users continue
+   * using local storage.
+   */
+  if (!session) {
+    if (currentlyCompleted) {
+      completedGames =
+        completedGames.filter(
+          id =>
+            id !== gameId
+        );
+    } else {
+      completedGames.push(
+        gameId
+      );
+    }
+
+    saveLocal();
+    updateLocalUI();
+
+    return;
+  }
+
+
+  try {
+    if (currentlyCompleted) {
+      /*
+       * DELETE today's status row
+       * when unchecking Played.
+       */
+      await request(
+        "/rest/v1/daily_game_status" +
+        "?user_id=eq." +
+        encodeURIComponent(
+          session.user.id
+        ) +
+        "&game_key=eq." +
+        encodeURIComponent(
+          gameId
+        ) +
+        "&play_date=eq." +
+        encodeURIComponent(
+          TODAY
+        ),
+        {
+          method: "DELETE",
+
+          headers:
+            authHeaders(
+              "return=minimal"
+            )
+        }
+      );
+
+
+      completedGames =
+        completedGames.filter(
+          id =>
+            id !== gameId
+        );
+
+    } else {
+      /*
+       * UPSERT today's Played state.
+       */
+      await request(
+        "/rest/v1/daily_game_status" +
+        "?on_conflict=" +
+        "user_id,game_key,play_date",
+        {
+          method: "POST",
+
+          headers:
+            authHeaders(
+              "resolution=merge-duplicates,return=minimal"
+            ),
+
+          body:
+            JSON.stringify({
+              user_id:
+                session.user.id,
+
+              game_key:
+                gameId,
+
+              play_date:
+                TODAY,
+
+              completed:
+                true,
+
+              updated_at:
+                new Date()
+                  .toISOString()
+            })
+        }
+      );
+
+
+      if (
+        !completedGames.includes(
+          gameId
+        )
+      ) {
+        completedGames.push(
+          gameId
+        );
+      }
+    }
+
+
+    saveLocal();
+    updateLocalUI();
+
+  } catch (error) {
+    console.error(
+      "Played status saving failed:",
+      error
+    );
+  }
 }
     
     async function loadTodayScores() {
