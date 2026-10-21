@@ -3314,9 +3314,9 @@ let currentGameOrder =
 let draggedGameId =
   null;
 
-    let gameOrderSyncTimer =
+    let librarySyncTimer =
   null;
-
+    
     let userGameLibrary =
   [];
 
@@ -4080,56 +4080,7 @@ function renderArrangeList() {
 }
 
 
-async function loadGameOrder() {
-  if (!session) {
-    applyGameOrder(
-      currentGameOrder
-    );
 
-    return;
-  }
-
-
-  try {
-    const preferenceRows =
-      await request(
-        "/rest/v1/game_preferences" +
-        "?user_id=eq." +
-        encodeURIComponent(
-          session.user.id
-        ) +
-        "&select=game_order",
-        {
-          headers:
-            authHeaders()
-        }
-      );
-
-
-    
-
-    
-
-
-    applyGameOrder(
-      currentGameOrder
-    );
-
-    renderArrangeList();
-
-    updateLocalUI();
-
-  } catch (error) {
-    console.error(
-      "Game order loading failed:",
-      error
-    );
-
-    applyGameOrder(
-      currentGameOrder
-    );
-  }
-}
 
     async function loadUserGameLibrary() {
   if (!session) {
@@ -4175,6 +4126,66 @@ localStorage.setItem(
   )
 );
 
+    currentGameOrder =
+  userGameLibrary
+    .filter(
+      game =>
+        game.is_visible
+    )
+    .sort(
+      (
+        firstGame,
+        secondGame
+      ) =>
+        Number(
+          firstGame.sort_order
+        ) -
+        Number(
+          secondGame.sort_order
+        )
+    )
+    .map(
+      game =>
+        game.game_key
+    );
+
+
+cards().forEach(card => {
+  const gameId =
+    card.dataset.id;
+
+  const libraryGame =
+    userGameLibrary.find(
+      game =>
+        game.game_key ===
+        gameId
+    );
+
+  if (
+    libraryGame?.is_visible &&
+    !currentGameOrder.includes(
+      gameId
+    )
+  ) {
+    currentGameOrder.push(
+      gameId
+    );
+  }
+});
+
+
+localStorage.setItem(
+  GAME_ORDER_KEY,
+  JSON.stringify(
+    currentGameOrder
+  )
+);
+
+
+applyGameOrder(
+  currentGameOrder
+);
+
     applyUserGameVisibility();
     renderManageGames();
     updateLocalUI();
@@ -4185,6 +4196,75 @@ localStorage.setItem(
       error
     );
   }
+}
+
+    async function syncUserGameLibrary() {
+  if (!session) {
+    return;
+  }
+
+
+  const arrangeModalOpen =
+    document
+      .getElementById(
+        "arrangeModal"
+      )
+      .classList
+      .contains("open");
+
+
+  /*
+   * Do not overwrite an order
+   * while the user is arranging it.
+   */
+  if (arrangeModalOpen) {
+    return;
+  }
+
+
+  await loadUserGameLibrary();
+
+
+  if (
+    document
+      .getElementById(
+        "manageGamesModal"
+      )
+      .classList
+      .contains("open")
+  ) {
+    renderManageGames();
+  }
+}
+
+    function startLibrarySync() {
+  if (librarySyncTimer) {
+    clearInterval(
+      librarySyncTimer
+    );
+  }
+
+
+  if (!session) {
+    librarySyncTimer =
+      null;
+
+    return;
+  }
+
+
+  librarySyncTimer =
+    setInterval(
+      () => {
+        if (
+          document.visibilityState ===
+          "visible"
+        ) {
+          syncUserGameLibrary();
+        }
+      },
+      5000
+    );
 }
 
     function applyUserGameVisibility() {
@@ -4567,10 +4647,18 @@ async function saveGameOrder() {
   );
 
 
+  localStorage.setItem(
+    GAME_ORDER_KEY,
+    JSON.stringify(
+      currentGameOrder
+    )
+  );
+
+
   if (!session) {
     setStatus(
       arrangeStatus,
-      "Order saved on this device. Log in to sync it to other devices.",
+      "Order saved on this device.",
       "success"
     );
 
@@ -4585,27 +4673,56 @@ async function saveGameOrder() {
     );
 
 
-    await request(
-      "/rest/v1/game_preferences" +
-      "?on_conflict=user_id",
-      {
-        method: "POST",
+    for (
+      let index = 0;
+      index <
+        currentGameOrder.length;
+      index += 1
+    ) {
+      const gameId =
+        currentGameOrder[index];
 
-        headers:
-          authHeaders(
-            "resolution=merge-duplicates,return=minimal"
-          ),
 
-        body:
-  JSON.stringify({
-    user_id:
-      session.user.id,
+      await request(
+        "/rest/v1/user_games" +
+        "?user_id=eq." +
+        encodeURIComponent(
+          session.user.id
+        ) +
+        "&game_key=eq." +
+        encodeURIComponent(
+          gameId
+        ),
+        {
+          method: "PATCH",
 
-    game_order:
-      currentGameOrder
-  })
+          headers:
+            authHeaders(
+              "return=minimal"
+            ),
+
+          body:
+            JSON.stringify({
+              sort_order:
+                index + 1
+            })
+        }
+      );
+
+
+      const libraryGame =
+        userGameLibrary.find(
+          game =>
+            game.game_key ===
+            gameId
+        );
+
+
+      if (libraryGame) {
+        libraryGame.sort_order =
+          index + 1;
       }
-    );
+    }
 
 
     setStatus(
@@ -4690,117 +4807,7 @@ async function saveGameOrder() {
   }
 }
 
-   async function syncGameOrderFromSupabase() {
-  if (!session) {
-    return;
-  }
-
-  try {
-    const preferenceRows =
-      await request(
-        "/rest/v1/game_preferences" +
-        "?user_id=eq." +
-        encodeURIComponent(
-          session.user.id
-        ) +
-        "&select=game_order",
-        {
-          headers:
-            authHeaders()
-        }
-      );
-
-    if (
-      !preferenceRows ||
-      preferenceRows.length === 0 ||
-      !Array.isArray(
-        preferenceRows[0].game_order
-      )
-    ) {
-      return;
-    }
-
-    const remoteOrder =
-      normalizeGameOrder(
-        preferenceRows[0].game_order
-      );
-
-    const localOrderText =
-      JSON.stringify(
-        currentGameOrder
-      );
-
-    const remoteOrderText =
-      JSON.stringify(
-        remoteOrder
-      );
-
-    if (
-      remoteOrderText !==
-      localOrderText
-    ) {
-      applyGameOrder(
-        remoteOrder
-      );
-
-      updateLocalUI();
-
-      if (
-        document
-          .getElementById(
-            "arrangeModal"
-          )
-          .classList
-          .contains("open")
-      ) {
-        renderArrangeList();
-
-        setStatus(
-          arrangeStatus,
-          "Game order updated from another device.",
-          "success"
-        );
-      }
-    }
-
-    
-  } catch (error) {
-    console.error(
-      "Game order sync failed:",
-      error
-    );
-  }
-}
-
-
-function startGameOrderSync() {
-  if (gameOrderSyncTimer) {
-    clearInterval(
-      gameOrderSyncTimer
-    );
-  }
-
-  if (!session) {
-    gameOrderSyncTimer =
-      null;
-
-    return;
-  }
-
-  gameOrderSyncTimer =
-    setInterval(
-      () => {
-        if (
-          document.visibilityState ===
-          "visible"
-        ) {
-          syncGameOrderFromSupabase();
-        }
-      },
-      5000
-    );
-} 
-
+   
 
     function getFilterLabel() {
       const labels = {
@@ -5496,7 +5503,7 @@ document
     window.addEventListener(
   "focus",
   () => {
-    syncGameOrderFromSupabase();
+    syncUserGameLibrary();
   }
 );
 
@@ -5508,7 +5515,7 @@ document.addEventListener(
       document.visibilityState ===
       "visible"
     ) {
-      syncGameOrderFromSupabase();
+      syncUserGameLibrary();
     }
   }
 );
@@ -5597,14 +5604,15 @@ document.addEventListener(
         loadDailyGameStatus();
       loadTodayScores();
       loadStreaks();
-      loadGameOrder();
+      
 
 loadGameCatalog()
   .then(
     loadUserGameLibrary
   );
 
-startGameOrderSync();
+startLibrarySync();
+
         
 
    
@@ -5805,12 +5813,12 @@ startGameOrderSync();
             SESSION_KEY
           );
 
-          if (gameOrderSyncTimer) {
+          if (librarySyncTimer) {
   clearInterval(
-    gameOrderSyncTimer
+    librarySyncTimer
   );
 
-  gameOrderSyncTimer =
+  librarySyncTimer =
     null;
 }
 
