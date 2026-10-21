@@ -4306,36 +4306,96 @@ applyGameOrder(
     return;
   }
 
+
   try {
+    const existingLibraryGame =
+      userGameLibrary.find(
+        game =>
+          game.game_key ===
+          gameId
+      );
+
+
+    /*
+     * ADD A GAME THAT DOESN'T
+     * HAVE A user_games ROW YET.
+     */
+    if (
+      isVisible &&
+      !existingLibraryGame
+    ) {
+      const highestSortOrder =
+        userGameLibrary.reduce(
+          (
+            highest,
+            game
+          ) =>
+            Math.max(
+              highest,
+              Number(
+                game.sort_order
+              ) || 0
+            ),
+          0
+        );
+
+
+      await request(
+        "/rest/v1/user_games",
+        {
+          method:
+            "POST",
+
+          headers:
+            authHeaders(
+              "return=minimal"
+            ),
+
+          body:
+            JSON.stringify({
+              user_id:
+                session.user.id,
+
+              game_key:
+                gameId,
+
+              is_visible:
+                true,
+
+              is_favorite:
+                false,
+
+              sort_order:
+                highestSortOrder + 1
+            })
+        }
+      );
+
+
+      await loadUserGameLibrary();
+
+
+      setStatus(
+        manageGamesStatus,
+        "Game added to the bottom.",
+        "success"
+      );
+
+
+      return;
+    }
+
+
+    /*
+     * EXISTING LIBRARY GAME.
+     */
     let newSortOrder =
       null;
 
 
-    /*
-     * When adding a game back,
-     * move it to the bottom.
-     */
     if (isVisible) {
-      currentGameOrder =
-        currentGameOrder.filter(
-          id =>
-            id !== gameId
-        );
-
-      currentGameOrder.push(
-        gameId
-      );
-
-
-      const visibleGames =
-        userGameLibrary.filter(
-          game =>
-            game.is_visible
-        );
-
-
       const highestSortOrder =
-        visibleGames.reduce(
+        userGameLibrary.reduce(
           (
             highest,
             game
@@ -4396,19 +4456,6 @@ applyGameOrder(
     );
 
 
-    /*
-     * Also save the master custom
-     * order used by the current site.
-     */
-    if (isVisible) {
-      applyGameOrder(
-        currentGameOrder
-      );
-
-      await saveGameOrder();
-    }
-
-
     await loadUserGameLibrary();
 
 
@@ -4420,6 +4467,7 @@ applyGameOrder(
       "success"
     );
 
+
   } catch (error) {
     setStatus(
       manageGamesStatus,
@@ -4428,7 +4476,6 @@ applyGameOrder(
     );
   }
 }
-
 
 function renderManageGames() {
   const myGamesList =
@@ -4441,6 +4488,7 @@ function renderManageGames() {
       "availableGamesList"
     );
 
+
   if (
     !myGamesList ||
     !availableGamesList
@@ -4448,24 +4496,39 @@ function renderManageGames() {
     return;
   }
 
+
   myGamesList.innerHTML =
     "";
 
   availableGamesList.innerHTML =
     "";
 
-  userGameLibrary.forEach(
-    libraryGame => {
-      const card =
-        document.querySelector(
-          '.game-card[data-id="' +
-          libraryGame.game_key +
-          '"]'
+
+  /*
+   * USE THE FULL CATALOG,
+   * NOT ONLY user_games.
+   */
+  const catalogGames =
+    Array.from(
+      gameCatalog.values()
+    );
+
+
+  catalogGames.forEach(
+    catalogGame => {
+      const libraryGame =
+        userGameLibrary.find(
+          game =>
+            game.game_key ===
+            catalogGame.game_key
         );
 
-      if (!card) {
-        return;
-      }
+
+      const isVisible =
+        Boolean(
+          libraryGame?.is_visible
+        );
+
 
       const row =
         document.createElement(
@@ -4475,6 +4538,7 @@ function renderManageGames() {
       row.className =
         "manage-game";
 
+
       const info =
         document.createElement(
           "div"
@@ -4482,6 +4546,7 @@ function renderManageGames() {
 
       info.className =
         "manage-game-info";
+
 
       const name =
         document.createElement(
@@ -4492,7 +4557,8 @@ function renderManageGames() {
         "manage-game-name";
 
       name.textContent =
-        card.dataset.name;
+        catalogGame.name;
+
 
       const category =
         document.createElement(
@@ -4503,16 +4569,65 @@ function renderManageGames() {
         "manage-game-category";
 
       category.textContent =
-        card.querySelector(
-          ".category"
-        )?.textContent
-          ?.trim() ||
-        "";
+        getCategoryLabel(
+          catalogGame.category
+        );
+
 
       info.append(
         name,
         category
       );
+
+
+      const actionContainer =
+        document.createElement(
+          "div"
+        );
+
+      actionContainer.className =
+        "friend-actions";
+
+
+      /*
+       * CUSTOM GAME CREATOR
+       * GETS EDIT.
+       */
+      if (
+        !catalogGame.is_official &&
+        catalogGame.created_by ===
+          session?.user?.id
+      ) {
+        const editButton =
+          document.createElement(
+            "button"
+          );
+
+        editButton.type =
+          "button";
+
+        editButton.className =
+          "small-button";
+
+        editButton.textContent =
+          "Edit";
+
+
+        editButton.addEventListener(
+          "click",
+          () => {
+            openCustomGameEditor(
+              catalogGame.game_key
+            );
+          }
+        );
+
+
+        actionContainer.appendChild(
+          editButton
+        );
+      }
+
 
       const actionButton =
         document.createElement(
@@ -4525,99 +4640,53 @@ function renderManageGames() {
       actionButton.className =
         "manage-game-button " +
         (
-          libraryGame.is_visible
+          isVisible
             ? "remove"
             : "add"
         );
 
+
       actionButton.textContent =
-        libraryGame.is_visible
+        isVisible
           ? "Remove"
           : "+ Add";
+
 
       actionButton.addEventListener(
         "click",
         () => {
           setGameVisibility(
-            libraryGame.game_key,
-            !libraryGame.is_visible
+            catalogGame.game_key,
+            !isVisible
           );
         }
       );
 
-      const actionContainer =
-  document.createElement(
-    "div"
-  );
 
-actionContainer.className =
-  "friend-actions";
-
-
-const catalogGame =
-  gameCatalog.get(
-    libraryGame.game_key
-  );
-
-
-if (
-  catalogGame &&
-  !catalogGame.is_official &&
-  catalogGame.created_by ===
-    session?.user?.id
-) {
-  const editButton =
-    document.createElement(
-      "button"
-    );
-
-  editButton.type =
-    "button";
-
-  editButton.className =
-    "small-button";
-
-  editButton.textContent =
-    "Edit";
-
-  editButton.addEventListener(
-    "click",
-    () => {
-      openCustomGameEditor(
-        libraryGame.game_key
+      actionContainer.appendChild(
+        actionButton
       );
-    }
-  );
-
-  actionContainer.appendChild(
-    editButton
-  );
-}
 
 
-actionContainer.appendChild(
-  actionButton
-);
+      row.append(
+        info,
+        actionContainer
+      );
 
 
-row.append(
-  info,
-  actionContainer
-);
-
-      if (
-        libraryGame.is_visible
-      ) {
+      if (isVisible) {
         myGamesList.appendChild(
           row
         );
       } else {
-        availableGamesList.appendChild(
-          row
-        );
+        availableGamesList
+          .appendChild(
+            row
+          );
       }
     }
   );
+
 
   if (
     myGamesList.children.length ===
@@ -4628,6 +4697,7 @@ row.append(
       "You have not added any games yet." +
       "</p>";
   }
+
 
   if (
     availableGamesList
@@ -4640,6 +4710,7 @@ row.append(
       "</p>";
   }
 }
+
 
 async function saveGameOrder() {
   applyGameOrder(
