@@ -4055,6 +4055,68 @@ if (
   }
 
   try {
+    let newSortOrder =
+      null;
+
+
+    /*
+     * When adding a game back,
+     * move it to the bottom.
+     */
+    if (isVisible) {
+      currentGameOrder =
+        currentGameOrder.filter(
+          id =>
+            id !== gameId
+        );
+
+      currentGameOrder.push(
+        gameId
+      );
+
+
+      const visibleGames =
+        userGameLibrary.filter(
+          game =>
+            game.is_visible
+        );
+
+
+      const highestSortOrder =
+        visibleGames.reduce(
+          (
+            highest,
+            game
+          ) =>
+            Math.max(
+              highest,
+              Number(
+                game.sort_order
+              ) || 0
+            ),
+          0
+        );
+
+
+      newSortOrder =
+        highestSortOrder + 1;
+    }
+
+
+    const updateRecord = {
+      is_visible:
+        isVisible
+    };
+
+
+    if (
+      newSortOrder !== null
+    ) {
+      updateRecord.sort_order =
+        newSortOrder;
+    }
+
+
     await request(
       "/rest/v1/user_games" +
       "?user_id=eq." +
@@ -4066,7 +4128,8 @@ if (
         gameId
       ),
       {
-        method: "PATCH",
+        method:
+          "PATCH",
 
         headers:
           authHeaders(
@@ -4074,19 +4137,33 @@ if (
           ),
 
         body:
-          JSON.stringify({
-            is_visible:
-              isVisible
-          })
+          JSON.stringify(
+            updateRecord
+          )
       }
     );
 
+
+    /*
+     * Also save the master custom
+     * order used by the current site.
+     */
+    if (isVisible) {
+      applyGameOrder(
+        currentGameOrder
+      );
+
+      await saveGameOrder();
+    }
+
+
     await loadUserGameLibrary();
+
 
     setStatus(
       manageGamesStatus,
       isVisible
-        ? "Game added."
+        ? "Game added to the bottom."
         : "Game removed.",
       "success"
     );
