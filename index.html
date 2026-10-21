@@ -5402,84 +5402,6 @@ function startGameOrderSync() {
           "error"
         );
 
-        document
-  .getElementById(
-    "openAddGameButton"
-  )
-  .addEventListener(
-    "click",
-    () => {
-
-      selectedCustomGameKey =
-  null;
-
-document
-  .getElementById(
-    "customGameModalTitle"
-  )
-  .textContent =
-    "Add Custom Game";
-
-document
-  .getElementById(
-    "saveCustomGameButton"
-  )
-  .textContent =
-    "Add Game";
-
-document
-  .getElementById(
-    "customGameName"
-  )
-  .value = "";
-
-document
-  .getElementById(
-    "customGameUrl"
-  )
-  .value = "";
-
-document
-  .getElementById(
-    "customGameCategory"
-  )
-  .value =
-    "word";
-
-document
-  .getElementById(
-    "customGameIcon"
-  )
-  .value = "";
-
-document
-  .getElementById(
-    "customGameDescription"
-  )
-  .value = "";
-      setStatus(
-        addGameStatus,
-        ""
-      );
-
-      document
-        .getElementById(
-          "addGameModal"
-        )
-        .classList
-        .add("open");
-    }
-  );
-
-        document
-  .getElementById(
-    "saveCustomGameButton"
-  )
-  .addEventListener(
-    "click",
-    createCustomGame
-  );
-
         return;
       }
 
@@ -5497,7 +5419,87 @@ document
         .classList
         .add("open");
     }
-  ); 
+  );
+
+
+document
+  .getElementById(
+    "openAddGameButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+      selectedCustomGameKey =
+        null;
+
+      document
+        .getElementById(
+          "customGameModalTitle"
+        )
+        .textContent =
+          "Add Custom Game";
+
+      document
+        .getElementById(
+          "saveCustomGameButton"
+        )
+        .textContent =
+          "Add Game";
+
+      document
+        .getElementById(
+          "customGameName"
+        )
+        .value = "";
+
+      document
+        .getElementById(
+          "customGameUrl"
+        )
+        .value = "";
+
+      document
+        .getElementById(
+          "customGameCategory"
+        )
+        .value =
+          "word";
+
+      document
+        .getElementById(
+          "customGameIcon"
+        )
+        .value = "";
+
+      document
+        .getElementById(
+          "customGameDescription"
+        )
+        .value = "";
+
+      setStatus(
+        addGameStatus,
+        ""
+      );
+
+      document
+        .getElementById(
+          "addGameModal"
+        )
+        .classList
+        .add("open");
+    }
+  );
+
+
+document
+  .getElementById(
+    "saveCustomGameButton"
+  )
+  .addEventListener(
+    "click",
+    createCustomGame
+  );
 
 
 document
