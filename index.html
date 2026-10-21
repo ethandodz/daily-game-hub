@@ -8,7 +8,10 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <meta name="theme-color" content="#080c18">
+  <meta name="color-scheme" content="light dark">
+
+  <meta name="theme-color" content="#080c18" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f5fb" media="(prefers-color-scheme: light)">
 
   <title>Daily Game Hub</title>
 
@@ -18,17 +21,69 @@
     }
 
     :root {
+      color-scheme: dark;
+
       --background: #080c18;
       --panel: #111827;
       --panel-light: #182234;
       --border: #263348;
+      --border-strong: #64748b;
       --text: #f8fafc;
+      --text-soft: #cbd5e1;
       --muted: #94a3b8;
       --green: #10b981;
       --yellow: #f59e0b;
       --purple: #7c3aed;
+      --purple-soft: #8b5cf6;
       --blue: #2563eb;
       --red: #f87171;
+
+      --success-text: #34d399;
+      --streak: #fbbf24;
+      --icon-dim: #64748b;
+      --control: #334155;
+      --control-strong: #475569;
+      --control-text: #ffffff;
+      --track: rgba(255, 255, 255, 0.15);
+      --inset: rgba(15, 23, 42, 0.65);
+      --divider: rgba(148, 163, 184, 0.15);
+      --overlay: rgba(2, 6, 23, 0.82);
+      --selected-bg: rgba(16, 185, 129, 0.12);
+      --glow-purple: rgba(124, 58, 237, 0.28);
+      --glow-blue: rgba(14, 165, 233, 0.17);
+    }
+
+    /* Light mode follows the device setting. Purple accents stay the same. */
+    @media (prefers-color-scheme: light) {
+      :root {
+        color-scheme: light;
+
+        --background: #f6f5fb;
+        --panel: #ffffff;
+        --panel-light: #f1f0f7;
+        --border: #e2e0ec;
+        --border-strong: #a8a3bd;
+        --text: #12101c;
+        --text-soft: #3f3a52;
+        --muted: #6b6680;
+        --yellow: #d97706;
+        --purple-soft: #7c3aed;
+        --red: #dc2626;
+
+        --success-text: #047857;
+        --streak: #b45309;
+        --icon-dim: #a8a3bd;
+        --control: #e7e5f0;
+        --control-strong: #6b6680;
+        --control-text: #12101c;
+        --track: rgba(18, 16, 28, 0.08);
+        --inset: #faf9fd;
+        --divider: rgba(18, 16, 28, 0.08);
+        --overlay: rgba(18, 16, 28, 0.45);
+        --selected-bg: rgba(16, 185, 129, 0.1);
+        --glow-purple: rgba(124, 58, 237, 0.12);
+        --glow-blue: rgba(14, 165, 233, 0.08);
+      }
     }
 
     body {
@@ -45,12 +100,12 @@
       background:
         radial-gradient(
           circle at 10% 0%,
-          rgba(124, 58, 237, 0.28),
+          var(--glow-purple),
           transparent 30%
         ),
         radial-gradient(
           circle at 100% 35%,
-          rgba(14, 165, 233, 0.17),
+          var(--glow-blue),
           transparent 28%
         ),
         var(--background);
@@ -113,6 +168,7 @@
     }
 
     .button.secondary {
+      color: var(--text);
       background: var(--panel);
       border: 1px solid var(--border);
     }
@@ -142,7 +198,7 @@
     }
 
     .eyebrow {
-      color: #cbd5e1;
+      color: var(--text-soft);
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 0.12em;
@@ -155,7 +211,7 @@
 
     .progress-message {
       margin: 0;
-      color: #cbd5e1;
+      color: var(--text-soft);
     }
 
     .percentage {
@@ -169,7 +225,7 @@
       margin-top: 12px;
       overflow: hidden;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--track);
     }
 
     .progress-fill {
@@ -200,7 +256,7 @@
     }
 
     .search:focus {
-      border-color: #8b5cf6;
+      border-color: var(--purple-soft);
     }
 
     .arrange-row {
@@ -221,8 +277,8 @@
 }
 
 .arrange-button:hover {
-  color: white;
-  border-color: #64748b;
+  color: var(--text);
+  border-color: var(--border-strong);
 }
 
 .arrange-list {
@@ -244,7 +300,7 @@
 
 .arrange-item.dragging {
   opacity: 0.45;
-  border-color: #8b5cf6;
+  border-color: var(--purple-soft);
 }
 
 .arrange-handle {
@@ -273,11 +329,11 @@
   width: 38px;
   height: 38px;
   place-items: center;
-  color: white;
+  color: var(--control-text);
   font-weight: 900;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: #334155;
+  background: var(--control);
 }
 
 .arrange-move:disabled {
@@ -318,7 +374,7 @@
 }
 
 .manage-game-name {
-  color: white;
+  color: var(--text);
   font-weight: 800;
 }
 
@@ -340,7 +396,7 @@
 }
 
 .manage-game-button.remove {
-  background: #475569;
+  background: var(--control-strong);
 }
 
 .manage-game-button.add {
@@ -375,7 +431,7 @@
 
 .onboarding-game.selected {
   border-color: var(--green);
-  background: rgba(16, 185, 129, 0.12);
+  background: var(--selected-bg);
 }
 
 .onboarding-checkbox {
@@ -391,7 +447,7 @@
 
 .onboarding-game-name {
   font-weight: 800;
-  color: white;
+  color: var(--text);
 }
 
 .onboarding-game-category {
@@ -435,9 +491,9 @@
     }
 
     .filter-button.active {
-      color: #111827;
-      border-color: white;
-      background: white;
+      color: var(--panel);
+      border-color: var(--text);
+      background: var(--text);
     }
 
     .games {
@@ -502,7 +558,7 @@
 
     .favorite-button {
       padding: 3px;
-      color: #64748b;
+      color: var(--icon-dim);
       font-size: 22px;
       border: 0;
       background: transparent;
@@ -528,7 +584,7 @@
     .streak {
   display: none;
   margin-top: 7px;
-  color: #fbbf24;
+  color: var(--streak);
   font-size: 12px;
   font-weight: 800;
 }
@@ -569,22 +625,25 @@
 
     .complete-button {
       width: 43px;
+      color: var(--text);
       background: var(--panel-light);
     }
 
     .completed .complete-button {
+      color: white;
       background: var(--green);
     }
 
     .result-button {
       grid-column: 1 / -1;
-      background: #334155;
+      color: var(--control-text);
+      background: var(--control);
     }
 
     .history-button {
   grid-column: 1 / -1;
   padding: 9px;
-  color: #cbd5e1;
+  color: var(--text-soft);
   font-size: 12px;
   font-weight: 800;
   border: 1px solid var(--border);
@@ -593,8 +652,8 @@
 }
 
 .history-button:hover {
-  color: white;
-  border-color: #64748b;
+  color: var(--text);
+  border-color: var(--border-strong);
 }
 
 .history-list {
@@ -620,7 +679,7 @@
 }
 
 .history-result {
-  color: white;
+  color: var(--text);
   font-size: 13px;
   line-height: 1.45;
   white-space: pre-wrap;
@@ -631,7 +690,7 @@
   display: none;
   margin-top: 10px;
   padding: 9px;
-  color: #cbd5e1;
+  color: var(--text-soft);
   font-size: 12px;
   line-height: 1.4;
   border-radius: 10px;
@@ -646,7 +705,7 @@
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.65);
+  background: var(--inset);
 }
 
 .friend-results.visible {
@@ -669,7 +728,7 @@
   gap: 5px;
   padding: 8px 0;
   font-size: 12px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  border-bottom: 1px solid var(--divider);
 }
 
 .friend-result-row:last-child {
@@ -678,7 +737,7 @@
 }
 
 .friend-result-name {
-  color: #cbd5e1;
+  color: var(--text-soft);
   font-weight: 700;
 }
 
@@ -691,14 +750,14 @@
 
 .friend-result-streak {
   flex: 0 0 auto;
-  color: #fbbf24;
+  color: var(--streak);
   font-size: 11px;
   font-weight: 800;
 }  
 
 .friend-result-score {
   width: 100%;
-  color: white;
+  color: var(--text);
   font-weight: 900;
   white-space: pre-wrap;
   word-break: break-word;
@@ -710,7 +769,7 @@
   width: 100%;
   margin-top: 8px;
   padding: 9px 10px;
-  color: #cbd5e1;
+  color: var(--text-soft);
   font-size: 12px;
   font-weight: 800;
   text-align: center;
@@ -720,8 +779,8 @@
 }
 
 .friend-results-toggle:hover {
-  color: white;
-  border-color: #64748b;
+  color: var(--text);
+  border-color: var(--border-strong);
 }
 
 
@@ -805,7 +864,7 @@
     }
 
     .status.success {
-      color: #34d399;
+      color: var(--success-text);
     }
 
     .status.error {
@@ -834,10 +893,10 @@
 
     .small-button {
       padding: 7px 10px;
-      color: white;
+      color: var(--control-text);
       border: 0;
       border-radius: 9px;
-      background: #334155;
+      background: var(--control);
     }
 
     .feedback-types {
@@ -877,7 +936,7 @@
       z-index: 30;
       place-items: center;
       padding: 16px;
-      background: rgba(2, 6, 23, 0.82);
+      background: var(--overlay);
     }
 
     .modal.open {
@@ -904,7 +963,7 @@
     .close-button {
       width: 36px;
       height: 36px;
-      color: white;
+      color: var(--text);
       border: 0;
       border-radius: 10px;
       background: var(--panel-light);
@@ -946,7 +1005,7 @@
 
 .signed-out-home-icon {
   margin-bottom: 10px;
-  color: #8b5cf6;
+  color: var(--purple-soft);
   font-size: 32px;
 }
 
