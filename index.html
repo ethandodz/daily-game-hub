@@ -4098,7 +4098,7 @@ async function loadGameOrder() {
         encodeURIComponent(
           session.user.id
         ) +
-        "&select=game_order,favorite_games",
+        "&select=game_order",
         {
           headers:
             authHeaders()
@@ -4108,53 +4108,7 @@ async function loadGameOrder() {
 
     
 
-    const remoteFavorites =
-  preferenceRows?.[0]
-    ?.favorite_games;
-
-
-if (
-  Array.isArray(
-    remoteFavorites
-  )
-) {
-  if (
-    remoteFavorites.length === 0 &&
-    favoriteGames.length > 0
-  ) {
-    await saveFavorites();
-  } else {
-    favoriteGames =
-      remoteFavorites;
-
-    localStorage.setItem(
-      FAVORITES_KEY,
-      JSON.stringify(
-        favoriteGames
-      )
-    );
-  }
-}
-
-    if (
-  preferenceRows &&
-  preferenceRows.length > 0 &&
-  Array.isArray(
-    preferenceRows[0]
-      .favorite_games
-  )
-) {
-  favoriteGames =
-    preferenceRows[0]
-      .favorite_games;
-
-  localStorage.setItem(
-    FAVORITES_KEY,
-    JSON.stringify(
-      favoriteGames
-    )
-  );
-}
+    
 
 
     applyGameOrder(
@@ -4749,7 +4703,7 @@ async function saveGameOrder() {
         encodeURIComponent(
           session.user.id
         ) +
-        "&select=game_order,favorite_games",
+        "&select=game_order",
         {
           headers:
             authHeaders()
@@ -4808,44 +4762,7 @@ async function saveGameOrder() {
         );
       }
     }
-const remoteFavorites =
-  preferenceRows?.[0]
-    ?.favorite_games;
 
-
-if (
-  Array.isArray(
-    remoteFavorites
-  )
-) {
-  const localFavoritesText =
-    JSON.stringify(
-      [...favoriteGames].sort()
-    );
-
-  const remoteFavoritesText =
-    JSON.stringify(
-      [...remoteFavorites].sort()
-    );
-
-
-  if (
-    localFavoritesText !==
-    remoteFavoritesText
-  ) {
-    favoriteGames =
-      remoteFavorites;
-
-    localStorage.setItem(
-      FAVORITES_KEY,
-      JSON.stringify(
-        favoriteGames
-      )
-    );
-
-    updateLocalUI();
-  }
-}
     
   } catch (error) {
     console.error(
