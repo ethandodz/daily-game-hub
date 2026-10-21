@@ -5,7 +5,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
 
   <meta name="color-scheme" content="light dark">
@@ -51,6 +51,8 @@
       --selected-bg: rgba(16, 185, 129, 0.12);
       --glow-purple: rgba(124, 58, 237, 0.28);
       --glow-blue: rgba(14, 165, 233, 0.17);
+      --tab-active: #a78bfa;
+      --tab-bar-bg: rgba(17, 24, 39, 0.86);
     }
 
     /* Light mode follows the device setting. Purple accents stay the same. */
@@ -83,6 +85,8 @@
         --selected-bg: rgba(16, 185, 129, 0.1);
         --glow-purple: rgba(124, 58, 237, 0.12);
         --glow-blue: rgba(14, 165, 233, 0.08);
+        --tab-active: #7c3aed;
+        --tab-bar-bg: rgba(255, 255, 255, 0.88);
       }
     }
 
@@ -1166,6 +1170,148 @@
     }
 
 
+    /* App shell: tab bar and views */
+
+    body {
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    .container {
+      padding-bottom:
+        calc(96px + env(safe-area-inset-bottom));
+    }
+
+    .tab-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding:
+        6px
+        calc(8px + env(safe-area-inset-right))
+        calc(6px + env(safe-area-inset-bottom))
+        calc(8px + env(safe-area-inset-left));
+      border-top: 1px solid var(--border);
+      background: var(--panel);
+      background: var(--tab-bar-bg);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+
+    .tab-button {
+      position: relative;
+      display: flex;
+      min-height: 50px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 4px 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-button svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .tab-button.active {
+      color: var(--tab-active);
+    }
+
+    .tab-button.active svg {
+      stroke-width: 2.2;
+    }
+
+    .tab-button.needs-attention::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      left: calc(50% + 9px);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    .tab-view > .section:first-child {
+      margin-top: 0;
+    }
+
+    .tab-view > .section + .section {
+      margin-top: 18px;
+    }
+
+    #accountSection .account-state {
+      margin: 4px 0 20px;
+    }
+
+    body:not([data-tab="games"]) #randomButton,
+    body.signed-out #randomButton,
+    body.signed-out .games-tools,
+    body.signed-out #emptyMessage {
+      display: none !important;
+    }
+
+    @media (min-width: 900px) {
+      .container {
+        padding-bottom: 60px;
+      }
+
+      .tab-bar {
+        position: sticky;
+        top: 12px;
+        bottom: auto;
+        display: flex;
+        width: fit-content;
+        gap: 4px;
+        margin: 0 auto 22px;
+        padding: 5px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+      }
+
+      .tab-button {
+        min-height: 0;
+        flex-direction: row;
+        gap: 7px;
+        padding: 9px 18px;
+        font-size: 14px;
+        border-radius: 999px;
+      }
+
+      .tab-button svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .tab-button.active {
+        color: white;
+        background: var(--purple);
+      }
+
+      .tab-button.needs-attention::after {
+        top: 7px;
+        left: auto;
+        right: 9px;
+      }
+    }
+
   </style>
 </head>
 
@@ -1180,22 +1326,6 @@
 
       <div class="header-actions">
         <button
-          class="button secondary"
-          id="friendsButton"
-          type="button"
-        >
-          Friends
-        </button>
-
-        <button
-          class="button secondary"
-          id="accountButton"
-          type="button"
-        >
-          Account
-        </button>
-
-        <button
           class="button"
           id="randomButton"
           type="button"
@@ -1204,6 +1334,56 @@
         </button>
       </div>
     </header>
+
+    <nav
+      class="tab-bar"
+      id="tabBar"
+      aria-label="Sections"
+    >
+      <button
+        class="tab-button"
+        data-tab-button="games"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+        <span>Games</span>
+      </button>
+
+      <button
+        class="tab-button"
+        data-tab-button="social"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4"/><path d="M18 14.4c2.1.8 3.5 2.8 3.5 5.6"/></svg>
+        <span>Social</span>
+      </button>
+
+      <button
+        class="tab-button"
+        data-tab-button="activity"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>
+        <span>Activity</span>
+      </button>
+
+      <button
+        class="tab-button"
+        data-tab-button="account"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span>Account</span>
+      </button>
+    </nav>
+
+    <div
+      class="tab-view"
+      id="gamesView"
+      data-tab-view="games"
+    >
+
+    <div class="games-tools">
 
     <section class="progress-card">
       <div class="progress-top">
@@ -1298,6 +1478,8 @@
       </button>
     </div>
 
+    </div>
+
     <div
   class="signed-out-home hidden"
   id="signedOutHome"
@@ -1336,6 +1518,14 @@
     >
       No games match your search or selected filter.
     </div>
+
+    </div>
+
+    <div
+      class="tab-view hidden"
+      id="socialView"
+      data-tab-view="social"
+    >
 
 <section
       class="section"
@@ -1417,6 +1607,113 @@
       </div>
     </section>
 
+    </div>
+
+    <div
+      class="tab-view hidden"
+      id="activityView"
+      data-tab-view="activity"
+    >
+      <section class="section">
+        <h2>
+          📈 Activity
+        </h2>
+
+        <p class="intro">
+          Your streaks and recent results will show up here soon.
+          For now, use 📅 History on any game card.
+        </p>
+      </section>
+    </div>
+
+    <div
+      class="tab-view hidden"
+      id="accountView"
+      data-tab-view="account"
+    >
+
+    <section
+      class="section"
+      id="accountSection"
+    >
+      <h2>
+        👤 Account
+      </h2>
+
+      <div id="accountSignedOut">
+        <p class="intro">
+          Log in to choose your games, track results and streaks,
+          and compare scores with friends.
+        </p>
+
+        <button
+          class="button"
+          id="accountLoginButton"
+          type="button"
+        >
+          Log In / Create Account
+        </button>
+      </div>
+
+      <div
+        id="signedInView"
+        class="hidden"
+      >
+        <div class="account-state">
+
+          <div>
+            <strong id="accountName"></strong>
+
+            <p
+              class="status"
+              id="accountEmail"
+            ></p>
+          </div>
+
+          <button
+            class="button danger"
+            id="signOutButton"
+            type="button"
+          >
+            Sign Out
+          </button>
+
+        </div>
+
+        <div class="form">
+
+          <div class="field full">
+            <label for="usernameInput">
+              Username
+            </label>
+
+            <input
+              id="usernameInput"
+              type="text"
+              maxlength="24"
+              autocomplete="off"
+              placeholder="lowercase_letters"
+            >
+
+            <button
+              class="button"
+              id="saveProfileButton"
+              type="button"
+            >
+              Save Username
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+
+      <p
+        class="status"
+        id="profileStatus"
+        aria-live="polite"
+      ></p>
+    </section>
 
     <section class="section">
       <h2>
@@ -1607,6 +1904,8 @@
       Local favorites and checkmarks remain available without an account.
       Signed-in results, friends, and feedback use Supabase.
     </p>
+
+    </div>
   </div>
 
 <div
@@ -1677,58 +1976,6 @@
               type="button"
             >
               Create Account
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <div
-        id="signedInView"
-        class="hidden"
-      >
-        <div class="account-state">
-
-          <div>
-            <strong id="accountName"></strong>
-
-            <p
-              class="status"
-              id="accountEmail"
-            ></p>
-          </div>
-
-          <button
-            class="button danger"
-            id="signOutButton"
-            type="button"
-          >
-            Sign Out
-          </button>
-
-        </div>
-
-        <div class="form">
-
-          <div class="field full">
-            <label for="usernameInput">
-              Username
-            </label>
-
-            <input
-              id="usernameInput"
-              type="text"
-              maxlength="24"
-              autocomplete="off"
-              placeholder="lowercase_letters"
-            >
-
-            <button
-              class="button"
-              id="saveProfileButton"
-              type="button"
-            >
-              Save Username
             </button>
           </div>
 
@@ -4676,7 +4923,7 @@ document
 
     document
       .getElementById(
-        "accountButton"
+        "accountLoginButton"
       )
       .addEventListener(
         "click",
@@ -4707,22 +4954,6 @@ document
   );
 
 
-    document
-      .getElementById(
-        "friendsButton"
-      )
-      .addEventListener(
-        "click",
-        () => {
-          document
-            .getElementById(
-              "friendsSection"
-            )
-            .scrollIntoView({
-              behavior: "smooth"
-            });
-        }
-      );
 
     document
   .getElementById(
@@ -4977,15 +5208,29 @@ document.addEventListener(
     !signedIn
   );
 
-      
-      if (!signedIn) {
-  document
-    .getElementById(
-      "accountButton"
-    )
-    .textContent =
-      "Account";
-}
+      document.body.classList.toggle(
+        "signed-out",
+        !signedIn
+      );
+
+      document
+        .getElementById(
+          "accountSignedOut"
+        )
+        .classList
+        .toggle(
+          "hidden",
+          signedIn
+        );
+
+      if (signedIn) {
+        document
+          .getElementById(
+            "accountModal"
+          )
+          .classList
+          .remove("open");
+      }
 
       document
         .getElementById(
@@ -5275,6 +5520,8 @@ startLibrarySync();
 
           showSessionUI();
 
+          switchTab("games");
+
           document
             .getElementById(
               "accountModal"
@@ -5326,14 +5573,13 @@ async function loadProfile() {
             .textContent =
               profile.display_name ||
               "@" + profile.username;
-          document
-  .getElementById(
-    "accountButton"
-  )
-  .textContent =
-    "👤 @" +
-    profile.username;
+
+          setAccountAttention(
+            !profile.username
+          );
         } else {
+          setAccountAttention(true);
+
           document
             .getElementById(
               "accountName"
@@ -5343,13 +5589,13 @@ async function loadProfile() {
               "Signed in";
 
           setStatus(
-            authStatus,
+            profileStatus,
             "Choose a username to finish setting up your profile."
           );
         }
       } catch (error) {
         setStatus(
-          authStatus,
+          profileStatus,
           error.message,
           "error"
         );
@@ -5366,7 +5612,7 @@ async function loadProfile() {
         async () => {
           if (!session) {
             setStatus(
-              authStatus,
+              profileStatus,
               "Log in before saving a username.",
               "error"
             );
@@ -5389,7 +5635,7 @@ async function loadProfile() {
 
           if (!usernameIsValid) {
             setStatus(
-              authStatus,
+              profileStatus,
               "Use 3–24 lowercase letters, numbers, or underscores.",
               "error"
             );
@@ -5399,7 +5645,7 @@ async function loadProfile() {
 
           try {
             setStatus(
-              authStatus,
+              profileStatus,
               "Saving username..."
             );
 
@@ -5426,7 +5672,7 @@ async function loadProfile() {
             );
 
             setStatus(
-              authStatus,
+              profileStatus,
               "Username saved.",
               "success"
             );
@@ -5451,7 +5697,7 @@ async function loadProfile() {
               )
             ) {
               setStatus(
-                authStatus,
+                profileStatus,
                 "That username is already taken.",
                 "error"
               );
@@ -5461,13 +5707,13 @@ async function loadProfile() {
               )
             ) {
               setStatus(
-                authStatus,
+                profileStatus,
                 "Username must be 3–24 characters using only lowercase letters, numbers, or underscores.",
                 "error"
               );
             } else {
               setStatus(
-                authStatus,
+                profileStatus,
                 errorMessage ||
                   "Could not save username.",
                 "error"
@@ -9039,7 +9285,8 @@ window.addEventListener(
   if (
     !gameCard ||
     gameCard.style.display ===
-      "none"
+      "none" ||
+    gameCard.offsetParent === null
   ) {
     return;
   }
@@ -9058,6 +9305,106 @@ window.addEventListener(
   );
 }
 
+
+    const ACTIVE_TAB_KEY =
+      "dailyGameHubActiveTab";
+
+    const TABS =
+      ["games", "social", "activity", "account"];
+
+    let currentTab =
+      TABS.includes(
+        localStorage.getItem(ACTIVE_TAB_KEY)
+      )
+        ? localStorage.getItem(ACTIVE_TAB_KEY)
+        : "games";
+
+    const tabScrollPositions =
+      {};
+
+
+    /*
+     * Show one tab view and hide the others.
+     * Views stay in the page, so nothing reloads
+     * and every listener and element keeps working.
+     */
+    function switchTab(tab) {
+      if (!TABS.includes(tab)) {
+        return;
+      }
+
+      if (tab === currentTab) {
+        if (document.body.dataset.tab === tab) {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+          return;
+        }
+      } else {
+        tabScrollPositions[currentTab] =
+          window.scrollY;
+      }
+
+      currentTab = tab;
+      document.body.dataset.tab = tab;
+
+      try {
+        localStorage.setItem(ACTIVE_TAB_KEY, tab);
+      } catch (error) {}
+
+      document
+        .querySelectorAll("[data-tab-view]")
+        .forEach(view => {
+          view.classList.toggle(
+            "hidden",
+            view.dataset.tabView !== tab
+          );
+        });
+
+      document
+        .querySelectorAll("[data-tab-button]")
+        .forEach(button => {
+          const active =
+            button.dataset.tabButton === tab;
+
+          button.classList.toggle("active", active);
+
+          if (active) {
+            button.setAttribute("aria-current", "page");
+          } else {
+            button.removeAttribute("aria-current");
+          }
+        });
+
+      window.scrollTo(
+        0,
+        tabScrollPositions[tab] || 0
+      );
+    }
+
+
+    function setAccountAttention(needed) {
+      document
+        .querySelector('[data-tab-button="account"]')
+        .classList
+        .toggle("needs-attention", needed);
+    }
+
+
+    document
+      .querySelectorAll("[data-tab-button]")
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            switchTab(button.dataset.tabButton);
+          }
+        );
+      });
+
+
+    switchTab(currentTab);
 
 updateLocalUI();
 showSessionUI();
