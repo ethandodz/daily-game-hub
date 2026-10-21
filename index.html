@@ -1545,17 +1545,29 @@
     }
 
     .game-card:not(.expanded) h3 {
-      margin: 6px 0 0;
+      margin: 8px 0 0;
       overflow: hidden;
-      font-size: 15px;
+      font-size: 17px;
       line-height: 1.2;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .game-card:not(.expanded) .streak.visible {
-      margin-top: 1px;
-      font-size: 11px;
+    .streak-badge {
+      color: var(--streak);
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .streak-badge:empty,
+    .game-card.expanded .streak-badge,
+    .game-card:not(.expanded) .streak {
+      display: none !important;
+    }
+
+    .game-card:not(.expanded) .favorite-button {
+      padding: 2px;
     }
 
     .game-card:not(.expanded) .category,
@@ -7006,7 +7018,16 @@ card.dataset.official =
   cardActions.className =
     "card-top-actions";
 
+  const streakBadge =
+    document.createElement(
+      "span"
+    );
+
+  streakBadge.className =
+    "streak-badge";
+
   cardActions.append(
+    streakBadge,
     favoriteButton,
     expandButton
   );
@@ -8614,6 +8635,25 @@ await loadStreaks();
 
             streakElement.classList.remove(
               "visible"
+            );
+          }
+
+          const streakBadge =
+            card.querySelector(
+              ".streak-badge"
+            );
+
+          if (streakBadge) {
+            streakBadge.textContent =
+              streak > 0
+                ? "🔥 " + streak
+                : "";
+
+            streakBadge.setAttribute(
+              "aria-label",
+              streak > 0
+                ? streak + " day streak"
+                : ""
             );
           }
         });
