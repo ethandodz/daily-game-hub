@@ -3077,9 +3077,156 @@
       id="availableGamesList"
     ></div>
 
+    <div class="manage-section-title">
+  Custom Games
+</div>
+
+<button
+  class="button"
+  id="openAddGameButton"
+  type="button"
+>
+  ＋ Add Custom Game
+</button>
+
+    
     <p
       class="status"
       id="manageGamesStatus"
+      aria-live="polite"
+    ></p>
+
+  </div>
+</div>
+
+  <div
+  class="modal"
+  id="addGameModal"
+>
+  <div class="modal-card">
+
+    <div class="modal-top">
+      <div>
+        <h2>
+          Add Custom Game
+        </h2>
+
+        <p class="status">
+          Add another daily game to your personal dashboard.
+        </p>
+      </div>
+
+      <button
+        class="close-button"
+        data-close="addGameModal"
+        type="button"
+        aria-label="Close Add Custom Game"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="form">
+
+      <div class="field full">
+        <label for="customGameName">
+          Game Name
+        </label>
+
+        <input
+          id="customGameName"
+          type="text"
+          maxlength="60"
+          placeholder="Cine2Nerdle"
+        >
+      </div>
+
+      <div class="field full">
+        <label for="customGameUrl">
+          Game URL
+        </label>
+
+        <input
+          id="customGameUrl"
+          type="url"
+          maxlength="500"
+          placeholder="https://example.com"
+        >
+      </div>
+
+      <div class="field">
+        <label for="customGameCategory">
+          Category
+        </label>
+
+        <select id="customGameCategory">
+          <option value="word">
+            Word & Logic
+          </option>
+
+          <option value="geography">
+            Geography
+          </option>
+
+          <option value="movies">
+            Movies
+          </option>
+
+          <option value="sports">
+            Sports
+          </option>
+
+          <option value="trivia">
+            Trivia
+          </option>
+
+          <option value="other">
+            Other
+          </option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="customGameIcon">
+          Icon
+        </label>
+
+        <input
+          id="customGameIcon"
+          type="text"
+          maxlength="4"
+          placeholder="🎮"
+        >
+      </div>
+
+      <div class="field full">
+        <label for="customGameDescription">
+          Description
+        </label>
+
+        <input
+          id="customGameDescription"
+          type="text"
+          maxlength="150"
+          placeholder="A quick daily movie game."
+        >
+      </div>
+
+      <div class="field full">
+        <button
+          class="button"
+          id="saveCustomGameButton"
+          type="button"
+        >
+          Add Game
+        </button>
+      </div>
+
+    </div>
+
+    <p
+      class="status"
+      id="addGameStatus"
       aria-live="polite"
     ></p>
 
@@ -3538,6 +3685,35 @@ function applyGameOrder(
     GAME_ORDER_KEY,
     JSON.stringify(
       currentGameOrder
+    )
+  );
+}
+
+    function createCustomGameKey(
+  gameName
+) {
+  const baseKey =
+    gameName
+      .toLowerCase()
+      .trim()
+      .replace(
+        /[^a-z0-9]+/g,
+        "-"
+      )
+      .replace(
+        /^-+|-+$/g,
+        ""
+      );
+
+  return (
+    "custom-" +
+    session.user.id.slice(0, 8) +
+    "-" +
+    Date.now() +
+    "-" +
+    (
+      baseKey ||
+      "game"
     )
   );
 }
@@ -5164,6 +5340,36 @@ function startGameOrderSync() {
           "Log in to manage your games.",
           "error"
         );
+
+        document
+  .getElementById(
+    "openAddGameButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+      setStatus(
+        addGameStatus,
+        ""
+      );
+
+      document
+        .getElementById(
+          "addGameModal"
+        )
+        .classList
+        .add("open");
+    }
+  );
+
+        document
+  .getElementById(
+    "saveCustomGameButton"
+  )
+  .addEventListener(
+    "click",
+    createCustomGame
+  );
 
         return;
       }
@@ -6802,6 +7008,308 @@ async function loadProfile() {
     console.error(
       "Game catalog loading failed:",
       error
+    );
+  }
+}
+
+    async function createCustomGame() {
+  if (!session) {
+    return;
+  }
+
+
+  const gameName =
+    document
+      .getElementById(
+        "customGameName"
+      )
+      .value
+      .trim();
+
+
+  let gameUrl =
+    document
+      .getElementById(
+        "customGameUrl"
+      )
+      .value
+      .trim();
+
+
+  const gameCategory =
+    document
+      .getElementById(
+        "customGameCategory"
+      )
+      .value;
+
+
+  const gameIcon =
+    document
+      .getElementById(
+        "customGameIcon"
+      )
+      .value
+      .trim() ||
+    "🎮";
+
+
+  const gameDescription =
+    document
+      .getElementById(
+        "customGameDescription"
+      )
+      .value
+      .trim();
+
+
+  if (!gameName) {
+    setStatus(
+      addGameStatus,
+      "Enter a game name.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (
+    !gameUrl.startsWith(
+      "https://"
+    ) &&
+    !gameUrl.startsWith(
+      "http://"
+    )
+  ) {
+    setStatus(
+      addGameStatus,
+      "Enter the full game URL beginning with https://",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const gameKey =
+    createCustomGameKey(
+      gameName
+    );
+
+
+  try {
+    setStatus(
+      addGameStatus,
+      "Adding game..."
+    );
+
+
+    /*
+     * Create the custom game.
+     */
+    await request(
+      "/rest/v1/games",
+      {
+        method: "POST",
+
+        headers:
+          authHeaders(
+            "return=minimal"
+          ),
+
+        body:
+          JSON.stringify({
+            game_key:
+              gameKey,
+
+            name:
+              gameName,
+
+            url:
+              gameUrl,
+
+            category:
+              gameCategory,
+
+            description:
+              gameDescription,
+
+            icon:
+              gameIcon,
+
+            color:
+              "#7c3aed",
+
+            is_official:
+              false,
+
+            created_by:
+              session.user.id
+          })
+      }
+    );
+
+
+    const visibleGames =
+      userGameLibrary.filter(
+        game =>
+          game.is_visible
+      );
+
+
+    const highestSortOrder =
+      visibleGames.reduce(
+        (
+          highest,
+          game
+        ) =>
+          Math.max(
+            highest,
+            Number(
+              game.sort_order
+            ) || 0
+          ),
+        0
+      );
+
+
+    /*
+     * Add it to this user's library
+     * at the bottom.
+     */
+    await request(
+      "/rest/v1/user_games",
+      {
+        method: "POST",
+
+        headers:
+          authHeaders(
+            "return=minimal"
+          ),
+
+        body:
+          JSON.stringify({
+            user_id:
+              session.user.id,
+
+            game_key:
+              gameKey,
+
+            is_visible:
+              true,
+
+            is_favorite:
+              false,
+
+            sort_order:
+              highestSortOrder + 1
+          })
+      }
+    );
+
+
+    /*
+     * Create its card.
+     */
+    createGameCard({
+      game_key:
+        gameKey,
+
+      name:
+        gameName,
+
+      url:
+        gameUrl,
+
+      category:
+        gameCategory,
+
+      description:
+        gameDescription,
+
+      icon:
+        gameIcon,
+
+      color:
+        "#7c3aed"
+    });
+
+
+    currentGameOrder =
+      currentGameOrder.filter(
+        id =>
+          id !== gameKey
+      );
+
+    currentGameOrder.push(
+      gameKey
+    );
+
+
+    defaultGameOrder.push(
+      gameKey
+    );
+
+
+    applyGameOrder(
+      currentGameOrder
+    );
+
+
+    await saveGameOrder();
+
+    await loadUserGameLibrary();
+
+
+    document
+      .getElementById(
+        "customGameName"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "customGameUrl"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "customGameIcon"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "customGameDescription"
+      )
+      .value = "";
+
+
+    setStatus(
+      addGameStatus,
+      "Game added.",
+      "success"
+    );
+
+
+    document
+      .getElementById(
+        "addGameModal"
+      )
+      .classList
+      .remove("open");
+
+
+    renderManageGames();
+    updateLocalUI();
+
+  } catch (error) {
+    setStatus(
+      addGameStatus,
+      error.message,
+      "error"
     );
   }
 }
