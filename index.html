@@ -5755,6 +5755,14 @@ loadGameCatalog()
     loadUserGameLibrary
   )
   .then(() => {
+    /*
+     * Scores and streaks can finish loading
+     * before the cards exist. Apply them again
+     * now that every card is on the page.
+     */
+    loadTodayScores();
+    loadStreaks();
+
     if (currentTab === "activity") {
       loadActivity();
     }
@@ -9805,6 +9813,24 @@ window.addEventListener(
     savedOffset
   );
 }
+
+
+    /*
+     * loadTodayScores rebuilds the friend rows on each
+     * card. Run calls one after another so two loads
+     * can never interleave and duplicate rows.
+     */
+    loadTodayScores = (load => {
+      let running =
+        Promise.resolve();
+
+      return () => {
+        running =
+          running.then(load, load);
+
+        return running;
+      };
+    })(loadTodayScores);
 
 
     /*
