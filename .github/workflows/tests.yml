@@ -29,7 +29,13 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run tests
-        run: npm test
+        run: |
+          mkdir -p output
+          npm test 2>&1 | tee output/test-log.txt
+
+      - name: Show failed checks
+        if: failure()
+        run: grep -E '✗|FAIL' output/test-log.txt | sed 's/^/::error::/' || true
 
       - name: Keep screenshots when something fails
         if: failure()
