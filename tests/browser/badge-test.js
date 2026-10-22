@@ -14,6 +14,8 @@ server.listen(0, async () => {
       return { badge: c.querySelector('.streak-badge').textContent, onCorner: b.right > i.right && b.left > i.left + 8 && b.top < i.top + 4 && b.bottom > i.top,
         clearOfNext: b.right <= next.left + 1, nameVisible: r('h3').height > 0 };
     });
+    const edges = await page.evaluate(() => { const i = [...document.querySelectorAll('.game-card .game-icon')].slice(0, 4).map(x => x.getBoundingClientRect()); const s = document.querySelector('.search-row').getBoundingClientRect(); return { left: i[0].left - s.left, right: s.right - i[3].right, gaps: [1, 2, 3].map(k => Math.round(i[k].left - i[k - 1].right)) }; });
+    assert(Math.abs(edges.left) <= 1 && Math.abs(edges.right) <= 1 && Math.max(...edges.gaps) - Math.min(...edges.gaps) <= 1, dev + ' outer icons line up with the search bar, even spacing ' + JSON.stringify(edges));
     const m = await spot();
     assert(m.badge === '🔥 5' && m.onCorner && m.clearOfNext && m.nameVisible, dev + ' streak bubble on the icon ' + JSON.stringify(m));
     assert(!(await page.$eval('.game-card[data-id="krillion"] .streak-badge', b => b.getBoundingClientRect().width)), dev + ' no bubble when no streak');
