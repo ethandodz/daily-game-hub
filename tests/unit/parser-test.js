@@ -1,6 +1,12 @@
 const { extract } = require('../helpers/extract.js');
 eval(extract('function readGuessFraction(', 'let scoreNumberEdited') + '\nglobalThis.readGameScore = readGameScore;');
 const cases = [
+  ['boxoffice', "boxofficega.me\nMarch 1, 2024\n✅ 120\n✅ 0\n❌ 0\n✅ 120\n✅ 160\n🏆 400", 400, 'points', false],
+  ['boxoffice', "boxofficega.me\nMarch 2, 2024\n❌ 0\n❌ 0\n✅ 80\n❌ 0\n❌ 0\n🏆 80", 80, 'points', false],
+  ['duotrigordle', "Daily Duotrigordle #1695\nGuesses: 36/37\n0️⃣8️⃣ 2️⃣4️⃣ 2️⃣3️⃣ 0️⃣9️⃣\n1️⃣0️⃣ 3️⃣5️⃣ 2️⃣5️⃣ 1️⃣1️⃣\n1️⃣4️⃣ 1️⃣5️⃣ 1️⃣7️⃣ 0️⃣7️⃣\nhttps://duotrigordle.com/", 36, 'guesses', false],
+  ['duotrigordle', "Daily Duotrigordle #1696\nGuesses: 37/37\n0️⃣8️⃣ 2️⃣4️⃣ 🟥🟥 0️⃣9️⃣\n1️⃣0️⃣ 3️⃣5️⃣ 2️⃣5️⃣ 1️⃣1️⃣", 38, 'guesses', true],
+  ['immaculate', "🏈 Immaculate Grid 1191 6/9:\nRarity: 430\n🟩🟩⬜️\n🟩🟩🟩\n⬜️⬜️🟩\nPlay at:\nhttps://www.sports-reference.com/immaculate-grid/play/football", 430, 'rarity', false],
+  ['custom-d624eb38-1792591388191-perceptle', "Perceptle #97 - B (78)\n🔢 83  🎯 99  📐 89  🥁 24  ✂️ 96\nhttps://perceptle.com", 78, 'points', false],
   ['connections', "Connections\n🟩🟩🟩🟩\n🟪🟪🟪🟪", null, null, null],
   ['connections', "Connections\nPuzzle #1223\n🟦🟦🟦🟦\n🟨🟨🟨🟨\n🟪🟪🟪🟪\n🟩🟩🟩🟩", 0, 'mistakes', false],
   ['connections', "Connections\nPuzzle #1223\n🟦🟨🟦🟦\n🟨🟨🟨🟨\n🟪🟦🟪🟪\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪", 2, 'mistakes', false],
