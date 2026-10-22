@@ -1719,13 +1719,97 @@
       font-size: 13px;
     }
 
-    .server-placeholder {
-      padding: 14px;
-      color: var(--muted);
+    .board-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .board-head h3 {
+      margin: 6px 0;
+    }
+
+    .board-days {
+      display: flex;
+      gap: 6px;
+    }
+
+    .board-days .filter-button {
+      padding: 6px 11px;
       font-size: 13px;
+    }
+
+    .board-summary {
+      margin: 4px 0 10px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .board-rule {
+      margin: 0 0 0 auto;
+    }
+
+    .board-crown-note {
+      margin: 6px 0 2px;
+      color: var(--streak);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .board-row {
+      border-top: 1px solid var(--divider);
+    }
+
+    .board-row summary {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 2px;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .board-row summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .board-rank {
+      color: var(--muted);
+      font-weight: 900;
       text-align: center;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
+    }
+
+    .board-name {
+      min-width: 0;
+      overflow: hidden;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .board-score {
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .board-row.winner .board-score {
+      color: var(--streak);
+    }
+
+    .board-full {
+      padding: 0 2px 10px 38px;
+      font-size: 13px;
+    }
+
+    .board-waiting {
+      padding-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--divider);
     }
 
     .invite-row {
@@ -2118,9 +2202,39 @@
           id="serverMeta"
         ></p>
 
-        <div class="server-placeholder">
-          📊 Daily results, winners and stats are coming next.
+        <div class="board-head">
+          <h3>
+            Daily Board
+          </h3>
+
+          <div class="board-days">
+            <button
+              class="filter-button active"
+              data-board-day="today"
+              type="button"
+            >
+              Today
+            </button>
+
+            <button
+              class="filter-button"
+              data-board-day="yesterday"
+              type="button"
+            >
+              Yesterday
+            </button>
+          </div>
         </div>
+
+        <p
+          class="board-summary"
+          id="serverBoardSummary"
+        ></p>
+
+        <div
+          class="social-results"
+          id="serverBoard"
+        ></div>
 
         <h3>
           Invite
@@ -11498,14 +11612,21 @@ window.addEventListener(
               )
             : [];
 
-        renderServerMembers(
-          members || [],
+        selectedServerMembers =
+          members || [];
+
+        selectedServerProfiles =
           new Map(
             (profiles || []).map(profile => [profile.user_id, profile])
-          )
+          );
+
+        renderServerMembers(
+          selectedServerMembers,
+          selectedServerProfiles
         );
 
         renderServerGames();
+        await loadServerBoard();
       } catch (error) {
         console.error(
           "Server details failed to load:",
@@ -12235,6 +12356,430 @@ window.addEventListener(
       );
 
     captureInviteLink();
+
+
+    /*
+     * Rank one game's results for a day.
+     * direction: "lower", "higher" or "none".
+     * Ties share a rank (1, 1, 3) and share the crown.
+     * A failed game ranks by its fail score but can never win.
+     * Results without a number are listed after the ranked ones.
+     */
+    function rankGameResults(results, direction) {
+      const hasNumber =
+        result =>
+          result.numeric_score !== null &&
+          result.numeric_score !== undefined &&
+          result.numeric_score !== "";
+
+      if (direction !== "lower" && direction !== "higher") {
+        return {
+          ranked: [],
+          unranked: [...results]
+        };
+      }
+
+      const sign =
+        direction === "lower" ? 1 : -1;
+
+      const sorted =
+        results
+          .filter(hasNumber)
+          .sort(
+            (a, b) =>
+              (a.completed === false) - (b.completed === false) ||
+              sign * (Number(a.numeric_score) - Number(b.numeric_score))
+          );
+
+      const bestWinning =
+        sorted.find(result => result.completed !== false);
+
+      const ranked =
+        sorted.map((result, index) => {
+          let rank = index + 1;
+
+          for (let earlier = index - 1; earlier >= 0; earlier -= 1) {
+            const previous = sorted[earlier];
+
+            if (
+              Number(previous.numeric_score) === Number(result.numeric_score) &&
+              (previous.completed === false) === (result.completed === false)
+            ) {
+              rank = earlier + 1;
+            } else {
+              break;
+            }
+          }
+
+          return {
+            result,
+            rank,
+            winner:
+              Boolean(bestWinning) &&
+              result.completed !== false &&
+              Number(result.numeric_score) === Number(bestWinning.numeric_score)
+          };
+        });
+
+      return {
+        ranked,
+        unranked: results.filter(result => !hasNumber(result))
+      };
+    }
+
+
+    let serverBoardDay =
+      "today";
+
+    let selectedServerMembers =
+      [];
+
+    let selectedServerProfiles =
+      new Map();
+
+
+    function boardDate() {
+      if (serverBoardDay === "today") {
+        return TODAY;
+      }
+
+      const yesterday =
+        new Date(TODAY + "T12:00:00");
+
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      return yesterday.toLocaleDateString("en-CA");
+    }
+
+
+    function memberName(userId) {
+      const profile =
+        selectedServerProfiles.get(userId);
+
+      const name =
+        profile
+          ? profile.display_name || "@" + profile.username
+          : "Player";
+
+      return userId === session?.user.id
+        ? name + " (you)"
+        : name;
+    }
+
+
+    function describeBoardScore(result) {
+      if (result.completed === false) {
+        return "Not solved";
+      }
+
+      if (
+        result.numeric_score === null ||
+        result.numeric_score === undefined
+      ) {
+        return "No score";
+      }
+
+      const unit =
+        result.score_unit || "";
+
+      return (
+        result.numeric_score +
+        (unit
+          ? " " + (Number(result.numeric_score) === 1 ? unit.replace(/s$/, "") : unit)
+          : "")
+      );
+    }
+
+
+    function createBoardRow(result, rank, winner) {
+      const row =
+        document.createElement("details");
+
+      row.className =
+        "board-row" + (winner ? " winner" : "");
+
+      const summary =
+        document.createElement("summary");
+
+      const place =
+        document.createElement("span");
+
+      place.className =
+        "board-rank";
+
+      place.textContent =
+        winner ? "👑" : rank ? String(rank) : "–";
+
+      const name =
+        document.createElement("span");
+
+      name.className =
+        "board-name";
+
+      name.textContent =
+        memberName(result.user_id);
+
+      const score =
+        document.createElement("span");
+
+      score.className =
+        "board-score";
+
+      score.textContent =
+        describeBoardScore(result);
+
+      summary.append(place, name, score);
+      row.appendChild(summary);
+
+      const full =
+        document.createElement("div");
+
+      full.className =
+        "friend-result-score board-full";
+
+      full.textContent =
+        result.result_text || formatScore(result);
+
+      row.appendChild(full);
+
+      return row;
+    }
+
+
+    async function loadServerBoard() {
+      const server =
+        getSelectedServer();
+
+      const board =
+        document.getElementById("serverBoard");
+
+      const summaryLine =
+        document.getElementById("serverBoardSummary");
+
+      if (!server) {
+        return;
+      }
+
+      document
+        .querySelectorAll("[data-board-day]")
+        .forEach(button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.boardDay === serverBoardDay
+          );
+        });
+
+      const date =
+        boardDate();
+
+      if (date < server.start_date) {
+        summaryLine.textContent = "";
+        board.innerHTML =
+          '<p class="status">Scores count from ' +
+          formatServerDate(server.start_date) +
+          ".</p>";
+        return;
+      }
+
+      const gameKeys =
+        selectedServerGames.map(game => game.game_key);
+
+      const memberIds =
+        selectedServerMembers.map(member => member.user_id);
+
+      if (gameKeys.length === 0 || memberIds.length === 0) {
+        board.innerHTML = "";
+        summaryLine.textContent = "";
+        return;
+      }
+
+      let results =
+        [];
+
+      try {
+        results =
+          await request(
+            "/rest/v1/daily_scores" +
+            "?play_date=eq." + date +
+            "&game_id=in.(" + gameKeys.map(encodeURIComponent).join(",") + ")" +
+            "&user_id=in.(" + memberIds.join(",") + ")" +
+            "&select=user_id,game_id,result_text,numeric_score,score_unit,completed",
+            {
+              headers: authHeaders()
+            }
+          ) || [];
+      } catch (error) {
+        console.error(
+          "Server board failed to load:",
+          error
+        );
+
+        board.innerHTML =
+          '<p class="status error">Results could not be loaded.</p>';
+        return;
+      }
+
+      if (
+        server.id !== selectedServerId ||
+        date !== boardDate()
+      ) {
+        return;
+      }
+
+      const isToday =
+        serverBoardDay === "today";
+
+      const leadCounts =
+        new Map();
+
+      const fragment =
+        document.createDocumentFragment();
+
+      for (const serverGame of selectedServerGames) {
+        const direction =
+          serverGame.score_direction ||
+          gameDirections.get(serverGame.game_key) ||
+          "none";
+
+        const gameResults =
+          results.filter(result => result.game_id === serverGame.game_key);
+
+        const { ranked, unranked } =
+          rankGameResults(gameResults, direction);
+
+        const block =
+          document.createElement("div");
+
+        block.className =
+          "social-game board-game";
+
+        const header =
+          document.createElement("div");
+
+        header.className =
+          "social-game-header";
+
+        const name =
+          document.createElement("div");
+
+        name.className =
+          "social-game-name";
+
+        name.textContent =
+          getCatalogGame(serverGame.game_key).name;
+
+        const rule =
+          document.createElement("div");
+
+        rule.className =
+          "activity-sub board-rule";
+
+        rule.textContent =
+          describeDirection(direction);
+
+        header.append(
+          createGameBadge(serverGame.game_key),
+          name,
+          rule
+        );
+
+        block.appendChild(header);
+
+        const winners =
+          ranked.filter(entry => entry.winner);
+
+        if (winners.length) {
+          const crownNote =
+            document.createElement("div");
+
+          crownNote.className =
+            "board-crown-note";
+
+          crownNote.textContent =
+            (isToday ? "👑 Leading: " : "👑 Winner: ") +
+            winners.map(entry => memberName(entry.result.user_id)).join(", ") +
+            (winners.length > 1 ? " (tie)" : "");
+
+          block.appendChild(crownNote);
+
+          winners.forEach(entry => {
+            leadCounts.set(
+              entry.result.user_id,
+              (leadCounts.get(entry.result.user_id) || 0) + 1
+            );
+          });
+        }
+
+        ranked.forEach(entry => {
+          block.appendChild(
+            createBoardRow(entry.result, entry.rank, entry.winner)
+          );
+        });
+
+        unranked.forEach(result => {
+          block.appendChild(
+            createBoardRow(result, null, false)
+          );
+        });
+
+        const played =
+          new Set(gameResults.map(result => result.user_id));
+
+        const waiting =
+          selectedServerMembers
+            .map(member => member.user_id)
+            .filter(userId => !played.has(userId));
+
+        if (waiting.length) {
+          const waitingNote =
+            document.createElement("div");
+
+          waitingNote.className =
+            "board-waiting";
+
+          waitingNote.textContent =
+            (isToday ? "Not played yet: " : "Didn’t play: ") +
+            waiting.map(memberName).join(", ");
+
+          block.appendChild(waitingNote);
+        }
+
+        fragment.appendChild(block);
+      }
+
+      board.innerHTML = "";
+      board.appendChild(fragment);
+
+      const leaders =
+        [...leadCounts.entries()]
+          .sort((a, b) => b[1] - a[1]);
+
+      summaryLine.textContent =
+        leaders.length
+          ? "👑 " +
+            leaders
+              .map(([userId, count]) =>
+                memberName(userId) + " " + count
+              )
+              .join(" · ") +
+            (isToday ? " (leading so far)" : " (final)")
+          : isToday
+            ? "No winners yet today."
+            : "No winners yesterday.";
+    }
+
+
+    document
+      .querySelectorAll("[data-board-day]")
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            serverBoardDay = button.dataset.boardDay;
+            loadServerBoard();
+          }
+        );
+      });
 
 
     const ACTIVE_TAB_KEY =
