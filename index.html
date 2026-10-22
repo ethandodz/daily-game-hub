@@ -1904,8 +1904,8 @@
       color: var(--red);
     }
 
-    #serversSection:not(.is-owner) .owner-only,
-    #serversSection.is-owner .member-only {
+    body:not(.server-owner) .owner-only,
+    body.server-owner .member-only {
       display: none;
     }
 
@@ -2080,6 +2080,150 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+    }
+
+    /* Social tab: server bar, panels, compact board */
+
+    body.signed-out [data-social-section="friends"] {
+      display: block !important;
+    }
+
+    .server-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .server-bar .server-switcher {
+      flex: 1;
+      min-width: 0;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .chip-button {
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      color: var(--text);
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel-light);
+    }
+
+    .social-segments {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+      margin: 12px 0;
+      padding: 3px;
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .social-segment {
+      padding: 8px 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+    }
+
+    .social-segment.active {
+      color: white;
+      background: var(--purple);
+    }
+
+    #serverDetail .board-head .server-meta {
+      margin: 0;
+    }
+
+    #serverDetail [data-social-section] > h3:first-child {
+      margin-top: 4px;
+    }
+
+    .board-list {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-light);
+    }
+
+    .board-game + .board-game {
+      border-top: 1px solid var(--divider);
+    }
+
+    .board-game-header {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      color: var(--text);
+      text-align: left;
+      border: 0;
+      background: transparent;
+    }
+
+    .board-game-name {
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .board-lead {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .board-lead.has-winner {
+      color: var(--streak);
+      font-weight: 800;
+    }
+
+    .board-chevron {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      transition: transform 0.15s ease;
+    }
+
+    .board-game.open .board-chevron {
+      transform: rotate(90deg);
+    }
+
+    .board-game-body {
+      display: none;
+      padding: 0 12px 10px;
+    }
+
+    .board-game.open .board-game-body {
+      display: block;
+    }
+
+    .board-game-body .board-rule {
+      margin: 0 0 4px;
+    }
+
+    .settings-actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .settings-actions .arrange-button {
+      padding: 12px;
+      font-size: 14px;
+      text-align: left;
     }
 
     @media (min-width: 900px) {
@@ -2345,239 +2489,228 @@
       class="section"
       id="serversSection"
     >
-      <div class="servers-head">
+      <div class="server-bar">
+        <div
+          class="filter-scroll server-switcher"
+          id="serverSwitcher"
+        ></div>
+
+        <button
+          class="chip-button"
+          id="openNewServerButton"
+          type="button"
+          aria-label="Create or join a server"
+        >
+          ＋
+        </button>
+
+        <button
+          class="chip-button"
+          id="openServerSettingsButton"
+          type="button"
+          aria-label="Server settings"
+        >
+          ⚙️
+        </button>
+      </div>
+
+      <div
+        class="hidden"
+        id="serversEmpty"
+      >
         <h2>
           🏆 Servers
         </h2>
 
-        <div class="servers-head-actions">
+        <p class="intro">
+          Servers are private groups that compete on the same daily games.
+          Create one and share the invite, or join with a code.
+        </p>
+
+        <div class="onboarding-actions">
           <button
-            class="arrange-button"
+            class="button secondary"
             id="openJoinServerButton"
             type="button"
           >
-            Join
+            Join with a code
           </button>
 
           <button
-            class="arrange-button"
+            class="button"
             id="openCreateServerButton"
             type="button"
           >
-            ＋ Create
+            Create a server
           </button>
         </div>
       </div>
 
       <div
-        class="filter-scroll server-switcher"
-        id="serverSwitcher"
-      ></div>
-
-      <p
-        class="intro hidden"
-        id="serversEmpty"
+        class="social-segments hidden"
+        id="socialSegments"
+        role="tablist"
       >
-        Servers are private groups that compete on the same daily games.
-        Create one and share the invite, or join with a code.
-      </p>
+        <button class="social-segment" data-social-panel="today" type="button" role="tab">Today</button>
+        <button class="social-segment" data-social-panel="stats" type="button" role="tab">Stats</button>
+        <button class="social-segment" data-social-panel="members" type="button" role="tab">Members</button>
+        <button class="social-segment" data-social-panel="friends" type="button" role="tab">Friends</button>
+      </div>
 
       <div
         class="hidden"
         id="serverDetail"
       >
-        <p
-          class="server-meta"
-          id="serverMeta"
-        ></p>
+        <div data-social-section="today">
+          <div class="board-head">
+            <p
+              class="server-meta"
+              id="serverMeta"
+            ></p>
 
-        <div class="board-head">
-          <h3>
-            Daily Board
-          </h3>
+            <div class="board-days">
+              <button
+                class="filter-button active"
+                data-board-day="today"
+                type="button"
+              >
+                Today
+              </button>
 
-          <div class="board-days">
-            <button
-              class="filter-button active"
-              data-board-day="today"
-              type="button"
-            >
-              Today
-            </button>
-
-            <button
-              class="filter-button"
-              data-board-day="yesterday"
-              type="button"
-            >
-              Yesterday
-            </button>
+              <button
+                class="filter-button"
+                data-board-day="yesterday"
+                type="button"
+              >
+                Yesterday
+              </button>
+            </div>
           </div>
-        </div>
-
-        <p
-          class="board-summary"
-          id="serverBoardSummary"
-        ></p>
-
-        <div
-          class="social-results"
-          id="serverBoard"
-        ></div>
-
-        <h3>
-          📊 Stats
-        </h3>
-
-        <div class="filter-scroll stats-periods">
-          <button class="filter-button" data-stats-period="week" type="button">This week</button>
-          <button class="filter-button active" data-stats-period="month" type="button">This month</button>
-          <button class="filter-button" data-stats-period="year" type="button">This year</button>
-          <button class="filter-button" data-stats-period="all" type="button">All time</button>
-        </div>
-
-        <label
-          class="hidden-label"
-          for="statsGame"
-        >
-          Game
-        </label>
-
-        <select
-          class="search stats-select"
-          id="statsGame"
-        ></select>
-
-        <p
-          class="server-meta"
-          id="statsRange"
-        ></p>
-
-        <div
-          class="stats-list"
-          id="statsLeaderboard"
-        ></div>
-
-        <h4
-          class="stats-subtitle"
-          id="statsHeadToHeadTitle"
-        >
-          You vs each member <span>(wins–losses–ties)</span>
-        </h4>
-
-        <div
-          class="stats-list"
-          id="statsHeadToHead"
-        ></div>
-
-        <div
-          class="stats-chart-wrap"
-          id="statsChartWrap"
-        >
-          <h4
-            class="stats-subtitle"
-            id="statsChartTitle"
-          ></h4>
-
-          <div
-            class="stats-chart"
-            id="statsChart"
-          ></div>
-
-          <div
-            class="stats-legend"
-            id="statsLegend"
-          ></div>
 
           <p
-            class="activity-sub"
-            id="statsChartNote"
+            class="board-summary"
+            id="serverBoardSummary"
           ></p>
+
+          <div
+            class="board-list"
+            id="serverBoard"
+          ></div>
         </div>
 
-        <p
-          class="status"
-          id="statsStatus"
-          aria-live="polite"
-        ></p>
+        <div data-social-section="stats">
+          <div class="filter-scroll stats-periods">
+            <button class="filter-button" data-stats-period="week" type="button">This week</button>
+            <button class="filter-button active" data-stats-period="month" type="button">This month</button>
+            <button class="filter-button" data-stats-period="year" type="button">This year</button>
+            <button class="filter-button" data-stats-period="all" type="button">All time</button>
+          </div>
 
-        <h3>
-          Invite
-        </h3>
+          <label
+            class="hidden-label"
+            for="statsGame"
+          >
+            Game
+          </label>
 
-        <div class="invite-row">
+          <select
+            class="search stats-select"
+            id="statsGame"
+          ></select>
+
+          <p
+            class="server-meta"
+            id="statsRange"
+          ></p>
+
           <div
-            class="invite-code"
-            id="serverInviteCode"
+            class="stats-list"
+            id="statsLeaderboard"
           ></div>
 
-          <button
-            class="button"
-            id="shareInviteButton"
-            type="button"
+          <h4
+            class="stats-subtitle"
+            id="statsHeadToHeadTitle"
           >
-            Share invite link
-          </button>
+            You vs each member <span>(wins–losses–ties)</span>
+          </h4>
+
+          <div
+            class="stats-list"
+            id="statsHeadToHead"
+          ></div>
+
+          <div
+            class="stats-chart-wrap"
+            id="statsChartWrap"
+          >
+            <h4
+              class="stats-subtitle"
+              id="statsChartTitle"
+            ></h4>
+
+            <div
+              class="stats-chart"
+              id="statsChart"
+            ></div>
+
+            <div
+              class="stats-legend"
+              id="statsLegend"
+            ></div>
+
+            <p
+              class="activity-sub"
+              id="statsChartNote"
+            ></p>
+          </div>
+
+          <p
+            class="status"
+            id="statsStatus"
+            aria-live="polite"
+          ></p>
+
         </div>
 
-        <h3>
-          Members
-        </h3>
+        <div data-social-section="members">
+          <h3>
+            Invite
+          </h3>
 
-        <div
-          class="friend-list"
-          id="serverMembers"
-        ></div>
+          <div class="invite-row">
+            <div
+              class="invite-code"
+              id="serverInviteCode"
+            ></div>
 
-        <h3>
-          Games
-        </h3>
+            <button
+              class="button"
+              id="shareInviteButton"
+              type="button"
+            >
+              Share invite link
+            </button>
+          </div>
 
-        <div
-          class="server-games"
-          id="serverGames"
-        ></div>
+          <h3>
+            Members
+          </h3>
 
-        <div class="server-actions">
-          <button
-            class="arrange-button owner-only"
-            id="editServerGamesButton"
-            type="button"
-          >
-            Edit games
-          </button>
+          <div
+            class="friend-list"
+            id="serverMembers"
+          ></div>
 
-          <button
-            class="arrange-button owner-only"
-            id="renameServerButton"
-            type="button"
-          >
-            Rename
-          </button>
+          <h3>
+            Games
+          </h3>
 
-          <button
-            class="arrange-button owner-only"
-            id="resetInviteButton"
-            type="button"
-          >
-            New invite code
-          </button>
+          <div
+            class="server-games"
+            id="serverGames"
+          ></div>
 
-          <button
-            class="arrange-button danger-text owner-only"
-            id="deleteServerButton"
-            type="button"
-          >
-            Delete server
-          </button>
-
-          <button
-            class="arrange-button danger-text member-only"
-            id="leaveServerButton"
-            type="button"
-          >
-            Leave server
-          </button>
         </div>
       </div>
 
@@ -2587,6 +2720,8 @@
         aria-live="polite"
       ></p>
     </section>
+
+    <div data-social-section="friends">
 
     <section
       class="section"
@@ -2672,6 +2807,8 @@
         ></div>
       </div>
     </section>
+
+    </div>
 
     </div>
 
@@ -3489,6 +3626,112 @@
 
   </div>
 </div>
+
+  <div
+    class="modal"
+    id="serverSettingsModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2 id="serverSettingsTitle">
+          Server settings
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="serverSettingsModal"
+          type="button"
+          aria-label="Close server settings"
+        >
+          ✕
+        </button>
+      </div>
+
+        <div class="server-actions settings-actions">
+          <button
+            class="arrange-button owner-only"
+            id="editServerGamesButton"
+            type="button"
+          >
+            Edit games
+          </button>
+
+          <button
+            class="arrange-button owner-only"
+            id="renameServerButton"
+            type="button"
+          >
+            Rename
+          </button>
+
+          <button
+            class="arrange-button owner-only"
+            id="resetInviteButton"
+            type="button"
+          >
+            New invite code
+          </button>
+
+          <button
+            class="arrange-button danger-text owner-only"
+            id="deleteServerButton"
+            type="button"
+          >
+            Delete server
+          </button>
+
+          <button
+            class="arrange-button danger-text member-only"
+            id="leaveServerButton"
+            type="button"
+          >
+            Leave server
+          </button>
+        </div>
+    </div>
+  </div>
+
+
+  <div
+    class="modal"
+    id="newServerModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Add a server
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="newServerModal"
+          type="button"
+          aria-label="Close add server window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="settings-actions">
+        <button
+          class="button"
+          id="newServerCreateButton"
+          type="button"
+        >
+          Create a server
+        </button>
+
+        <button
+          class="button secondary"
+          id="newServerJoinButton"
+          type="button"
+        >
+          Join with a code
+        </button>
+      </div>
+    </div>
+  </div>
+
 
   <div
     class="modal"
@@ -11794,25 +12037,30 @@ window.addEventListener(
         switcher.appendChild(chip);
       }
 
-      switcher.classList.toggle(
-        "hidden",
-        myServers.length < 2
-      );
+      const hasServers =
+        myServers.length > 0;
+
+      document
+        .querySelector(".server-bar")
+        .classList
+        .toggle("hidden", !hasServers);
 
       document
         .getElementById("serversEmpty")
         .classList
-        .toggle("hidden", myServers.length > 0);
+        .toggle("hidden", hasServers);
 
       document
         .getElementById("serverDetail")
         .classList
         .toggle("hidden", !getSelectedServer());
 
-      document
-        .getElementById("serversSection")
-        .classList
-        .toggle("is-owner", isSelectedServerOwner());
+      document.body.classList.toggle(
+        "server-owner",
+        isSelectedServerOwner()
+      );
+
+      applySocialPanel();
     }
 
 
@@ -11825,9 +12073,15 @@ window.addEventListener(
       }
 
       document.getElementById("serverMeta").textContent =
-        server.name +
-        " · scores count from " +
-        formatServerDate(server.start_date);
+        "Since " +
+        new Date(server.start_date + "T12:00:00").toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year:
+            server.start_date.slice(0, 4) === TODAY.slice(0, 4)
+              ? undefined
+              : "numeric"
+        });
 
       document.getElementById("serverInviteCode").textContent =
         server.invite_code;
@@ -12515,6 +12769,145 @@ window.addEventListener(
     }
 
 
+    const SOCIAL_PANEL_KEY =
+      "dailyGameHubSocialPanel";
+
+    let socialPanel =
+      "today";
+
+    try {
+      socialPanel =
+        localStorage.getItem(SOCIAL_PANEL_KEY) || "today";
+    } catch (error) {}
+
+
+    /*
+     * Social shows one panel at a time: Today, Stats, Members or
+     * Friends. Without any servers (or signed out) only Friends shows.
+     */
+    function applySocialPanel() {
+      const hasServers =
+        Boolean(session) && myServers.length > 0;
+
+      const panel =
+        hasServers ? socialPanel : "friends";
+
+      document
+        .getElementById("socialSegments")
+        .classList
+        .toggle("hidden", !hasServers);
+
+      document
+        .querySelectorAll("[data-social-panel]")
+        .forEach(button => {
+          const active =
+            button.dataset.socialPanel === panel;
+
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-selected", String(active));
+        });
+
+      document
+        .querySelectorAll("[data-social-section]")
+        .forEach(section => {
+          section.classList.toggle(
+            "hidden",
+            section.dataset.socialSection !== panel
+          );
+        });
+    }
+
+
+    document
+      .querySelectorAll("[data-social-panel]")
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            socialPanel = button.dataset.socialPanel;
+
+            try {
+              localStorage.setItem(SOCIAL_PANEL_KEY, socialPanel);
+            } catch (error) {}
+
+            applySocialPanel();
+            window.scrollTo(0, 0);
+
+            // The chart measures its width, so draw it once Stats is visible.
+            if (socialPanel === "stats") {
+              renderServerStats();
+            }
+          }
+        );
+      });
+
+
+    document
+      .getElementById("openServerSettingsButton")
+      .addEventListener(
+        "click",
+        () => {
+          const server =
+            getSelectedServer();
+
+          if (!server) {
+            return;
+          }
+
+          document.getElementById("serverSettingsTitle").textContent =
+            server.name;
+
+          document.getElementById("serverSettingsModal").classList.add("open");
+        }
+      );
+
+    [
+      "editServerGamesButton",
+      "renameServerButton",
+      "resetInviteButton",
+      "deleteServerButton",
+      "leaveServerButton"
+    ].forEach(id => {
+      document
+        .getElementById(id)
+        .addEventListener(
+          "click",
+          () => {
+            document.getElementById("serverSettingsModal").classList.remove("open");
+          }
+        );
+    });
+
+    document
+      .getElementById("openNewServerButton")
+      .addEventListener(
+        "click",
+        () => {
+          document.getElementById("newServerModal").classList.add("open");
+        }
+      );
+
+    document
+      .getElementById("newServerCreateButton")
+      .addEventListener(
+        "click",
+        () => {
+          document.getElementById("newServerModal").classList.remove("open");
+          openCreateServer();
+        }
+      );
+
+    document
+      .getElementById("newServerJoinButton")
+      .addEventListener(
+        "click",
+        () => {
+          document.getElementById("newServerModal").classList.remove("open");
+          openJoinServer();
+        }
+      );
+
+
     /*
      * Invite links look like ...?join=ABC123. The code is kept
      * until the player is signed in, then joined automatically.
@@ -12697,6 +13090,9 @@ window.addEventListener(
     let serverBoardDay =
       "today";
 
+    const openBoardGames =
+      new Set();
+
     let selectedServerMembers =
       [];
 
@@ -12730,6 +13126,20 @@ window.addEventListener(
       return userId === session?.user.id
         ? name + " (you)"
         : name;
+    }
+
+
+    function shortMemberName(userId) {
+      if (userId === session?.user.id) {
+        return "you";
+      }
+
+      const profile =
+        selectedServerProfiles.get(userId);
+
+      return profile
+        ? profile.display_name || "@" + profile.username
+        : "Player";
     }
 
 
@@ -12917,22 +13327,90 @@ window.addEventListener(
           document.createElement("div");
 
         block.className =
-          "social-game board-game";
+          "board-game" +
+          (openBoardGames.has(serverGame.game_key) ? " open" : "");
 
         const header =
-          document.createElement("div");
+          document.createElement("button");
+
+        header.type =
+          "button";
 
         header.className =
-          "social-game-header";
+          "board-game-header";
+
+        header.setAttribute(
+          "aria-expanded",
+          String(openBoardGames.has(serverGame.game_key))
+        );
 
         const name =
-          document.createElement("div");
+          document.createElement("span");
 
         name.className =
-          "social-game-name";
+          "board-game-name";
 
         name.textContent =
           getCatalogGame(serverGame.game_key).name;
+
+        const winners =
+          ranked.filter(entry => entry.winner);
+
+        const lead =
+          document.createElement("span");
+
+        lead.className =
+          "board-lead" + (winners.length ? " has-winner" : "");
+
+        lead.textContent =
+          winners.length
+            ? "👑 " +
+              winners.map(entry => shortMemberName(entry.result.user_id)).join(", ") +
+              " · " + describeBoardScore(winners[0].result)
+            : gameResults.length
+              ? gameResults.length + " played"
+              : isToday
+                ? "no results yet"
+                : "nobody played";
+
+        const chevron =
+          document.createElement("span");
+
+        chevron.className =
+          "board-chevron";
+
+        chevron.textContent =
+          "›";
+
+        header.append(
+          createGameBadge(serverGame.game_key),
+          name,
+          lead,
+          chevron
+        );
+
+        header.addEventListener(
+          "click",
+          () => {
+            const open =
+              !block.classList.contains("open");
+
+            block.classList.toggle("open", open);
+            header.setAttribute("aria-expanded", String(open));
+
+            if (open) {
+              openBoardGames.add(serverGame.game_key);
+            } else {
+              openBoardGames.delete(serverGame.game_key);
+            }
+          }
+        );
+
+        const body =
+          document.createElement("div");
+
+        body.className =
+          "board-game-body";
 
         const rule =
           document.createElement("div");
@@ -12941,33 +13419,13 @@ window.addEventListener(
           "activity-sub board-rule";
 
         rule.textContent =
-          describeDirection(direction);
+          describeDirection(direction) +
+          (winners.length > 1 ? " · tie for " + (isToday ? "the lead" : "the win") : "");
 
-        header.append(
-          createGameBadge(serverGame.game_key),
-          name,
-          rule
-        );
-
-        block.appendChild(header);
-
-        const winners =
-          ranked.filter(entry => entry.winner);
+        body.appendChild(rule);
+        block.append(header, body);
 
         if (winners.length) {
-          const crownNote =
-            document.createElement("div");
-
-          crownNote.className =
-            "board-crown-note";
-
-          crownNote.textContent =
-            (isToday ? "👑 Leading: " : "👑 Winner: ") +
-            winners.map(entry => memberName(entry.result.user_id)).join(", ") +
-            (winners.length > 1 ? " (tie)" : "");
-
-          block.appendChild(crownNote);
-
           winners.forEach(entry => {
             leadCounts.set(
               entry.result.user_id,
@@ -12977,13 +13435,13 @@ window.addEventListener(
         }
 
         ranked.forEach(entry => {
-          block.appendChild(
+          body.appendChild(
             createBoardRow(entry.result, entry.rank, entry.winner)
           );
         });
 
         unranked.forEach(result => {
-          block.appendChild(
+          body.appendChild(
             createBoardRow(result, null, false)
           );
         });
@@ -13007,7 +13465,7 @@ window.addEventListener(
             (isToday ? "Not played yet: " : "Didn’t play: ") +
             waiting.map(memberName).join(", ");
 
-          block.appendChild(waitingNote);
+          body.appendChild(waitingNote);
         }
 
         fragment.appendChild(block);
@@ -13025,7 +13483,7 @@ window.addEventListener(
           ? "👑 " +
             leaders
               .map(([userId, count]) =>
-                memberName(userId) + " " + count
+                shortMemberName(userId) + " " + count
               )
               .join(" · ") +
             (isToday ? " (leading so far)" : " (final)")
@@ -13523,7 +13981,13 @@ window.addEventListener(
       leaderboardList.innerHTML = "";
       headToHeadList.innerHTML = "";
 
-      if (server.start_date > yesterday) {
+      const statsStarted =
+        server.start_date <= yesterday;
+
+      document.querySelector(".stats-periods").classList.toggle("hidden", !statsStarted);
+      document.getElementById("statsGame").classList.toggle("hidden", !statsStarted);
+
+      if (!statsStarted) {
         document.getElementById("statsRange").textContent =
           "Stats start after the first full day. Check back tomorrow.";
         document.getElementById("statsHeadToHeadTitle").classList.add("hidden");
