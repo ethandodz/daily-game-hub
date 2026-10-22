@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.22.6">
+  <meta name="app-version" content="2026.10.22.7">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.22.6">
+  <link rel="stylesheet" href="styles.css?v=2026.10.22.7">
 </head>
 
 <body>
@@ -843,6 +843,11 @@
           <div class="card-who">
             <strong id="accountName"></strong>
 
+            <span
+              class="card-title hidden"
+              id="myCardTitle"
+            ></span>
+
             <button
               class="coins-pill hidden"
               id="myCoinsButton"
@@ -919,6 +924,41 @@
         class="achievement-list"
         id="achievementList"
       ></div>
+    </details>
+
+    <details
+      class="section achievements-section shop-section hidden"
+      id="shopSection"
+    >
+      <summary>
+        <span class="achievements-title">🛍️ Shop</span>
+        <span
+          class="achievements-count"
+          id="shopBalance"
+        ></span>
+      </summary>
+
+      <div
+        class="shop-kinds"
+        id="shopKinds"
+        role="tablist"
+      >
+        <button class="filter-button" data-shop-kind="icon" type="button" role="tab">Icons</button>
+        <button class="filter-button" data-shop-kind="frame" type="button" role="tab">Frames</button>
+        <button class="filter-button" data-shop-kind="name_color" type="button" role="tab">Name colors</button>
+        <button class="filter-button" data-shop-kind="title" type="button" role="tab">Titles</button>
+      </div>
+
+      <div
+        class="shop-grid"
+        id="shopGrid"
+      ></div>
+
+      <p
+        class="status"
+        id="shopStatus"
+        aria-live="polite"
+      ></p>
     </details>
 
     <p class="footer">
@@ -2525,7 +2565,7 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.22.6"></script>
+  <script src="app.js?v=2026.10.22.7"></script>
 </body>
 </html>
 

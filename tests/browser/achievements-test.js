@@ -18,7 +18,7 @@ server.listen(0, async () => {
     await page.click('#iconChoices [data-icon="🐼"]'); await page.click('#saveCardButton'); await page.waitForTimeout(500);
     const saved = serverState.cards.find(c => c.user_id === ME);
     assert(saved && saved.icon === '🐼' && !('showcase' in saved), 'not set up yet: card saves without badges ' + JSON.stringify(saved));
-    assert(errors.every(e => /Achievements failed|Coins failed|404/.test(e)), 'only the expected missing-feature errors ' + errors.join('|'));
+    assert(errors.every(e => /Achievements failed|Coins failed|Shop failed|404/.test(e)), 'only the expected missing-feature errors ' + errors.join('|'));
     await browser.close(); server.close(); return;
   }
   // Coins

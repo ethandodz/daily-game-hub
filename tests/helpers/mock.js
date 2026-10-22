@@ -39,7 +39,17 @@ const requests = [];
 const serverState = { servers: [{ id: 'srv-ethan', name: 'Work Crew', owner_id: FRIEND, invite_code: 'JOIN42', start_date: today, created_at: '2026-10-01' }],
   members: [{ server_id: 'srv-ethan', user_id: FRIEND, role: 'owner', joined_at: '2026-10-01' }],
   games: [{ server_id: 'srv-ethan', game_key: 'wordle', sort_order: 1, score_direction: null }],
-  cards: [{ user_id: FRIEND, icon: '🐸', color: 'teal', bio: 'purple group first, always', favorite_game: 'connections', showcase: ['krillionaire', 'on_fire', 'sharpshooter'] }],
+  cards: [{ user_id: FRIEND, icon: '🐸', color: 'teal', bio: 'purple group first, always', favorite_game: 'connections', showcase: ['krillionaire', 'on_fire', 'sharpshooter'], frame: 'frame_gold', name_color: 'name_mint', title: 'title_wordle' }],
+  purchases: [],
+  shopItems: [
+    { id: 'icon_crown', kind: 'icon', name: 'Crown', value: '👑', price: 300, unlock_id: null, unlock_tier: null, sort_order: 1 },
+    { id: 'icon_trophy', kind: 'icon', name: 'Trophy', value: '🏆', price: null, unlock_id: 'on_fire', unlock_tier: 2, sort_order: 2 },
+    { id: 'frame_gold', kind: 'frame', name: 'Gold frame', value: 'gold', price: 500, unlock_id: null, unlock_tier: null, sort_order: 10 },
+    { id: 'frame_rainbow', kind: 'frame', name: 'Rainbow frame', value: 'rainbow', price: 1000, unlock_id: null, unlock_tier: null, sort_order: 11 },
+    { id: 'frame_crown', kind: 'frame', name: 'Crown frame', value: 'crown', price: null, unlock_id: 'winner', unlock_tier: 2, sort_order: 12 },
+    { id: 'name_mint', kind: 'name_color', name: 'Mint name', value: 'mint', price: 200, unlock_id: null, unlock_tier: null, sort_order: 20 },
+    { id: 'title_wordle', kind: 'title', name: 'Wordle Wizard', value: 'Wordle Wizard', price: 250, unlock_id: null, unlock_tier: null, sort_order: 30 },
+    { id: 'title_champ', kind: 'title', name: 'Champion', value: 'Champion', price: null, unlock_id: 'founder', unlock_tier: 1, sort_order: 31 }],
   achievementList: [['winner', 'Winner', '👑', 'Days won in your servers', [1, 10, 50, 100]], ['on_fire', 'On Fire', '🔥', 'Days in a row with a result', [7, 30, 100, 365]],
     ['sharpshooter', 'Sharpshooter', '🎯', 'Wordle in 2 guesses or fewer', [1, 5, 25]], ['krillionaire', 'Krillionaire', '💎', 'Krillion answer (💎) in Krillion', [1, 5, 20]], ['founder', 'Founder', '🏰', 'Create a server', [1]]],
   achievementProgress: { [ME]: { winner: 31, on_fire: 12, sharpshooter: 3, krillionaire: 0, founder: 1 }, [FRIEND]: { winner: 24, on_fire: 40, krillionaire: 6 } },
@@ -101,11 +111,19 @@ function serverRoute(method, u, body) {
       const i = serverState.cards.findIndex(c => c.user_id === ME); if (i >= 0) serverState.cards[i] = body; else serverState.cards.push(body); return { status: 201, body: null }; }
     const ids = (p.get('user_id') || '').replace(/^in\.\(|\)$/g, '').replace(/^eq\./, '').split(',');
     return { status: 200, body: serverState.cards.filter(c => ids.includes(c.user_id)) }; }
+  if (t === 'shop_items') return process.env.NO_ACHIEVEMENTS ? { status: 404, body: { message: 'relation "public.shop_items" does not exist' } } : { status: 200, body: serverState.shopItems };
+  if (t === 'purchases') return { status: 200, body: serverState.purchases.map(item_id => ({ item_id })) };
+  if (t === 'rpc/buy_item') { const item = serverState.shopItems.find(i => i.id === body.p_item_id);
+    const spent = serverState.purchases.reduce((sum, id) => sum + serverState.shopItems.find(i => i.id === id).price, 0);
+    if (!item || !item.price) return err('This item can\'t be bought. Unlock it with a badge.');
+    if (1240 - spent < item.price) return err('Not enough coins.');
+    serverState.purchases.push(item.id); return { status: 200, body: { balance: 1240 - spent - item.price } }; }
   if (t === 'rpc/player_achievements') { if (process.env.NO_ACHIEVEMENTS) return { status: 404, body: { message: 'Could not find the function' } };
     const progress = serverState.achievementProgress[body.p_user_id] || {};
     return { status: 200, body: serverState.achievementList.flatMap(([id, name, icon, description, thresholds], i) => thresholds.map((threshold, t) => ({ id, tier: t + 1, name, icon, description, threshold, coins: [25, 50, 100, 200][t], progress: progress[id] || 0 }))) }; }
   if (t === 'rpc/player_coins') { if (process.env.NO_ACHIEVEMENTS) return { status: 404, body: { message: 'Could not find the function' } };
-    return { status: 200, body: body.p_user_id === ME ? { balance: 1240, history: [{ day: null, label: 'Badge: Winner Silver', amount: 50 }, { day: day(1), label: 'Won Wordle', amount: 15 }, { day: day(1), label: 'Played 3 games', amount: 11 }] } : { balance: 980, history: null } }; }
+    const spent = serverState.purchases.reduce((sum, id) => sum + serverState.shopItems.find(i => i.id === id).price, 0);
+    return { status: 200, body: body.p_user_id === ME ? { balance: 1240 - spent, history: [{ day: null, label: 'Badge: Winner Silver', amount: 50 }, { day: day(1), label: 'Won Wordle', amount: 15 }, { day: day(1), label: 'Played 3 games', amount: 11 }] } : { balance: 980, history: null } }; }
   if (t === 'rpc/player_card_stats') return { status: 200, body: serverState.cardStats[body.p_user_id] || { played: 0, wins: 0, best_streak: 0, member_since: '2026-06-01T00:00:00Z', my_wins: 0, their_wins: 0 } };
   if (t === 'profiles' && method === 'POST') { // POST_PROFILE
     if (profiles.some(x => x.username === body.username && x.user_id !== body.user_id)) return { status: 409, body: { code: '23505', message: 'duplicate key value violates unique constraint "profiles_username_unique"' } };

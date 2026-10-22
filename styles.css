@@ -3198,3 +3198,139 @@ body:not(.signed-out) .footer {
   color: var(--streak);
 }
 
+/* Shop items: frames, name colors, titles */
+.avatar[data-frame] {
+  position: relative;
+}
+
+.avatar[data-frame="gold"] { box-shadow: 0 0 0 3px #eab308, 0 0 10px rgba(234, 179, 8, 0.45); }
+.avatar[data-frame="neon"] { box-shadow: 0 0 0 3px #a855f7, 0 0 14px #a855f7; }
+.avatar[data-frame="ice"] { box-shadow: 0 0 0 3px #bae6fd, 0 0 12px rgba(125, 211, 252, 0.7); }
+.avatar[data-frame="rainbow"] { box-shadow: 0 0 0 2px #f43f5e, 0 0 0 4px #eab308, 0 0 0 6px #22c55e, 0 0 0 8px #3b82f6; }
+.avatar[data-frame="fire"] { box-shadow: 0 0 0 3px #f97316, 0 0 14px #ef4444; }
+.avatar[data-frame="crown"] { box-shadow: 0 0 0 3px #eab308; }
+.avatar[data-frame="diamond"] { box-shadow: 0 0 0 3px #67e8f9, 0 0 16px #22d3ee; }
+
+.avatar-sm[data-frame] {
+  box-shadow: 0 0 0 2px var(--frame-color, #eab308);
+}
+
+.avatar-sm[data-frame="neon"] { --frame-color: #a855f7; }
+.avatar-sm[data-frame="ice"] { --frame-color: #bae6fd; }
+.avatar-sm[data-frame="rainbow"] { --frame-color: #f43f5e; }
+.avatar-sm[data-frame="fire"] { --frame-color: #f97316; }
+.avatar-sm[data-frame="diamond"] { --frame-color: #67e8f9; }
+
+.avatar[data-frame="crown"]::after {
+  content: "👑";
+  position: absolute;
+  top: -0.55em;
+  right: -0.3em;
+  font-size: 0.5em;
+  transform: rotate(18deg);
+}
+
+[data-name-color="gold"] { color: #eab308; }
+[data-name-color="mint"] { color: #34d399; }
+[data-name-color="pink"] { color: #f472b6; }
+[data-name-color="sky"] { color: #38bdf8; }
+[data-name-color="diamond"] { color: #22d3ee; }
+
+[data-name-color="rainbow"] {
+  color: transparent;
+  background: linear-gradient(90deg, #f43f5e, #eab308, #22c55e, #3b82f6, #a855f7);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.card-title {
+  color: var(--tab-active);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shop-section summary {
+  grid-template-columns: 1fr auto 18px;
+}
+
+.shop-kinds {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.shop-item {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-align: center;
+  background: var(--panel-light);
+}
+
+.shop-item.in-use {
+  border: 2px solid var(--tab-active);
+}
+
+.shop-item b {
+  font-size: 0.78rem;
+}
+
+.shop-item .shop-name,
+.shop-item .card-title {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.shop-action {
+  width: 100%;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  cursor: pointer;
+}
+
+.shop-action.too-expensive {
+  opacity: 0.55;
+}
+
+.shop-action:disabled {
+  color: var(--muted);
+  background: var(--panel);
+  cursor: default;
+}
+
+.shop-item.in-use .shop-action {
+  color: var(--tab-active);
+  background: var(--glow-purple);
+}
+
+.shop-item.in-use .shop-action:not(:disabled) {
+  cursor: pointer;
+}
+
+.shop-kinds .filter-button {
+  min-height: 0;
+  padding: 7px 11px;
+  font-size: 0.85rem;
+}
