@@ -2466,6 +2466,10 @@
       white-space: nowrap;
     }
 
+    .share-standings-button {
+      margin-top: 10px;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2950,6 +2954,14 @@
             class="stats-list"
             id="statsLeaderboard"
           ></div>
+
+          <button
+            class="button secondary full-width share-standings-button hidden"
+            id="shareStandingsButton"
+            type="button"
+          >
+            📤 Share standings
+          </button>
 
           <h4
             class="stats-subtitle hidden"
@@ -15339,6 +15351,21 @@ window.addEventListener(
       const hasWinner =
         !singleGame || singleGame.direction !== "none";
 
+      lastStandings = {
+        serverName: server.name,
+        period:
+          document.querySelector("[data-stats-period].active")?.textContent.trim() || "",
+        gameName: singleGame ? getCatalogGame(singleGame.game_key).name : "All games",
+        range: document.getElementById("statsRange").textContent,
+        hasWinner,
+        leaderboard: stats.leaderboard.map(entry => ({ ...entry, name: memberName(entry.userId) }))
+      };
+
+      document
+        .getElementById("shareStandingsButton")
+        .classList
+        .toggle("hidden", stats.dayCount === 0);
+
       // Leaderboard
       let previous = null;
 
@@ -15662,6 +15689,189 @@ window.addEventListener(
         list.appendChild(row);
       }
     }
+
+
+    /*
+     * Share standings: draw the current leaderboard as a picture and
+     * open the share sheet (or download it where sharing files isn't
+     * supported).
+     */
+    let lastStandings =
+      null;
+
+
+    function drawStandingsImage(standings) {
+      // Same tie rule as the leaderboard: equal wins, win rate and
+      // games played share a rank.
+      let previous = null;
+
+      const rows =
+        standings.leaderboard
+          .map((entry, index) => {
+            const tied =
+              previous &&
+              previous.wins === entry.wins &&
+              previous.winRate === entry.winRate &&
+              previous.played === entry.played;
+
+            const ranked =
+              { ...entry, rank: tied ? previous.rank : index + 1 };
+
+            previous = ranked;
+            return ranked;
+          })
+          .slice(0, 10);
+
+      const width = 1080;
+      const rowHeight = 96;
+      const top = 260;
+      const height = top + rows.length * rowHeight + 120;
+
+      const canvas =
+        document.createElement("canvas");
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const context =
+        canvas.getContext("2d");
+
+      const gradient =
+        context.createLinearGradient(0, 0, width, height);
+
+      gradient.addColorStop(0, "#1b1340");
+      gradient.addColorStop(1, "#080c18");
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, width, height);
+
+      const font =
+        (weight, size) =>
+          weight + " " + size + "px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+      context.fillStyle = "#a78bfa";
+      context.font = font(800, 30);
+      context.fillText("DAILY GAME HUB", 64, 86);
+
+      context.fillStyle = "#f8fafc";
+      context.font = font(900, 64);
+      context.fillText(standings.serverName, 64, 160);
+
+      context.fillStyle = "#94a3b8";
+      context.font = font(600, 32);
+      context.fillText(
+        [standings.period, standings.gameName].filter(Boolean).join(" · ") +
+        (standings.range ? "  ·  " + standings.range.split(" · ").pop() : ""),
+        64,
+        214
+      );
+
+      rows.forEach((entry, index) => {
+        const y =
+          top + index * rowHeight;
+
+        context.fillStyle =
+          index % 2 === 0 ? "rgba(255, 255, 255, 0.05)" : "rgba(255, 255, 255, 0.02)";
+
+        context.fillRect(48, y, width - 96, rowHeight - 12);
+
+        const middle =
+          y + (rowHeight - 12) / 2 + 12;
+
+        context.fillStyle = "#fbbf24";
+        context.font = font(900, 40);
+        context.fillText(
+          standings.hasWinner && entry.rank === 1 && entry.wins > 0 ? "👑" : String(entry.rank),
+          76,
+          middle
+        );
+
+        context.fillStyle = "#f8fafc";
+        context.font = font(800, 40);
+        context.fillText(entry.name.replace(" (you)", ""), 160, middle);
+
+        context.textAlign = "right";
+        context.font = font(900, 40);
+        context.fillText(
+          standings.hasWinner
+            ? entry.wins + (entry.wins === 1 ? " win" : " wins")
+            : entry.played + " played",
+          width - 260,
+          middle
+        );
+
+        context.fillStyle = "#94a3b8";
+        context.font = font(600, 32);
+        context.fillText(
+          standings.hasWinner
+            ? formatPercent(entry.winRate)
+            : formatPercent(entry.playedRate),
+          width - 76,
+          middle
+        );
+
+        context.textAlign = "left";
+      });
+
+      context.fillStyle = "#64748b";
+      context.font = font(600, 26);
+      context.fillText(
+        "ethandodz.github.io/daily-game-hub",
+        64,
+        height - 50
+      );
+
+      return canvas;
+    }
+
+
+    async function shareStandings() {
+      if (!lastStandings) {
+        return;
+      }
+
+      const canvas =
+        drawStandingsImage(lastStandings);
+
+      const blob =
+        await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+
+      const fileName =
+        lastStandings.serverName.replace(/[^a-z0-9]+/gi, "-").toLowerCase() +
+        "-standings.png";
+
+      const file =
+        new File([blob], fileName, { type: "image/png" });
+
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: lastStandings.serverName + " standings"
+          });
+          return;
+        }
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          return;
+        }
+      }
+
+      const link =
+        document.createElement("a");
+
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      setStatus(statsStatus, "Standings image saved.", "success");
+    }
+
+
+    document
+      .getElementById("shareStandingsButton")
+      .addEventListener("click", shareStandings);
 
 
     /*
