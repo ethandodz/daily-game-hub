@@ -13564,6 +13564,62 @@ window.addEventListener(
 
 
     /*
+     * Live updates: while the app is on screen, refresh the server
+     * board every 30 seconds (Servers → Today) and the results under
+     * game cards every 60 seconds (Games), so new scores show up
+     * without reopening anything.
+     */
+    const BOARD_REFRESH_MS =
+      30000;
+
+    const CARD_RESULTS_REFRESH_MS =
+      60000;
+
+    let lastCardResultsRefresh =
+      Date.now();
+
+
+    function refreshLiveViews(force) {
+      if (!session || document.visibilityState !== "visible") {
+        return;
+      }
+
+      if (
+        currentTab === "social" &&
+        socialPanel === "today" &&
+        getSelectedServer()
+      ) {
+        loadServerBoard();
+      }
+
+      if (
+        currentTab === "games" &&
+        (force || Date.now() - lastCardResultsRefresh >= CARD_RESULTS_REFRESH_MS)
+      ) {
+        lastCardResultsRefresh = Date.now();
+        loadTodayScores();
+      }
+    }
+
+
+    setInterval(
+      () => {
+        refreshLiveViews(false);
+      },
+      BOARD_REFRESH_MS
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.visibilityState === "visible") {
+          refreshLiveViews(true);
+        }
+      }
+    );
+
+
+    /*
      * Invite links look like ...?join=ABC123. The code is kept
      * until the player is signed in, then joined automatically.
      */
