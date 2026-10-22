@@ -2669,10 +2669,10 @@ body.signed-out #activitySection .calendar-note {
   position: relative;
   width: 88px;
   height: 88px;
-  margin: -46px auto 0;
+  margin: 0 auto;
   border-radius: 26px;
   font-size: 50px;
-  box-shadow: 0 0 0 4px var(--panel);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
 }
 
 [data-color="teal"] { --card-a: #199e70; --card-b: #3987e5; }
@@ -2792,7 +2792,7 @@ body.signed-out #activitySection .calendar-note {
 #playerCardBody {
   display: grid;
   gap: 8px;
-  margin-top: -48px;
+  margin-top: -20px;
   text-align: center;
 }
 
@@ -3342,4 +3342,70 @@ body:not(.signed-out) .footer {
   margin-right: 0.3em;
   vertical-align: -0.2em;
   background: url("icons/coin.svg") center / contain no-repeat;
+}
+
+
+/* Tinted cards: the card color washes in from the top, and a shop
+   frame becomes the card's border. */
+.player-tint {
+  --tint-amount: 55%;
+  position: relative;
+  border: 2px solid color-mix(in srgb, var(--card-a, #7c3aed) 60%, transparent);
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--card-a, #7c3aed) var(--tint-amount), transparent),
+      color-mix(in srgb, var(--card-b, #2563eb) 18%, transparent) 55%,
+      transparent 85%
+    ),
+    var(--panel);
+}
+
+@media (prefers-color-scheme: light) {
+  .player-tint {
+    --tint-amount: 32%;
+  }
+}
+
+.player-tint[data-frame="gold"] { border-color: #eab308; box-shadow: 0 0 16px rgba(234, 179, 8, 0.45); }
+.player-tint[data-frame="neon"] { border-color: #a855f7; box-shadow: 0 0 18px #a855f7; }
+.player-tint[data-frame="ice"] { border-color: #bae6fd; box-shadow: 0 0 14px rgba(125, 211, 252, 0.6); }
+.player-tint[data-frame="rainbow"] { border-color: #f43f5e; box-shadow: 0 0 0 2px #eab308, 0 0 0 4px #22c55e, 0 0 0 6px #3b82f6; }
+.player-tint[data-frame="fire"] { border-color: #f97316; box-shadow: 0 0 18px rgba(239, 68, 68, 0.55); }
+.player-tint[data-frame="crown"] { border-color: #eab308; }
+.player-tint[data-frame="diamond"] { border-color: #67e8f9; box-shadow: 0 0 18px #22d3ee; }
+
+.player-tint[data-frame="crown"]::after {
+  content: "👑";
+  position: absolute;
+  top: -16px;
+  right: 22px;
+  font-size: 26px;
+  transform: rotate(14deg);
+  pointer-events: none;
+}
+
+/* The player card window scrolls, so keep its crown inside. */
+.player-card-window.player-tint[data-frame="crown"]::after {
+  top: 10px;
+  right: auto;
+  left: 18px;
+}
+
+.frame-preview {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.frame-preview .avatar-sm {
+  margin: 0;
+}
+
+.frame-preview[data-frame="crown"]::after {
+  top: -10px;
+  right: 4px;
+  font-size: 15px;
 }

@@ -32,17 +32,18 @@ server.listen(0, async () => {
   await page.click('[data-shop-kind="frame"]'); await page.waitForTimeout(150);
   assert(await tile('frame_crown').textContent() === 'Use', 'badge-unlocked frame is free to use');
   await tile('frame_crown').click(); await page.waitForTimeout(500);
-  assert(mine().frame === 'frame_crown' && await page.getAttribute('#myCardIcon', 'data-frame') === 'crown', 'frame on card');
+  assert(mine().frame === 'frame_crown' && await page.getAttribute('#accountSection', 'data-frame') === 'crown' && !(await page.getAttribute('#myCardIcon', 'data-frame')), 'frame around the whole card');
   await tile('frame_rainbow').click(); await page.waitForTimeout(300);
   assert((await text('#shopStatus')) === 'You need 60 more coins for Rainbow frame.' && !serverState.purchases.includes('frame_rainbow'), 'too expensive: ' + await text('#shopStatus'));
   await tile('frame_crown').click(); await page.waitForTimeout(500);
-  assert(mine().frame === null && !(await page.getAttribute('#myCardIcon', 'data-frame')), 'tap In use to take a frame off');
+  assert(mine().frame === null && !(await page.getAttribute('#accountSection', 'data-frame')), 'tap In use to take a frame off');
   // Title and name color
   await page.click('[data-shop-kind="title"]'); await tile('title_champ').click(); await page.waitForTimeout(500);
   assert(await text('#myCardTitle') === 'Champion' && mine().title === 'title_champ', 'title on card');
   await page.click('[data-shop-kind="name_color"]'); await tile('name_mint').click(); await page.waitForTimeout(700);
   await tile('name_mint').click(); await page.waitForTimeout(500);
   assert(await page.getAttribute('#accountName', 'data-name-color') === 'mint' && await text('#shopBalance') === '740', 'name color bought and used');
+  await page.click('[data-shop-kind="frame"]'); await tile('frame_crown').click(); await page.waitForTimeout(500);
   await page.screenshot({ path: out + '-card.png', fullPage: true });
   // Bought icons appear when editing the card; saving keeps shop items
   await page.click('#editCardButton'); await page.waitForTimeout(200);
@@ -56,7 +57,7 @@ server.listen(0, async () => {
   const ethan = page.locator('#serverMembers .player-link', { hasText: '@ethan' });
   assert(await ethan.getAttribute('data-name-color') === 'mint' && await ethan.locator('.avatar').getAttribute('data-frame') === 'gold', 'their name color and frame in lists');
   await ethan.click(); await page.waitForTimeout(600);
-  assert(await text('#playerCardBody .card-title') === 'Wordle Wizard' && await page.getAttribute('#playerCardBody .avatar-xl', 'data-frame') === 'gold', 'their title and frame on card');
+  assert(await text('#playerCardBody .card-title') === 'Wordle Wizard' && await page.getAttribute('#playerCardModal .player-card-window', 'data-frame') === 'gold' && await page.getAttribute('#playerCardModal .player-card-window', 'data-color') === 'teal', 'their title, color and frame on the whole card');
   await page.screenshot({ path: out + '-player.png' });
   assert(errors.length === 0, 'no console errors ' + errors.join('|'));
   await browser.close(); server.close();
