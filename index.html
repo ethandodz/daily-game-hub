@@ -2226,6 +2226,15 @@
       text-align: left;
     }
 
+    .link-button {
+      padding: 4px 0;
+      color: var(--tab-active);
+      font-weight: 700;
+      text-align: left;
+      border: 0;
+      background: transparent;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -3224,6 +3233,15 @@
             </button>
           </div>
 
+          <div class="field full">
+            <button
+              class="link-button"
+              id="forgotPasswordButton"
+              type="button"
+            >
+              Forgot password?
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3626,6 +3644,72 @@
 
   </div>
 </div>
+
+  <div
+    class="modal"
+    id="newPasswordModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Set a New Password
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="newPasswordModal"
+          type="button"
+          aria-label="Close new password window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="form">
+        <div class="field full">
+          <label for="newPasswordInput">
+            New password
+          </label>
+
+          <input
+            id="newPasswordInput"
+            type="password"
+            minlength="6"
+            autocomplete="new-password"
+            placeholder="At least 6 characters"
+          >
+        </div>
+
+        <div class="field full">
+          <label for="confirmPasswordInput">
+            Type it again
+          </label>
+
+          <input
+            id="confirmPasswordInput"
+            type="password"
+            minlength="6"
+            autocomplete="new-password"
+          >
+
+          <button
+            class="button"
+            id="saveNewPasswordButton"
+            type="button"
+          >
+            Save Password
+          </button>
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="newPasswordStatus"
+        aria-live="polite"
+      ></p>
+    </div>
+  </div>
+
 
   <div
     class="modal"
@@ -6907,6 +6991,25 @@ startLibrarySync();
             }
           );
 
+        const identities =
+          data?.identities ?? data?.user?.identities;
+
+        // Supabase answers an already-registered email without an
+        // error (and without sending mail), with no identities.
+        if (
+          !data?.access_token &&
+          Array.isArray(identities) &&
+          identities.length === 0
+        ) {
+          setStatus(
+            authStatus,
+            EXISTING_ACCOUNT_MESSAGE,
+            "error"
+          );
+
+          return;
+        }
+
         if (
           data?.access_token
         ) {
@@ -6934,7 +7037,9 @@ startLibrarySync();
       } catch (error) {
         setStatus(
           authStatus,
-          error.message,
+          /already (been )?registered|already exists/i.test(error.message)
+            ? EXISTING_ACCOUNT_MESSAGE
+            : error.message,
           "error"
         );
       }
@@ -14810,6 +14915,196 @@ window.addEventListener(
         loadServers();
       }
     }
+
+
+    const EXISTING_ACCOUNT_MESSAGE =
+      "This email already has an account. Tap Log In, or use " +
+      "“Forgot password?” to set a new password.";
+
+
+    function appAddress() {
+      return location.origin + location.pathname;
+    }
+
+
+    async function sendPasswordReset() {
+      const email =
+        document.getElementById("authEmail").value.trim();
+
+      if (!email) {
+        setStatus(
+          authStatus,
+          "Enter your email above, then tap “Forgot password?”.",
+          "error"
+        );
+        return;
+      }
+
+      const button =
+        document.getElementById("forgotPasswordButton");
+
+      button.disabled = true;
+      setStatus(authStatus, "Sending reset link...");
+
+      try {
+        await request(
+          "/auth/v1/recover?redirect_to=" + encodeURIComponent(appAddress()),
+          {
+            method: "POST",
+            headers: publicHeaders(),
+            body: JSON.stringify({ email })
+          }
+        );
+
+        // Same message either way, so the form can't reveal who has an account.
+        setStatus(
+          authStatus,
+          "If that email has an account, a reset link is on its way. " +
+          "Open it on this device.",
+          "success"
+        );
+      } catch (error) {
+        setStatus(
+          authStatus,
+          /rate limit|too many|seconds/i.test(error.message)
+            ? "Too many emails sent. Wait a little while, then try again."
+            : error.message,
+          "error"
+        );
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+
+    /*
+     * Links in Supabase emails (password reset, email confirmation)
+     * come back as ...#access_token=...&type=recovery. Sign the player
+     * in from it, and for a reset ask for the new password.
+     */
+    async function handleEmailLink() {
+      const params =
+        new URLSearchParams(location.hash.replace(/^#/, ""));
+
+      const accessToken =
+        params.get("access_token");
+
+      const linkError =
+        params.get("error_description");
+
+      if (!accessToken && !linkError) {
+        return;
+      }
+
+      history.replaceState(null, "", location.pathname + location.search);
+
+      if (linkError) {
+        document.getElementById("accountModal").classList.add("open");
+
+        setStatus(
+          authStatus,
+          /expired|invalid/i.test(linkError)
+            ? "That email link has expired or was already used. Request a new one."
+            : linkError,
+          "error"
+        );
+        return;
+      }
+
+      try {
+        const user =
+          await request(
+            "/auth/v1/user",
+            {
+              headers: {
+                ...publicHeaders(),
+                "Authorization": "Bearer " + accessToken
+              }
+            },
+            false
+          );
+
+        session = {
+          access_token: accessToken,
+          refresh_token: params.get("refresh_token"),
+          expires_in: Number(params.get("expires_in")) || null,
+          token_type: params.get("token_type") || "bearer",
+          user
+        };
+
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        showSessionUI();
+
+        if (params.get("type") === "recovery") {
+          document.getElementById("newPasswordInput").value = "";
+          document.getElementById("confirmPasswordInput").value = "";
+          setStatus(newPasswordStatus, "");
+          document.getElementById("newPasswordModal").classList.add("open");
+        }
+      } catch (error) {
+        document.getElementById("accountModal").classList.add("open");
+        setStatus(authStatus, "That email link could not be used. Try again.", "error");
+      }
+    }
+
+
+    async function saveNewPassword() {
+      const password =
+        document.getElementById("newPasswordInput").value;
+
+      const confirmation =
+        document.getElementById("confirmPasswordInput").value;
+
+      if (password.length < 6) {
+        setStatus(newPasswordStatus, "Use at least 6 characters.", "error");
+        return;
+      }
+
+      if (password !== confirmation) {
+        setStatus(newPasswordStatus, "The two passwords don’t match.", "error");
+        return;
+      }
+
+      if (!session) {
+        setStatus(newPasswordStatus, "Open the reset link from your email again.", "error");
+        return;
+      }
+
+      setStatus(newPasswordStatus, "Saving...");
+
+      try {
+        await request(
+          "/auth/v1/user",
+          {
+            method: "PUT",
+            headers: authHeaders(),
+            body: JSON.stringify({ password })
+          }
+        );
+
+        setStatus(newPasswordStatus, "Password updated. You’re signed in.", "success");
+
+        setTimeout(
+          () => {
+            document.getElementById("newPasswordModal").classList.remove("open");
+          },
+          1200
+        );
+      } catch (error) {
+        setStatus(newPasswordStatus, error.message, "error");
+      }
+    }
+
+
+    document
+      .getElementById("forgotPasswordButton")
+      .addEventListener("click", sendPasswordReset);
+
+    document
+      .getElementById("saveNewPasswordButton")
+      .addEventListener("click", saveNewPassword);
+
+    handleEmailLink();
 
 
     function reloadIfNewDay() {
