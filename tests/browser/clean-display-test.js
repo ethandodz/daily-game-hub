@@ -19,7 +19,7 @@ m.server.listen(0, async () => {
   const card = page.locator('.game-card[data-id="framed"]');
   assert(noLink(await card.locator('.result-summary').textContent()), 'your old result on the card has no link');
   assert(noLink(await card.locator('.friend-results').textContent()), 'others’ old results on the card have no link');
-  await card.locator('.expand-button').click(); await page.waitForTimeout(200);
+  await m.openCard(page, 'framed'); await card.locator('.expand-button').click(); await page.waitForTimeout(200);
   await card.locator('.history-button').click(); await page.waitForTimeout(600);
   assert(noLink(await page.textContent('#historyList')) && (await page.textContent('#historyList')).includes('Framed #1684'), 'History shows the result without the link');
   await page.click('[data-close="historyModal"]');
@@ -33,7 +33,7 @@ m.server.listen(0, async () => {
   assert(noLink(board) && board.includes('🎥'), 'server board shows results without links');
   // editing an old result: the box shows it clean
   await page.click('[data-tab-button="games"]');
-  await card.locator('.result-button').click(); await page.waitForTimeout(300);
+  await m.openCard(page, 'framed'); await card.locator('.result-button').click(); await page.waitForTimeout(300);
   assert(noLink(await page.inputValue('#resultText')) && await page.inputValue('#numericScore') === '4', 'Edit Result shows the saved result without the link');
   await page.click('[data-close="scoreModal"]');
   // pasting a new result with a link

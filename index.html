@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.22.9">
+  <meta name="app-version" content="2026.10.22.10">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.22.9">
+  <link rel="stylesheet" href="styles.css?v=2026.10.22.10">
 </head>
 
 <body>
@@ -168,16 +168,18 @@
           id="progressFill"
         ></span>
       </div>
+
+      <button
+        class="paste-result-button"
+        id="pasteResultButton"
+        type="button"
+        aria-label="Paste a result"
+      >
+        📋 Paste
+      </button>
     </section>
 
-    <button
-      class="button secondary paste-result-button"
-      id="pasteResultButton"
-      type="button"
-    >
-      📋 Paste a result
-    </button>
-
+    <div class="search-row">
     <div class="search-wrap">
       <!-- Not a login field: keep browsers and password managers from filling it -->
       <input
@@ -206,23 +208,26 @@
       </button>
     </div>
 
-    <div class="arrange-row">
-  <button
-    class="arrange-button"
-    id="arrangeGamesButton"
-    type="button"
-  >
-    ↕ Arrange Games
-  </button>
+    <button
+      class="arrange-button"
+      id="arrangeGamesButton"
+      type="button"
+      aria-label="Arrange games"
+      title="Arrange games"
+    >
+      ⇅
+    </button>
 
-      <button
-  class="arrange-button"
-  id="manageGamesButton"
-  type="button"
->
-  ＋ Manage Games
-</button>
-</div>
+    <button
+      class="arrange-button"
+      id="manageGamesButton"
+      type="button"
+      aria-label="Manage games"
+      title="Manage games"
+    >
+      ＋
+    </button>
+    </div>
 
     <div class="filter-scroll">
       <button class="filter-button" data-filter="all">
@@ -2565,7 +2570,7 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.22.9"></script>
+  <script src="app.js?v=2026.10.22.10"></script>
 </body>
 </html>
 

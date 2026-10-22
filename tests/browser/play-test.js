@@ -11,6 +11,7 @@ m.server.listen(0, async () => {
     if (scenario === 'autofill') await page.$eval('#searchInput', i => { i.value = 'laur@example.com'; });
     // come back to the window, then click Play
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await m.openCard(page, 'wordle');
     const play = page.locator('.game-card[data-id="wordle"] .play-button');
     const box = await play.boundingBox();
     const popup = ctx.waitForEvent('page', { timeout: 2500 }).catch(() => null);

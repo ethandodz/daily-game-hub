@@ -1,4 +1,4 @@
-const { setup, server, devices, chromium } = require('../helpers/mock.js');
+const { setup, server, devices, chromium, openCard } = require('../helpers/mock.js');
 const out = process.argv[3];
 const assert = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) process.exitCode = 1; };
 server.listen(0, async () => {
@@ -17,7 +17,7 @@ server.listen(0, async () => {
       assert(await page.inputValue('#usernameInput') === 'laur', 'username loads into Account tab');
       assert(await page.evaluate(() => getComputedStyle(document.getElementById('randomButton')).display) === 'none', 'Random hidden off Games tab');
       // per-tab scroll memory
-      await page.click('[data-tab-button="games"]'); const target = await page.evaluate(() => { window.scrollTo(0, 900); return scrollY; }); await page.waitForTimeout(300);
+      await page.click('[data-tab-button="games"]'); const target = await page.evaluate(() => { document.getElementById('gameGrid').style.minHeight = '2400px'; window.scrollTo(0, 900); return scrollY; }); await page.waitForTimeout(300);
       await page.click('[data-tab-button="social"]'); await page.waitForTimeout(200);
       assert(await page.evaluate(() => scrollY) < 50, 'Social opens at its own scroll position');
       await page.click('[data-tab-button="games"]'); await page.waitForTimeout(200);
@@ -27,7 +27,7 @@ server.listen(0, async () => {
       await page.click('#arrangeGamesButton'); await page.waitForTimeout(200);
       assert(await page.evaluate(() => document.getElementById('arrangeModal').classList.contains('open')), 'Arrange Games opens');
       await page.click('[data-close="arrangeModal"]');
-      await page.locator('[data-result]').first().click(); await page.waitForTimeout(200);
+      await openCard(page, await page.$eval('[data-result]', b => b.dataset.result)); await page.locator('[data-result]').first().click(); await page.waitForTimeout(200);
       assert(await page.evaluate(() => document.getElementById('scoreModal').classList.contains('open')), 'Enter/Edit Result opens');
       await page.locator('[data-close="scoreModal"]').first().click();
       // library sync while on another tab must not move that tab's scroll

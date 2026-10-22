@@ -1,4 +1,4 @@
-const { requests, setup, server, devices, chromium, tables } = require('../helpers/mock.js');
+const { requests, setup, server, devices, chromium, tables, openCard } = require('../helpers/mock.js');
 const assert = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) process.exitCode = 1; };
 // old results without numbers, for the backfill
 const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toLocaleDateString('en-CA'); };
@@ -19,7 +19,7 @@ server.listen(0, async () => {
   assert(!requests.slice(before).some(r => r.url.includes('numeric_score=is.null')), 'backfill runs only once per device');
   // live reading in the Enter Result window
   await page.click('[data-filter="all"]');
-  await page.click('.game-card[data-id="connections"] .result-button'); await page.waitForTimeout(200);
+  await openCard(page, 'connections'); await page.click('.game-card[data-id=\"connections\"] .result-button'); await page.waitForTimeout(200);
   await page.fill('#resultText', 'Connections\nPuzzle #1223\n🟦🟨🟦🟦\n🟨🟨🟨🟨\n🟦🟦🟦🟦\n🟪🟪🟪🟪\n🟩🟩🟩🟩');
   assert(await page.textContent('#scoreDetected') === 'Read as: 1 mistake' && await page.inputValue('#numericScore') === '1' && await page.inputValue('#scoreUnit') === 'mistakes', 'pasting fills score: ' + await page.textContent('#scoreDetected'));
   await page.screenshot({ path: process.argv[3] + '-modal.png' });
@@ -29,7 +29,7 @@ server.listen(0, async () => {
   assert(body.numeric_score === 1 && body.score_unit === 'mistakes' && body.completed === true, 'save sends the number: ' + post.body);
   // failed game
   await page.locator('[data-close="scoreModal"]').first().click().catch(() => {});
-  await page.click('.game-card[data-id="framed"] .result-button'); await page.waitForTimeout(200);
+  await openCard(page, 'framed'); await page.click('.game-card[data-id=\"framed\"] .result-button'); await page.waitForTimeout(200);
   await page.fill('#resultText', 'Framed #1685\n🎥 🟥 🟥 🟥 🟥 🟥 🟥');
   assert((await page.textContent('#scoreDetected')).startsWith('Read as: not solved (counts as 7'), 'failed game: ' + await page.textContent('#scoreDetected'));
   await page.click('#saveScoreButton'); await page.waitForTimeout(500);
@@ -37,7 +37,7 @@ server.listen(0, async () => {
   assert(post2.numeric_score === 7 && post2.completed === false, 'failed game saved as not completed: ' + JSON.stringify(post2));
   // player's own number wins
   await page.locator('[data-close="scoreModal"]').first().click().catch(() => {});
-  await page.click('.game-card[data-id="krillion"] .result-button'); await page.waitForTimeout(200);
+  await openCard(page, 'krillion'); await page.click('.game-card[data-id=\"krillion\"] .result-button'); await page.waitForTimeout(200);
   await page.fill('#numericScore', '400');
   await page.fill('#resultText', 'Krillion #97 🦐\n290\n\n🫧🦑');
   assert(await page.inputValue('#numericScore') === '400', 'typed number is not overwritten');
@@ -45,7 +45,7 @@ server.listen(0, async () => {
   assert((await page.textContent('#scoreDetected')).startsWith('Couldn’t read'), 'unreadable text shows a hint');
   // Immaculate Grid is read by its rarity
   await page.locator('[data-close="scoreModal"]').first().click().catch(() => {});
-  await page.click('.game-card[data-id="immaculate"] .result-button'); await page.waitForTimeout(200);
+  await openCard(page, 'immaculate'); await page.click('.game-card[data-id=\"immaculate\"] .result-button'); await page.waitForTimeout(200);
   await page.fill('#resultText', '🏈 Immaculate Grid 1191 6/9:\nRarity: 430\n🟩🟩⬜️');
   assert((await page.textContent('#scoreDetected')).startsWith('Read as: 430 rarity'), 'Immaculate Grid reads rarity: ' + await page.textContent('#scoreDetected'));
   assert(errors.length === 0, 'no console errors ' + errors.join(' | '));

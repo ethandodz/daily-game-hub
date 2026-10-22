@@ -2159,7 +2159,7 @@ function updateProgress() {
       playedCount +
       " of " +
       totalGames +
-      " played today";
+      " today";
 
   document
     .getElementById(
@@ -2230,6 +2230,8 @@ function currentSearchText() {
 
 
 function applyFilters() {
+  closePoppedCard(true);
+
   const searchValue =
     currentSearchText()
       .toLowerCase();
@@ -4041,6 +4043,10 @@ if (
   existingCard &&
   forceRecreate
 ) {
+  if (existingCard === poppedCard) {
+    closePoppedCard(true);
+  }
+
   existingCard.remove();
 }
 
@@ -4427,6 +4433,21 @@ document.createElement(
   resultSummary.dataset
 .resultSummary =
   game.game_key;
+
+
+  // In the grid the card is an app icon; tap it to pop it open.
+  card.addEventListener(
+    "click",
+    event => {
+      if (
+        !event.target.closest("button, a") &&
+        !card.classList.contains("popped") &&
+        !card.classList.contains("expanded")
+      ) {
+        popCard(card);
+      }
+    }
+  );
 
 
   card.append(
@@ -7676,7 +7697,155 @@ document
  * friends). It is the same card element, so all
  * existing buttons and live updates keep working.
  */
+/*
+ * Games show as app icons. Tapping one pops its card forward,
+ * growing out of the icon while the rest of the page blurs;
+ * tapping outside shrinks it back into the icon.
+ */
+let poppedCard =
+  null;
+
+function reduceMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+
+function popCard(card) {
+  if (poppedCard) {
+    closePoppedCard(true);
+  }
+
+  const from =
+    card.querySelector(".game-icon").getBoundingClientRect();
+
+  // Keeps the card's place in the grid while it floats.
+  const ghost =
+    document.createElement("div");
+
+  ghost.className =
+    "game-card-ghost";
+
+  ghost.style.height =
+    card.offsetHeight + "px";
+
+  card.after(ghost);
+
+  card.classList.add("popped");
+  document.body.classList.add("card-popped");
+  poppedCard = card;
+
+  card.style.left =
+    Math.round((window.innerWidth - card.offsetWidth) / 2) + "px";
+
+  card.style.top =
+    Math.round(Math.max(70, (window.innerHeight - card.offsetHeight) / 2)) + "px";
+
+  if (reduceMotion() || !card.animate) {
+    return;
+  }
+
+  const to =
+    card.getBoundingClientRect();
+
+  card.animate(
+    [
+      {
+        transform:
+          "translate(" + (from.left - to.left) + "px, " + (from.top - to.top) + "px) " +
+          "scale(" + from.width / to.width + ", " + from.height / to.height + ")",
+        opacity: 0.4
+      },
+      {
+        transform: "none",
+        opacity: 1
+      }
+    ],
+    {
+      duration: 320,
+      easing: "cubic-bezier(0.2, 0.9, 0.25, 1.12)"
+    }
+  );
+}
+
+
+function closePoppedCard(instant = false) {
+  const card =
+    poppedCard;
+
+  if (!card) {
+    return;
+  }
+
+  poppedCard = null;
+  document.body.classList.remove("card-popped");
+
+  const ghost =
+    card.nextElementSibling?.classList.contains("game-card-ghost")
+      ? card.nextElementSibling
+      : null;
+
+  const finish = () => {
+    card.classList.remove("popped");
+    card.style.left = "";
+    card.style.top = "";
+    ghost?.remove();
+  };
+
+  if (instant || !ghost || !card.isConnected || reduceMotion() || !card.animate) {
+    finish();
+    return;
+  }
+
+  // Shrink back toward where the icon sits.
+  const from =
+    card.getBoundingClientRect();
+
+  const spot =
+    ghost.getBoundingClientRect();
+
+  const size =
+    64;
+
+  card.animate(
+    [
+      {
+        transform: "none",
+        opacity: 1
+      },
+      {
+        transform:
+          "translate(" + (spot.left + (spot.width - size) / 2 - from.left) + "px, " + (spot.top - from.top) + "px) " +
+          "scale(" + size / from.width + ", " + size / from.height + ")",
+        opacity: 0.2
+      }
+    ],
+    {
+      duration: 220,
+      easing: "ease-in"
+    }
+  ).onfinish = finish;
+}
+
+
+document.addEventListener(
+  "click",
+  event => {
+    if (
+      poppedCard &&
+      !poppedCard.contains(event.target) &&
+      !event.target.closest(".modal")
+    ) {
+      closePoppedCard();
+    }
+  }
+);
+
+
 function setCardExpanded(card, open) {
+  if (open && card === poppedCard) {
+    closePoppedCard(true);
+  }
+
   if (open) {
     document
       .querySelectorAll(".game-card.expanded")
@@ -7723,6 +7892,8 @@ document.addEventListener(
       event.key === "Escape" &&
       !document.querySelector(".modal.open")
     ) {
+      closePoppedCard();
+
       document
         .querySelectorAll(".game-card.expanded")
         .forEach(card => {
@@ -13596,6 +13767,8 @@ function switchTab(tab) {
 
   currentTab = tab;
   document.body.dataset.tab = tab;
+
+  closePoppedCard(true);
 
   document
     .querySelectorAll(".game-card.expanded")

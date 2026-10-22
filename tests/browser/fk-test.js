@@ -12,7 +12,7 @@ m.server.listen(0, async () => {
     await page.evaluate(() => document.getElementById('usernameModal').classList.remove('open'));
   }
   await page.click('[data-filter="all"]');
-  await page.click('.game-card[data-id="krillion"] .result-button'); await page.waitForTimeout(200);
+  await m.openCard(page, 'krillion'); await page.click('.game-card[data-id="krillion"] .result-button'); await page.waitForTimeout(200);
   await page.fill('#resultText', 'Krillion #97 🦐\n290');
   const before = m.requests.filter(r => r.method === 'POST' && r.url.includes('daily_scores')).length;
   await page.click('#saveScoreButton'); await page.waitForTimeout(500);
