@@ -69,6 +69,13 @@
       --series-6: #008300;
       --series-7: #9085e9;
       --series-8: #e66767;
+
+      /* Days-played calendar: one purple ramp, empty = panel */
+      --heat-0: #1d2639;
+      --heat-1: #3b2a78;
+      --heat-2: #5b3cc4;
+      --heat-3: #8b5cf6;
+      --heat-4: #c4b5fd;
     }
 
     /* Light mode follows the device setting. Purple accents stay the same. */
@@ -113,6 +120,12 @@
         --series-6: #008300;
         --series-7: #6250d6;
         --series-8: #e34948;
+
+        --heat-0: #ebe9f3;
+        --heat-1: #d9ccff;
+        --heat-2: #a78bfa;
+        --heat-3: #7c3aed;
+        --heat-4: #4c1d95;
       }
     }
 
@@ -1373,6 +1386,7 @@
 
     .activity-list {
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
       gap: 8px;
     }
 
@@ -2382,6 +2396,76 @@
       background: var(--panel-light);
     }
 
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 3px;
+      margin-bottom: 6px;
+    }
+
+    .calendar-week {
+      display: grid;
+      gap: 3px;
+    }
+
+    .calendar-cell {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      padding: 0;
+      border: 0;
+      border-radius: 3px;
+    }
+
+    .calendar-legend .calendar-cell {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      vertical-align: middle;
+    }
+
+    .calendar-cell.level-0 { background: var(--heat-0); }
+    .calendar-cell.level-1 { background: var(--heat-1); }
+    .calendar-cell.level-2 { background: var(--heat-2); }
+    .calendar-cell.level-3 { background: var(--heat-3); }
+    .calendar-cell.level-4 { background: var(--heat-4); }
+
+    .calendar-cell.today {
+      outline: 2px solid var(--text);
+      outline-offset: 1px;
+    }
+
+    .calendar-cell.future {
+      visibility: hidden;
+    }
+
+    .calendar-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .calendar-legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    #activityAverages .activity-sub {
+      white-space: normal;
+    }
+
+    .activity-average {
+      flex: 0 0 auto;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -3107,6 +3191,43 @@
         <div
           class="activity-list"
           id="activityStreaks"
+        ></div>
+
+        <h3>
+          📅 Days Played
+        </h3>
+
+        <div
+          class="calendar"
+          id="activityCalendar"
+          role="img"
+          aria-label="Games played per day, last 12 weeks"
+        ></div>
+
+        <div class="calendar-foot">
+          <span
+            class="activity-sub"
+            id="activityCalendarNote"
+          >Tap a day to see how many games you played.</span>
+
+          <span class="calendar-legend">
+            Less
+            <i class="calendar-cell level-0"></i>
+            <i class="calendar-cell level-1"></i>
+            <i class="calendar-cell level-2"></i>
+            <i class="calendar-cell level-3"></i>
+            <i class="calendar-cell level-4"></i>
+            More
+          </span>
+        </div>
+
+        <h3>
+          📊 Your Averages
+        </h3>
+
+        <div
+          class="activity-list"
+          id="activityAverages"
         ></div>
 
         <h3>
@@ -12262,6 +12383,192 @@ window.addEventListener(
     }
 
 
+    /*
+     * Activity: last 12 weeks as a calendar (columns are weeks,
+     * Monday at the top), shaded by how many games were played.
+     */
+    function renderActivityCalendar(scores) {
+      const calendar =
+        document.getElementById("activityCalendar");
+
+      const perDay =
+        new Map();
+
+      scores.forEach(score => {
+        perDay.set(score.play_date, (perDay.get(score.play_date) || 0) + 1);
+      });
+
+      const weeks =
+        12;
+
+      const firstDay =
+        addDays(periodStartDate("week", TODAY), -7 * (weeks - 1));
+
+      const level =
+        count =>
+          count === 0 ? 0 : count <= 2 ? 1 : count <= 4 ? 2 : count <= 6 ? 3 : 4;
+
+      calendar.innerHTML = "";
+
+      let week = null;
+
+      for (let offset = 0; offset < weeks * 7; offset += 1) {
+        if (offset % 7 === 0) {
+          week = document.createElement("div");
+          week.className = "calendar-week";
+          calendar.appendChild(week);
+        }
+
+        const date =
+          addDays(firstDay, offset);
+
+        const cell =
+          document.createElement("button");
+
+        cell.type =
+          "button";
+
+        const count =
+          perDay.get(date) || 0;
+
+        const label =
+          new Date(date + "T12:00:00").toLocaleDateString(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric"
+          }) +
+          ": " +
+          (count === 1 ? "1 game" : count + " games");
+
+        cell.className =
+          "calendar-cell level-" + level(count) +
+          (date === TODAY ? " today" : "") +
+          (date > TODAY ? " future" : "");
+
+        cell.title = label;
+        cell.setAttribute("aria-label", label);
+
+        cell.addEventListener(
+          "click",
+          () => {
+            document.getElementById("activityCalendarNote").textContent = label;
+          }
+        );
+
+        week.appendChild(cell);
+      }
+    }
+
+
+    /*
+     * Activity: all-time average, personal best and games played for
+     * each game with numbered results. Failed games count at their
+     * fail score, as in server stats.
+     */
+    function renderActivityAverages(scores) {
+      const list =
+        document.getElementById("activityAverages");
+
+      const byGame =
+        new Map();
+
+      scores
+        .filter(score =>
+          score.numeric_score !== null &&
+          score.numeric_score !== undefined
+        )
+        .forEach(score => {
+          if (!byGame.has(score.game_id)) {
+            byGame.set(score.game_id, []);
+          }
+
+          byGame.get(score.game_id).push(score);
+        });
+
+      list.innerHTML = "";
+
+      if (byGame.size === 0) {
+        list.innerHTML =
+          '<p class="status">Averages appear once your results have scores.</p>';
+        return;
+      }
+
+      [...byGame.entries()]
+        .sort((a, b) => b[1].length - a[1].length)
+        .forEach(([gameId, results]) => {
+          const direction =
+            gameDirections.get(gameId) || "none";
+
+          const values =
+            results.map(result => Number(result.numeric_score));
+
+          const solved =
+            results
+              .filter(result => result.completed !== false)
+              .map(result => Number(result.numeric_score));
+
+          const average =
+            values.reduce((sum, value) => sum + value, 0) / values.length;
+
+          const best =
+            !solved.length || direction === "none"
+              ? null
+              : direction === "lower"
+                ? Math.min(...solved)
+                : Math.max(...solved);
+
+          const unit =
+            results.find(result => result.score_unit)?.score_unit || "";
+
+          const row =
+            document.createElement("div");
+
+          row.className =
+            "activity-row";
+
+          const info =
+            document.createElement("div");
+
+          info.className =
+            "activity-info";
+
+          const name =
+            document.createElement("div");
+
+          name.className =
+            "activity-name";
+
+          name.textContent =
+            getCatalogGame(gameId).name;
+
+          const detail =
+            document.createElement("div");
+
+          detail.className =
+            "activity-sub";
+
+          detail.textContent =
+            (best === null ? "" : "best " + formatStatNumber(best) + " · ") +
+            results.length + " played" +
+            (direction === "none" ? "" : " · " + describeDirection(direction));
+
+          info.append(name, detail);
+
+          const averageElement =
+            document.createElement("div");
+
+          averageElement.className =
+            "activity-average";
+
+          averageElement.textContent =
+            "avg " + formatStatNumber(average) + (unit ? " " + unit : "");
+
+          row.append(createGameBadge(gameId), info, averageElement);
+          list.appendChild(row);
+        });
+    }
+
+
     let activityLoaded =
       false;
 
@@ -12306,7 +12613,7 @@ window.addEventListener(
               "/rest/v1/daily_scores" +
               "?user_id=eq." +
               encodeURIComponent(session.user.id) +
-              "&select=game_id,play_date",
+              "&select=game_id,play_date,numeric_score,score_unit,completed",
               {
                 headers: authHeaders()
               }
@@ -12445,6 +12752,14 @@ window.addEventListener(
 
           streakList.appendChild(row);
         }
+
+        renderActivityCalendar(allScores || []);
+
+        if (!gameDirections.size) {
+          await loadGameDirections();
+        }
+
+        renderActivityAverages(allScores || []);
 
         // Recent results, grouped by day
         recentList.innerHTML = "";
