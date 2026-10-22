@@ -26,7 +26,7 @@ m.server.listen(0, async () => {
   assert(await page.textContent('#scoreStatus') === 'Result saved.', 'can save a result afterwards');
   // Account tab button still works
   await page.evaluate(() => document.querySelectorAll('.modal.open').forEach(x => x.classList.remove('open')));
-  await page.click('[data-tab-button="account"]'); await page.fill('#usernameInput', 'laur_23'); await page.click('#saveProfileButton'); await page.waitForTimeout(500);
+  await page.click('[data-tab-button="account"]'); await page.click('#openSettingsButton'); await page.fill('#usernameInput', 'laur_23'); await page.click('#saveProfileButton'); await page.waitForTimeout(500);
   assert(await page.textContent('#profileStatus') === 'Username saved.' && m.tables.profiles.some(x => x.username === 'laur_23'), 'Account tab username change still works');
   assert(errors.filter(e => !e.includes('409')).length === 0, 'no unexpected console errors ' + errors.join('|'));
   await browser.close(); m.server.close();

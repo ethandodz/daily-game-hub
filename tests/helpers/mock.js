@@ -38,7 +38,10 @@ const server = http.createServer((req,res)=>{ const f = path.join(dir, decodeURI
 const requests = [];
 const serverState = { servers: [{ id: 'srv-ethan', name: 'Work Crew', owner_id: FRIEND, invite_code: 'JOIN42', start_date: today, created_at: '2026-10-01' }],
   members: [{ server_id: 'srv-ethan', user_id: FRIEND, role: 'owner', joined_at: '2026-10-01' }],
-  games: [{ server_id: 'srv-ethan', game_key: 'wordle', sort_order: 1, score_direction: null }] };
+  games: [{ server_id: 'srv-ethan', game_key: 'wordle', sort_order: 1, score_direction: null }],
+  cards: [{ user_id: FRIEND, icon: '🐸', color: 'teal', bio: 'purple group first, always', favorite_game: 'connections' }],
+  cardStats: { [ME]: { played: 214, wins: 31, best_streak: 12, member_since: '2026-06-01T00:00:00Z', my_wins: 0, their_wins: 0 },
+    [FRIEND]: { played: 188, wins: 24, best_streak: 40, member_since: '2026-07-01T00:00:00Z', my_wins: 31, their_wins: 24 } } };
 const directions = { wordle: 'lower', connections: 'lower', worldle: 'lower', framed: 'lower', krillion: 'higher', immaculate: 'none' };
 function serverRoute(method, u, body) {
   if (u.pathname.startsWith('/auth/v1/')) {
@@ -90,6 +93,12 @@ function serverRoute(method, u, body) {
     if (method === 'POST') body.forEach(r => serverState.games.push({ ...r, score_direction: null }));
     return { status: 201, body: null }; }
   if (t === 'games' && (p.get('select') || '').includes('score_direction')) return { status: 200, body: games.map(g => ({ game_key: g.game_key, score_direction: directions[g.game_key] || 'none' })) };
+  if (t === 'player_cards') {
+    if (method === 'POST') { if (body.user_id !== ME) return { status: 403, body: { message: 'new row violates row-level security policy' } };
+      const i = serverState.cards.findIndex(c => c.user_id === ME); if (i >= 0) serverState.cards[i] = body; else serverState.cards.push(body); return { status: 201, body: null }; }
+    const ids = (p.get('user_id') || '').replace(/^in\.\(|\)$/g, '').replace(/^eq\./, '').split(',');
+    return { status: 200, body: serverState.cards.filter(c => ids.includes(c.user_id)) }; }
+  if (t === 'rpc/player_card_stats') return { status: 200, body: serverState.cardStats[body.p_user_id] || { played: 0, wins: 0, best_streak: 0, member_since: '2026-06-01T00:00:00Z', my_wins: 0, their_wins: 0 } };
   if (t === 'profiles' && method === 'POST') { // POST_PROFILE
     if (profiles.some(x => x.username === body.username && x.user_id !== body.user_id)) return { status: 409, body: { code: '23505', message: 'duplicate key value violates unique constraint "profiles_username_unique"' } };
     const existing = profiles.find(x => x.user_id === body.user_id);

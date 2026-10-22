@@ -25,7 +25,7 @@ server.listen(0, async () => {
     const games = await page.$$eval('#serverBoard .board-game', bs => bs.map(b => ({
       name: b.querySelector('.board-game-name').textContent,
       crown: b.querySelector('.board-lead').textContent,
-      rows: [...b.querySelectorAll('.board-row summary')].map(s => [...s.children].map(c => c.textContent.trim()).join(' ')),
+      rows: [...b.querySelectorAll('.board-row summary')].map(s => [...s.children].map(c => { const k = c.cloneNode(true); k.querySelectorAll('.avatar').forEach(a => a.remove()); return k.textContent.trim(); }).join(' ')),
       waiting: (b.querySelector('.board-waiting') || {}).textContent || '' })));
     if (scheme === 'dark') {
       const g = n => games.find(x => x.name === n);
@@ -40,7 +40,7 @@ server.listen(0, async () => {
       assert(await page.isVisible('#serverBoard .board-game:first-child .board-row'), 'tapping a game expands its ranking');
       const summary = await page.textContent('#serverBoardSummary');
       assert(summary === '👑 @maya 2 · you 1 · @sam 1 (leading so far)', 'summary: ' + summary);
-      await page.locator('#serverBoard .board-row', { hasText: '@maya' }).first().locator('summary').click(); await page.waitForTimeout(200);
+      await page.locator('#serverBoard .board-row', { hasText: '@maya' }).first().locator('summary .board-score').click(); await page.waitForTimeout(200);
       assert((await page.locator('#serverBoard .board-row[open] .board-full').first().textContent()).includes('Wordle 1,585 3/6'), 'tap a row shows full result');
       await page.screenshot({ path: out + '-today.png', fullPage: true });
       await page.click('[data-board-day="yesterday"]'); await page.waitForTimeout(600);

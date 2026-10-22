@@ -39,7 +39,7 @@ server.listen(0, async () => {
       await page.reload(); await page.waitForTimeout(1500);
       assert(await visibleView() === 'account', 'reload reopens last tab');
       // sign out
-      await page.click('#signOutButton'); await page.waitForTimeout(500);
+      await page.click('#openSettingsButton'); await page.click('#signOutButton'); await page.waitForTimeout(500);
       assert(await visibleView() === 'games', 'sign out returns to Games');
       assert(await page.isVisible('#signedOutHome') && !(await page.isVisible('.games-tools')), 'signed-out welcome shown, tools hidden');
       await page.screenshot({ path: `${out}-signedout.png` });

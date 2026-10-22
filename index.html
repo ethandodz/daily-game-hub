@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.22.4">
+  <meta name="app-version" content="2026.10.22.5">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.22.4">
+  <link rel="stylesheet" href="styles.css?v=2026.10.22.5">
 </head>
 
 <body>
@@ -807,14 +807,14 @@
     >
 
     <section
-      class="section"
+      class="section player-card my-card"
       id="accountSection"
     >
-      <h2>
-        👤 Account
-      </h2>
-
       <div id="accountSignedOut">
+        <h2>
+          👤 Account
+        </h2>
+
         <p class="intro">
           Log in to choose your games, track results and streaks,
           and compare scores with friends.
@@ -833,252 +833,603 @@
         id="signedInView"
         class="hidden"
       >
-        <div class="account-state">
+        <div class="card-head">
+          <span
+            class="avatar avatar-lg"
+            id="myCardIcon"
+            aria-hidden="true"
+          ></span>
 
-          <div>
+          <div class="card-who">
             <strong id="accountName"></strong>
-
-            <p
-              class="status"
-              id="accountEmail"
-            ></p>
+            <span
+              class="card-meta"
+              id="myCardMeta"
+            ></span>
           </div>
 
           <button
-            class="button danger"
-            id="signOutButton"
+            class="icon-button"
+            id="editCardButton"
             type="button"
+            aria-label="Edit my card"
           >
-            Sign Out
+            ✏️
           </button>
 
-        </div>
-
-        <div class="form">
-
-          <div class="field full">
-            <label for="usernameInput">
-              Username
-            </label>
-
-            <input
-              id="usernameInput"
-              type="text"
-              maxlength="24"
-              autocomplete="off"
-              placeholder="lowercase_letters"
-            >
-
-            <button
-              class="button"
-              id="saveProfileButton"
-              type="button"
-            >
-              Save Username
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-
-      <p
-        class="status"
-        id="profileStatus"
-        aria-live="polite"
-      ></p>
-    </section>
-
-    <section class="section">
-      <h2>
-        💬 Help Improve Daily Game Hub
-      </h2>
-
-      <p class="intro">
-        Report a bug, suggest a change, or request another game.
-      </p>
-
-      <div class="feedback-types">
-        <button
-          class="feedback-type selected"
-          data-feedback-type="bug"
-          type="button"
-        >
-          🐛 Report a Bug
-        </button>
-
-        <button
-          class="feedback-type"
-          data-feedback-type="suggestion"
-          type="button"
-        >
-          💡 Suggest a Change
-        </button>
-
-        <button
-          class="feedback-type"
-          data-feedback-type="game_request"
-          type="button"
-        >
-          🎮 Suggest a Game
-        </button>
-      </div>
-
-      <form
-        class="form"
-        id="feedbackForm"
-      >
-        <div class="field full">
-          <label for="feedbackGame">
-            Game involved
-          </label>
-
-          <select id="feedbackGame">
-            <option value="">
-              No specific game
-            </option>
-
-            <option value="Wordle">
-              Wordle
-            </option>
-
-            <option value="Connections">
-              Connections
-            </option>
-
-            <option value="Strands">
-              Strands
-            </option>
-
-            <option value="Krillion">
-              Krillion
-            </option>
-
-            <option value="GuessList">
-              GuessList
-            </option>
-
-            <option value="Magnitudle">
-              Magnitudle
-            </option>
-
-            <option value="Framed">
-              Framed
-            </option>
-
-            <option value="Worldle">
-              Worldle
-            </option>
-
-            <option value="Globle">
-              Globle
-            </option>
-
-            <option value="WhenTaken">
-              WhenTaken
-            </option>
-
-            <option value="Box Office Game">
-              Box Office Game
-            </option>
-
-            <option value="Poeltl">
-              Poeltl
-            </option>
-
-            <option value="Weddle">
-              Weddle
-            </option>
-
-            <option value="Poople">
-              Poople
-            </option>
-
-            <option value="MapTap">
-              MapTap
-            </option>
-
-            <option value="Contexto">
-              Contexto
-            </option>
-
-            <option value="Duotrigordle">
-              Duotrigordle
-            </option>
-
-            <option value="Minute Cryptic">
-              Minute Cryptic
-            </option>
-
-            <option value="Immaculate Grid">
-              Immaculate Grid
-            </option>
-          </select>
-        </div>
-
-        <div class="field full">
-          <label for="feedbackMessage">
-            Message
-          </label>
-
-          <textarea
-            id="feedbackMessage"
-            maxlength="2000"
-            required
-            placeholder="Describe the bug, idea, or game request..."
-          ></textarea>
-        </div>
-
-        <div class="field">
-          <label for="feedbackName">
-            Name (optional)
-          </label>
-
-          <input
-            id="feedbackName"
-            type="text"
-            maxlength="100"
-            autocomplete="name"
-          >
-        </div>
-
-        <div class="field">
-          <label for="feedbackEmail">
-            Email (optional)
-          </label>
-
-          <input
-            id="feedbackEmail"
-            type="email"
-            maxlength="200"
-            autocomplete="email"
-          >
-        </div>
-
-        <div class="field full">
           <button
-            class="button"
-            id="submitFeedbackButton"
-            type="submit"
+            class="icon-button"
+            id="openSettingsButton"
+            type="button"
+            aria-label="Settings"
           >
-            Submit Feedback
+            ⚙️
           </button>
-
-          <p
-            class="status"
-            id="feedbackStatus"
-            aria-live="polite"
-          ></p>
         </div>
-      </form>
-    </section>
 
+        <p
+          class="card-bio"
+          id="myCardBio"
+        ></p>
+
+        <div
+          class="card-stats"
+          id="myCardStats"
+        ></div>
+      </div>
+    </section>
 
     <p class="footer">
       Local favorites and checkmarks remain available without an account.
       Signed-in results, friends, and feedback use Supabase.
     </p>
 
+    </div>
+  </div>
+
+<div
+    class="modal sheet-modal"
+    id="settingsModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Settings
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="settingsModal"
+          type="button"
+          aria-label="Close settings"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="settings-row">
+        <span>✉️ Email</span>
+        <span
+          class="status"
+          id="accountEmail"
+        ></span>
+      </div>
+
+      <div class="form">
+        <div class="field full">
+          <label for="usernameInput">
+            Username
+          </label>
+
+          <input
+            id="usernameInput"
+            type="text"
+            maxlength="24"
+            autocomplete="off"
+            placeholder="lowercase_letters"
+          >
+
+          <button
+            class="button"
+            id="saveProfileButton"
+            type="button"
+          >
+            Save Username
+          </button>
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="profileStatus"
+        aria-live="polite"
+      ></p>
+
+      <details
+        class="settings-feedback"
+        id="feedbackSection"
+      >
+        <summary>
+          💬 Feedback &amp; requests
+        </summary>
+
+          <p class="intro">
+            Report a bug, suggest a change, or request another game.
+          </p>
+
+          <div class="feedback-types">
+            <button
+              class="feedback-type selected"
+              data-feedback-type="bug"
+              type="button"
+            >
+              🐛 Report a Bug
+            </button>
+
+            <button
+              class="feedback-type"
+              data-feedback-type="suggestion"
+              type="button"
+            >
+              💡 Suggest a Change
+            </button>
+
+            <button
+              class="feedback-type"
+              data-feedback-type="game_request"
+              type="button"
+            >
+              🎮 Suggest a Game
+            </button>
+          </div>
+
+          <form
+            class="form"
+            id="feedbackForm"
+          >
+            <div class="field full">
+              <label for="feedbackGame">
+                Game involved
+              </label>
+
+              <select id="feedbackGame">
+                <option value="">
+                  No specific game
+                </option>
+
+                <option value="Wordle">
+                  Wordle
+                </option>
+
+                <option value="Connections">
+                  Connections
+                </option>
+
+                <option value="Strands">
+                  Strands
+                </option>
+
+                <option value="Krillion">
+                  Krillion
+                </option>
+
+                <option value="GuessList">
+                  GuessList
+                </option>
+
+                <option value="Magnitudle">
+                  Magnitudle
+                </option>
+
+                <option value="Framed">
+                  Framed
+                </option>
+
+                <option value="Worldle">
+                  Worldle
+                </option>
+
+                <option value="Globle">
+                  Globle
+                </option>
+
+                <option value="WhenTaken">
+                  WhenTaken
+                </option>
+
+                <option value="Box Office Game">
+                  Box Office Game
+                </option>
+
+                <option value="Poeltl">
+                  Poeltl
+                </option>
+
+                <option value="Weddle">
+                  Weddle
+                </option>
+
+                <option value="Poople">
+                  Poople
+                </option>
+
+                <option value="MapTap">
+                  MapTap
+                </option>
+
+                <option value="Contexto">
+                  Contexto
+                </option>
+
+                <option value="Duotrigordle">
+                  Duotrigordle
+                </option>
+
+                <option value="Minute Cryptic">
+                  Minute Cryptic
+                </option>
+
+                <option value="Immaculate Grid">
+                  Immaculate Grid
+                </option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="feedbackMessage">
+                Message
+              </label>
+
+              <textarea
+                id="feedbackMessage"
+                maxlength="2000"
+                required
+                placeholder="Describe the bug, idea, or game request..."
+              ></textarea>
+            </div>
+
+            <div class="field">
+              <label for="feedbackName">
+                Name (optional)
+              </label>
+
+              <input
+                id="feedbackName"
+                type="text"
+                maxlength="100"
+                autocomplete="name"
+              >
+            </div>
+
+            <div class="field">
+              <label for="feedbackEmail">
+                Email (optional)
+              </label>
+
+              <input
+                id="feedbackEmail"
+                type="email"
+                maxlength="200"
+                autocomplete="email"
+              >
+            </div>
+
+            <div class="field full">
+              <button
+                class="button"
+                id="submitFeedbackButton"
+                type="submit"
+              >
+                Submit Feedback
+              </button>
+
+              <p
+                class="status"
+                id="feedbackStatus"
+                aria-live="polite"
+              ></p>
+            </div>
+          </form>
+      </details>
+
+      <button
+        class="button danger settings-signout"
+        id="signOutButton"
+        type="button"
+      >
+        Sign Out
+      </button>
+    </div>
+  </div>
+
+<div
+    class="modal sheet-modal"
+    id="editCardModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Edit my card
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="editCardModal"
+          type="button"
+          aria-label="Close edit card"
+        >
+          ✕
+        </button>
+      </div>
+
+      <h3 class="edit-heading">
+        Icon
+      </h3>
+
+      <div
+        class="icon-choices"
+        id="iconChoices"
+      >
+        <button
+          class="icon-choice"
+          data-icon="🦊"
+          type="button"
+          aria-label="Icon 🦊"
+        >🦊</button>
+        <button
+          class="icon-choice"
+          data-icon="🐸"
+          type="button"
+          aria-label="Icon 🐸"
+        >🐸</button>
+        <button
+          class="icon-choice"
+          data-icon="🦖"
+          type="button"
+          aria-label="Icon 🦖"
+        >🦖</button>
+        <button
+          class="icon-choice"
+          data-icon="🐙"
+          type="button"
+          aria-label="Icon 🐙"
+        >🐙</button>
+        <button
+          class="icon-choice"
+          data-icon="🦉"
+          type="button"
+          aria-label="Icon 🦉"
+        >🦉</button>
+        <button
+          class="icon-choice"
+          data-icon="🐼"
+          type="button"
+          aria-label="Icon 🐼"
+        >🐼</button>
+        <button
+          class="icon-choice"
+          data-icon="🐯"
+          type="button"
+          aria-label="Icon 🐯"
+        >🐯</button>
+        <button
+          class="icon-choice"
+          data-icon="🐨"
+          type="button"
+          aria-label="Icon 🐨"
+        >🐨</button>
+        <button
+          class="icon-choice"
+          data-icon="🐧"
+          type="button"
+          aria-label="Icon 🐧"
+        >🐧</button>
+        <button
+          class="icon-choice"
+          data-icon="🦈"
+          type="button"
+          aria-label="Icon 🦈"
+        >🦈</button>
+        <button
+          class="icon-choice"
+          data-icon="🐝"
+          type="button"
+          aria-label="Icon 🐝"
+        >🐝</button>
+        <button
+          class="icon-choice"
+          data-icon="🦋"
+          type="button"
+          aria-label="Icon 🦋"
+        >🦋</button>
+        <button
+          class="icon-choice"
+          data-icon="🎯"
+          type="button"
+          aria-label="Icon 🎯"
+        >🎯</button>
+        <button
+          class="icon-choice"
+          data-icon="🧩"
+          type="button"
+          aria-label="Icon 🧩"
+        >🧩</button>
+        <button
+          class="icon-choice"
+          data-icon="🎬"
+          type="button"
+          aria-label="Icon 🎬"
+        >🎬</button>
+        <button
+          class="icon-choice"
+          data-icon="🌍"
+          type="button"
+          aria-label="Icon 🌍"
+        >🌍</button>
+        <button
+          class="icon-choice"
+          data-icon="🦐"
+          type="button"
+          aria-label="Icon 🦐"
+        >🦐</button>
+        <button
+          class="icon-choice"
+          data-icon="⚾"
+          type="button"
+          aria-label="Icon ⚾"
+        >⚾</button>
+        <button
+          class="icon-choice"
+          data-icon="🏈"
+          type="button"
+          aria-label="Icon 🏈"
+        >🏈</button>
+        <button
+          class="icon-choice"
+          data-icon="🏀"
+          type="button"
+          aria-label="Icon 🏀"
+        >🏀</button>
+        <button
+          class="icon-choice"
+          data-icon="🎲"
+          type="button"
+          aria-label="Icon 🎲"
+        >🎲</button>
+        <button
+          class="icon-choice"
+          data-icon="🧠"
+          type="button"
+          aria-label="Icon 🧠"
+        >🧠</button>
+        <button
+          class="icon-choice"
+          data-icon="🎮"
+          type="button"
+          aria-label="Icon 🎮"
+        >🎮</button>
+        <button
+          class="icon-choice"
+          data-icon="🍕"
+          type="button"
+          aria-label="Icon 🍕"
+        >🍕</button>
+      </div>
+
+      <h3 class="edit-heading">
+        Card color
+      </h3>
+
+      <div
+        class="color-choices"
+        id="colorChoices"
+      >
+        <button
+          class="color-choice"
+          data-color="purple"
+          type="button"
+          aria-label="Purple"
+        ></button>
+        <button
+          class="color-choice"
+          data-color="teal"
+          type="button"
+          aria-label="Teal"
+        ></button>
+        <button
+          class="color-choice"
+          data-color="orange"
+          type="button"
+          aria-label="Orange"
+        ></button>
+        <button
+          class="color-choice"
+          data-color="pink"
+          type="button"
+          aria-label="Pink"
+        ></button>
+        <button
+          class="color-choice"
+          data-color="slate"
+          type="button"
+          aria-label="Gray"
+        ></button>
+        <button
+          class="color-choice"
+          data-color="red"
+          type="button"
+          aria-label="Red"
+        ></button>
+      </div>
+
+      <div class="form">
+        <div class="field full">
+          <label for="cardBioInput">
+            Bio <span id="cardBioCount">0/60</span>
+          </label>
+
+          <input
+            id="cardBioInput"
+            type="text"
+            maxlength="60"
+            autocomplete="off"
+            placeholder="Krillion or bust 🦐"
+          >
+        </div>
+
+        <div class="field full">
+          <label for="cardFavoriteInput">
+            Favorite game
+          </label>
+
+          <select id="cardFavoriteInput">
+            <option value="">
+              None
+            </option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <button
+            class="button"
+            id="saveCardButton"
+            type="button"
+          >
+            Save card
+          </button>
+
+          <p
+            class="status"
+            id="cardStatus"
+            aria-live="polite"
+          ></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div
+    class="modal sheet-modal"
+    id="playerCardModal"
+  >
+    <div class="modal-card player-card-window">
+      <div class="modal-top">
+        <span></span>
+
+        <button
+          class="close-button"
+          data-close="playerCardModal"
+          type="button"
+          aria-label="Close player card"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div
+        class="player-card"
+        id="playerCardBody"
+      ></div>
     </div>
   </div>
 
@@ -2077,7 +2428,7 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.22.4"></script>
+  <script src="app.js?v=2026.10.22.5"></script>
 </body>
 </html>
 
