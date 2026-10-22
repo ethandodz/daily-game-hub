@@ -12,7 +12,7 @@ const games = [
   ['worldle','Worldle','Geography','Name the country from its outline.','🌍','#0ea5e9'],
   ['framed','Framed','Movies','Guess the movie from one frame.','🎬','#e11d48'],
   ['immaculate','Immaculate Grid','Sports','Fill the baseball grid.','⚾','#f59e0b'],
-  ['krillion','Krillion','Trivia','Daily trivia ladder.','K','#14b8a6'],
+  ['krillion','Krillion','Trivia','Daily trivia ladder.','🦐','#14b8a6'],
 ].map(([game_key,name,category,description,icon,color]) => ({game_key,name,url:'https://example.com',category,description,icon,color,is_official:true,created_by:null}));
 const userGames = games.map((g,i)=>({user_id:ME,game_key:g.game_key,is_visible:true,is_favorite:i<4,sort_order:i,added_at:'2026-01-01'}));
 const scores = [
@@ -39,7 +39,10 @@ const requests = [];
 const serverState = { servers: [{ id: 'srv-ethan', name: 'Work Crew', owner_id: FRIEND, invite_code: 'JOIN42', start_date: today, created_at: '2026-10-01' }],
   members: [{ server_id: 'srv-ethan', user_id: FRIEND, role: 'owner', joined_at: '2026-10-01' }],
   games: [{ server_id: 'srv-ethan', game_key: 'wordle', sort_order: 1, score_direction: null }],
-  cards: [{ user_id: FRIEND, icon: '🐸', color: 'teal', bio: 'purple group first, always', favorite_game: 'connections' }],
+  cards: [{ user_id: FRIEND, icon: '🐸', color: 'teal', bio: 'purple group first, always', favorite_game: 'connections', showcase: ['krillionaire', 'on_fire', 'sharpshooter'] }],
+  achievementList: [['winner', 'Winner', '👑', 'Days won in your servers', [1, 10, 50, 100]], ['on_fire', 'On Fire', '🔥', 'Days in a row with a result', [7, 30, 100, 365]],
+    ['sharpshooter', 'Sharpshooter', '🎯', 'Wordle in 2 guesses or fewer', [1, 5, 25]], ['krillionaire', 'Krillionaire', '💎', 'Krillion answer (💎) in Krillion', [1, 5, 20]], ['founder', 'Founder', '🏰', 'Create a server', [1]]],
+  achievementProgress: { [ME]: { winner: 31, on_fire: 12, sharpshooter: 3, krillionaire: 0, founder: 1 }, [FRIEND]: { winner: 24, on_fire: 40, krillionaire: 6 } },
   cardStats: { [ME]: { played: 214, wins: 31, best_streak: 12, member_since: '2026-06-01T00:00:00Z', my_wins: 0, their_wins: 0 },
     [FRIEND]: { played: 188, wins: 24, best_streak: 40, member_since: '2026-07-01T00:00:00Z', my_wins: 31, their_wins: 24 } } };
 const directions = { wordle: 'lower', connections: 'lower', worldle: 'lower', framed: 'lower', krillion: 'higher', immaculate: 'none' };
@@ -98,6 +101,11 @@ function serverRoute(method, u, body) {
       const i = serverState.cards.findIndex(c => c.user_id === ME); if (i >= 0) serverState.cards[i] = body; else serverState.cards.push(body); return { status: 201, body: null }; }
     const ids = (p.get('user_id') || '').replace(/^in\.\(|\)$/g, '').replace(/^eq\./, '').split(',');
     return { status: 200, body: serverState.cards.filter(c => ids.includes(c.user_id)) }; }
+  if (t === 'rpc/player_achievements') { if (process.env.NO_ACHIEVEMENTS) return { status: 404, body: { message: 'Could not find the function' } };
+    const progress = serverState.achievementProgress[body.p_user_id] || {};
+    return { status: 200, body: serverState.achievementList.flatMap(([id, name, icon, description, thresholds], i) => thresholds.map((threshold, t) => ({ id, tier: t + 1, name, icon, description, threshold, coins: [25, 50, 100, 200][t], progress: progress[id] || 0 }))) }; }
+  if (t === 'rpc/player_coins') { if (process.env.NO_ACHIEVEMENTS) return { status: 404, body: { message: 'Could not find the function' } };
+    return { status: 200, body: body.p_user_id === ME ? { balance: 1240, history: [{ day: null, label: 'Badge: Winner Silver', amount: 50 }, { day: day(1), label: 'Won Wordle', amount: 15 }, { day: day(1), label: 'Played 3 games', amount: 11 }] } : { balance: 980, history: null } }; }
   if (t === 'rpc/player_card_stats') return { status: 200, body: serverState.cardStats[body.p_user_id] || { played: 0, wins: 0, best_streak: 0, member_since: '2026-06-01T00:00:00Z', my_wins: 0, their_wins: 0 } };
   if (t === 'profiles' && method === 'POST') { // POST_PROFILE
     if (profiles.some(x => x.username === body.username && x.user_id !== body.user_id)) return { status: 409, body: { code: '23505', message: 'duplicate key value violates unique constraint "profiles_username_unique"' } };

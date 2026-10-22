@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.22.5">
+  <meta name="app-version" content="2026.10.22.6">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.22.5">
+  <link rel="stylesheet" href="styles.css?v=2026.10.22.6">
 </head>
 
 <body>
@@ -842,10 +842,13 @@
 
           <div class="card-who">
             <strong id="accountName"></strong>
-            <span
-              class="card-meta"
-              id="myCardMeta"
-            ></span>
+
+            <button
+              class="coins-pill hidden"
+              id="myCoinsButton"
+              type="button"
+              aria-label="Coins"
+            ></button>
           </div>
 
           <button
@@ -872,12 +875,51 @@
           id="myCardBio"
         ></p>
 
+        <p
+          class="card-meta"
+          id="myCardMeta"
+        ></p>
+
         <div
           class="card-stats"
           id="myCardStats"
         ></div>
+
+        <div
+          class="card-badges hidden"
+          id="myShowcase"
+        ></div>
+
+        <p
+          class="card-meta hidden"
+          id="myShowcaseHint"
+        >
+          Tap ✏️ to show off up to 3 badges.
+        </p>
       </div>
     </section>
+
+    <details
+      class="section achievements-section hidden"
+      id="achievementsSection"
+    >
+      <summary>
+        <span class="achievements-title">🏆 Achievements</span>
+        <span
+          class="achievements-count"
+          id="achievementsCount"
+        ></span>
+        <span
+          class="progress-bar"
+          aria-hidden="true"
+        ><i id="achievementsBar"></i></span>
+      </summary>
+
+      <div
+        class="achievement-list"
+        id="achievementList"
+      ></div>
+    </details>
 
     <p class="footer">
       Local favorites and checkmarks remain available without an account.
@@ -1389,6 +1431,20 @@
           </select>
         </div>
 
+        <div
+          class="field full hidden"
+          id="showcaseField"
+        >
+          <label>
+            Badges on your card <span id="showcaseCount">0/3</span>
+          </label>
+
+          <div
+            class="showcase-choices"
+            id="showcaseChoices"
+          ></div>
+        </div>
+
         <div class="field full">
           <button
             class="button"
@@ -1405,6 +1461,47 @@
           ></p>
         </div>
       </div>
+    </div>
+  </div>
+
+<div
+    class="modal sheet-modal"
+    id="coinsModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2 id="coinsTitle">
+          🪙 Coins
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="coinsModal"
+          type="button"
+          aria-label="Close coins"
+        >
+          ✕
+        </button>
+      </div>
+
+      <details class="coins-how">
+        <summary>
+          How to earn coins
+        </summary>
+
+        <ul>
+          <li>+5 for each day you post a result, plus +2 per result (up to 5 a day)</li>
+          <li>+15 for each game you win in a server (2+ players, once per game a day)</li>
+          <li>+100 for winning a week in a server: most wins, or best average place</li>
+          <li>+300 for winning a month the same ways</li>
+          <li>+25 / 50 / 100 / 200 for each badge tier you unlock</li>
+        </ul>
+      </details>
+
+      <div
+        class="coin-history"
+        id="coinHistory"
+      ></div>
     </div>
   </div>
 
@@ -2428,7 +2525,7 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.22.5"></script>
+  <script src="app.js?v=2026.10.22.6"></script>
 </body>
 </html>
 
