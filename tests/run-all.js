@@ -19,7 +19,8 @@ const runs = [
   { file: 'browser/auth-test.js', env: { SIGNUP_MODE: 'existing-confirm' } },
   { file: 'browser/auth-test.js', env: { SIGNUP_MODE: 'existing-noconfirm' } },
   { file: 'browser/fk-test.js', env: { NO_PROFILE: '1' } },
-  { file: 'browser/fk-test.js', env: { FK_FAIL: '1' } }
+  { file: 'browser/fk-test.js', env: { FK_FAIL: '1' } },
+  { file: 'browser/achievements-test.js', env: { NO_ACHIEVEMENTS: '1' } }
 ].filter(run => run.file.endsWith('.js') && run.file.includes(filter));
 
 let failed = 0;

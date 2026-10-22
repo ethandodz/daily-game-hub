@@ -3152,6 +3152,8 @@ document
       session = null;
       myProfile = null;
       myCardStats = null;
+      myAchievements = null;
+      myCoins = null;
       playerCards.clear();
 
       document.getElementById("settingsModal").classList.remove("open");
@@ -11864,7 +11866,7 @@ const CARD_COLORS =
   ["purple", "teal", "orange", "pink", "slate", "red"];
 
 const DEFAULT_CARD =
-  { icon: "", color: "purple", bio: "", favorite_game: null };
+  { icon: "", color: "purple", bio: "", favorite_game: null, showcase: [] };
 
 const playerCards =
   new Map();
@@ -11887,16 +11889,23 @@ async function loadPlayerCards(userIds) {
     return;
   }
 
-  try {
-    const rows =
-      await request(
+  const fetchCards =
+    columns =>
+      request(
         "/rest/v1/player_cards" +
         "?user_id=in.(" + missing.join(",") + ")" +
-        "&select=user_id,icon,color,bio,favorite_game",
+        "&select=" + columns,
         {
           headers: authHeaders()
         }
       );
+
+  try {
+    // showcase arrives with the achievements database file;
+    // until it has been run, load cards without it.
+    const rows =
+      await fetchCards("user_id,icon,color,bio,favorite_game,showcase")
+        .catch(() => fetchCards("user_id,icon,color,bio,favorite_game"));
 
     for (const userId of missing) {
       playerCards.set(
@@ -12088,6 +12097,494 @@ async function loadCardStats(userId) {
 }
 
 
+/*
+ * Achievements come from the database as one row per tier with
+ * the player's progress. Group them into one entry per achievement.
+ */
+const TIER_NAMES =
+  ["Bronze", "Silver", "Gold", "Diamond"];
+
+let myAchievements =
+  null;
+
+let myCoins =
+  null;
+
+
+function groupAchievements(rows) {
+  const families =
+    new Map();
+
+  for (const row of rows || []) {
+    if (!families.has(row.id)) {
+      families.set(row.id, {
+        id: row.id,
+        name: row.name,
+        icon: row.icon,
+        description: row.description,
+        progress: Number(row.progress) || 0,
+        tiers: []
+      });
+    }
+
+    families.get(row.id).tiers.push({
+      tier: row.tier,
+      threshold: row.threshold,
+      coins: row.coins
+    });
+  }
+
+  return [...families.values()].map(family => {
+    family.tiers.sort((a, b) => a.tier - b.tier);
+
+    family.unlocked =
+      family.tiers.filter(tier => family.progress >= tier.threshold).length;
+
+    family.next =
+      family.tiers[family.unlocked] || null;
+
+    return family;
+  });
+}
+
+
+function tierLabel(family, unlocked = family.unlocked) {
+  if (!unlocked) {
+    return "Locked";
+  }
+
+  return family.tiers.length > 1
+    ? TIER_NAMES[unlocked - 1]
+    : "Unlocked";
+}
+
+
+async function loadAchievements(userId) {
+  try {
+    const rows =
+      await request(
+        "/rest/v1/rpc/player_achievements",
+        {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            p_user_id: userId,
+            p_today: TODAY
+          })
+        }
+      );
+
+    return Array.isArray(rows) && rows.length
+      ? groupAchievements(rows)
+      : null;
+  } catch (error) {
+    console.error(
+      "Achievements failed to load:",
+      error
+    );
+
+    return null;
+  }
+}
+
+
+async function loadCoins(userId) {
+  try {
+    const coins =
+      await request(
+        "/rest/v1/rpc/player_coins",
+        {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            p_user_id: userId,
+            p_today: TODAY
+          })
+        }
+      );
+
+    return coins && typeof coins === "object" && "balance" in coins
+      ? coins
+      : null;
+  } catch (error) {
+    console.error(
+      "Coins failed to load:",
+      error
+    );
+
+    return null;
+  }
+}
+
+
+function coinsText(coins) {
+  return "🪙 " + Number(coins.balance || 0).toLocaleString("en-US");
+}
+
+
+/*
+ * Up to 3 badge tiles: the player's picks, but only badges they
+ * have actually unlocked.
+ */
+function renderShowcase(container, showcase, families) {
+  container.innerHTML = "";
+
+  const unlocked =
+    new Map(
+      (families || [])
+        .filter(family => family.unlocked)
+        .map(family => [family.id, family])
+    );
+
+  const picks =
+    (showcase || [])
+      .filter(id => unlocked.has(id))
+      .slice(0, 3);
+
+  for (const id of picks) {
+    const family =
+      unlocked.get(id);
+
+    const tile =
+      document.createElement("div");
+
+    tile.className =
+      "badge-tile";
+
+    tile.dataset.tier =
+      family.tiers.length > 1 ? family.unlocked : 3;
+
+    const icon =
+      document.createElement("i");
+
+    icon.textContent =
+      family.icon;
+
+    const name =
+      document.createElement("b");
+
+    name.textContent =
+      family.name;
+
+    const tier =
+      document.createElement("span");
+
+    tier.textContent =
+      tierLabel(family);
+
+    tile.append(icon, name, tier);
+    container.appendChild(tile);
+  }
+
+  container.classList.toggle("hidden", picks.length === 0);
+
+  return picks.length;
+}
+
+
+function renderAchievements() {
+  const section =
+    document.getElementById("achievementsSection");
+
+  if (!myAchievements) {
+    section.classList.add("hidden");
+    return;
+  }
+
+  const totalTiers =
+    myAchievements.reduce((sum, family) => sum + family.tiers.length, 0);
+
+  const unlockedTiers =
+    myAchievements.reduce((sum, family) => sum + family.unlocked, 0);
+
+  document.getElementById("achievementsCount").textContent =
+    unlockedTiers + " of " + totalTiers;
+
+  document.getElementById("achievementsBar").style.width =
+    (totalTiers ? Math.round(unlockedTiers / totalTiers * 100) : 0) + "%";
+
+  const list =
+    document.getElementById("achievementList");
+
+  list.innerHTML = "";
+
+  for (const family of myAchievements) {
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "achievement-row" + (family.unlocked ? "" : " locked");
+
+    row.dataset.id =
+      family.id;
+
+    const icon =
+      document.createElement("span");
+
+    icon.className =
+      "achievement-icon";
+
+    icon.textContent =
+      family.icon;
+
+    const text =
+      document.createElement("div");
+
+    text.className =
+      "achievement-text";
+
+    const top =
+      document.createElement("div");
+
+    top.className =
+      "achievement-top";
+
+    const name =
+      document.createElement("b");
+
+    name.textContent =
+      family.name;
+
+    const tier =
+      document.createElement("span");
+
+    tier.className =
+      "achievement-tier";
+
+    tier.dataset.tier =
+      family.unlocked && family.tiers.length === 1 ? 3 : family.unlocked;
+
+    tier.textContent =
+      tierLabel(family);
+
+    top.append(name, tier);
+
+    const description =
+      document.createElement("span");
+
+    description.className =
+      "achievement-description";
+
+    description.textContent =
+      family.description;
+
+    const progress =
+      document.createElement("div");
+
+    progress.className =
+      "achievement-progress";
+
+    const bar =
+      document.createElement("span");
+
+    bar.className =
+      "progress-bar";
+
+    const fill =
+      document.createElement("i");
+
+    const goal =
+      family.next || family.tiers[family.tiers.length - 1];
+
+    fill.style.width =
+      Math.min(100, Math.round(family.progress / goal.threshold * 100)) + "%";
+
+    bar.appendChild(fill);
+
+    const count =
+      document.createElement("span");
+
+    count.className =
+      "achievement-count";
+
+    count.textContent =
+      family.next
+        ? Math.min(family.progress, family.next.threshold) + " / " + family.next.threshold +
+          (family.tiers.length > 1 ? " for " + TIER_NAMES[family.next.tier - 1] : "")
+        : "Complete";
+
+    progress.append(bar, count);
+
+    const dots =
+      document.createElement("span");
+
+    dots.className =
+      "tier-dots";
+
+    if (family.tiers.length > 1) {
+      family.tiers.forEach(entry => {
+        const dot =
+          document.createElement("i");
+
+        dot.dataset.tier =
+          entry.tier;
+
+        dot.classList.toggle("on", entry.tier <= family.unlocked);
+        dots.appendChild(dot);
+      });
+    }
+
+    text.append(top, description, progress);
+    row.append(icon, text, dots);
+    list.appendChild(row);
+  }
+
+  section.classList.remove("hidden");
+}
+
+
+function formatCoinDay(day) {
+  if (!day) {
+    return "Badge";
+  }
+
+  return new Date(day + "T12:00:00")
+    .toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+
+function openCoins() {
+  if (!myCoins) {
+    return;
+  }
+
+  document.getElementById("coinsTitle").textContent =
+    coinsText(myCoins);
+
+  const list =
+    document.getElementById("coinHistory");
+
+  list.innerHTML = "";
+
+  for (const entry of myCoins.history || []) {
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "coin-row";
+
+    const day =
+      document.createElement("span");
+
+    day.className =
+      "coin-day";
+
+    day.textContent =
+      formatCoinDay(entry.day);
+
+    const label =
+      document.createElement("span");
+
+    label.className =
+      "coin-label";
+
+    label.textContent =
+      entry.label;
+
+    const amount =
+      document.createElement("b");
+
+    amount.textContent =
+      "+" + entry.amount;
+
+    row.append(day, label, amount);
+    list.appendChild(row);
+  }
+
+  if (!list.children.length) {
+    list.innerHTML =
+      '<p class="status">Post a result to earn your first coins.</p>';
+  }
+
+  document.getElementById("coinsModal").classList.add("open");
+}
+
+
+function renderShowcaseChoices() {
+  const field =
+    document.getElementById("showcaseField");
+
+  const unlocked =
+    (myAchievements || []).filter(family => family.unlocked);
+
+  field.classList.toggle("hidden", !myAchievements);
+
+  const list =
+    document.getElementById("showcaseChoices");
+
+  list.innerHTML = "";
+
+  for (const family of unlocked) {
+    const button =
+      document.createElement("button");
+
+    button.type =
+      "button";
+
+    button.className =
+      "showcase-choice";
+
+    button.dataset.badge =
+      family.id;
+
+    button.classList.toggle(
+      "selected",
+      editingCard.showcase.includes(family.id)
+    );
+
+    button.textContent =
+      family.icon + " " + family.name;
+
+    list.appendChild(button);
+  }
+
+  if (!unlocked.length) {
+    list.innerHTML =
+      '<p class="status">Unlock achievements to earn badges you can show here.</p>';
+  }
+
+  document.getElementById("showcaseCount").textContent =
+    editingCard.showcase.length + "/3";
+}
+
+
+document
+  .getElementById("showcaseChoices")
+  .addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target.closest("[data-badge]");
+
+      if (!button || !editingCard) {
+        return;
+      }
+
+      const id =
+        button.dataset.badge;
+
+      if (editingCard.showcase.includes(id)) {
+        editingCard.showcase =
+          editingCard.showcase.filter(entry => entry !== id);
+      } else if (editingCard.showcase.length < 3) {
+        editingCard.showcase =
+          [...editingCard.showcase, id];
+      } else {
+        setStatus(
+          document.getElementById("cardStatus"),
+          "You can show 3 badges. Tap one to remove it first."
+        );
+      }
+
+      renderShowcaseChoices();
+    }
+  );
+
+document
+  .getElementById("myCoinsButton")
+  .addEventListener("click", openCoins);
+
+
 function renderMyCard() {
   if (!session) {
     return;
@@ -12127,6 +12624,30 @@ function renderMyCard() {
     document.getElementById("myCardStats"),
     myCardStats
   );
+
+  const coinsButton =
+    document.getElementById("myCoinsButton");
+
+  coinsButton.classList.toggle("hidden", !myCoins);
+
+  if (myCoins) {
+    coinsButton.textContent =
+      coinsText(myCoins);
+  }
+
+  const shown =
+    renderShowcase(
+      document.getElementById("myShowcase"),
+      card.showcase,
+      myAchievements
+    );
+
+  document.getElementById("myShowcaseHint").classList.toggle(
+    "hidden",
+    shown > 0 || !(myAchievements || []).some(family => family.unlocked)
+  );
+
+  renderAchievements();
 }
 
 
@@ -12140,9 +12661,11 @@ async function loadMyCard() {
 
   playerCards.delete(userId);
 
-  const [stats] =
+  const [stats, achievements, coins] =
     await Promise.all([
       loadCardStats(userId),
+      loadAchievements(userId),
+      loadCoins(userId),
       loadPlayerCards([userId])
     ]);
 
@@ -12152,6 +12675,12 @@ async function loadMyCard() {
 
   myCardStats =
     stats;
+
+  myAchievements =
+    achievements;
+
+  myCoins =
+    coins;
 
   renderMyCard();
 }
@@ -12216,13 +12745,27 @@ async function openPlayerCard(userId) {
   versus.className =
     "card-versus hidden";
 
+  const coins =
+    document.createElement("span");
+
+  coins.className =
+    "coins-pill hidden";
+
+  const badges =
+    document.createElement("div");
+
+  badges.className =
+    "card-badges hidden";
+
   body.append(
     banner,
     playerAvatar(userId, "xl"),
     name,
+    coins,
     bio,
     meta,
     stats,
+    badges,
     versus
   );
 
@@ -12230,10 +12773,27 @@ async function openPlayerCard(userId) {
 
   document.getElementById("playerCardModal").classList.add("open");
 
-  const loaded =
-    await loadCardStats(userId);
+  const [loaded, achievements, coinTotal] =
+    await Promise.all([
+      loadCardStats(userId),
+      loadAchievements(userId),
+      loadCoins(userId)
+    ]);
 
-  if (!loaded || !body.isConnected) {
+  if (!body.contains(badges)) {
+    return;
+  }
+
+  if (coinTotal) {
+    coins.textContent =
+      coinsText(coinTotal);
+
+    coins.classList.remove("hidden");
+  }
+
+  renderShowcase(badges, card.showcase, achievements);
+
+  if (!loaded) {
     return;
   }
 
@@ -12317,7 +12877,10 @@ function openEditCard() {
 
   editingCard = {
     icon: card.icon || "🦊",
-    color: CARD_COLORS.includes(card.color) ? card.color : "purple"
+    color: CARD_COLORS.includes(card.color) ? card.color : "purple",
+    showcase: (card.showcase || []).filter(id =>
+      (myAchievements || []).some(family => family.id === id && family.unlocked)
+    )
   };
 
   document.getElementById("cardBioInput").value =
@@ -12326,6 +12889,7 @@ function openEditCard() {
   fillFavoriteGameChoices(card.favorite_game);
   setStatus(document.getElementById("cardStatus"), "");
   showEditingChoices();
+  renderShowcaseChoices();
 
   document.getElementById("editCardModal").classList.add("open");
 }
@@ -12356,6 +12920,12 @@ async function saveCard() {
     updated_at: new Date().toISOString()
   };
 
+  // Only once the achievements database file has been run.
+  if (myAchievements) {
+    row.showcase =
+      editingCard.showcase;
+  }
+
   button.disabled = true;
   setStatus(status, "Saving...");
 
@@ -12369,7 +12939,7 @@ async function saveCard() {
       }
     );
 
-    playerCards.set(session.user.id, row);
+    playerCards.set(session.user.id, { showcase: [], ...row });
     renderMyCard();
 
     if (selectedServerId) {
