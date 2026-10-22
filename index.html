@@ -14812,6 +14812,26 @@ window.addEventListener(
     }
 
 
+    function reloadIfNewDay() {
+      if (new Date().toLocaleDateString("en-CA") !== TODAY) {
+        location.reload();
+      }
+    }
+
+    // Home Screen apps can stay open for days; "today" is fixed at load.
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.visibilityState === "visible") {
+          reloadIfNewDay();
+        }
+      }
+    );
+
+    window.addEventListener("focus", reloadIfNewDay);
+    window.addEventListener("pageshow", reloadIfNewDay);
+
+
     /*
      * Saved results must belong to a profile (daily_scores.user_id
      * references it), and the profile is created with the username.
