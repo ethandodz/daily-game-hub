@@ -3160,6 +3160,12 @@ document
 
       document.getElementById("settingsModal").classList.remove("open");
 
+      const accountSection =
+        document.getElementById("accountSection");
+
+      accountSection.classList.remove("player-tint");
+      delete accountSection.dataset.frame;
+
       localStorage.removeItem(
         SESSION_KEY
       );
@@ -12754,13 +12760,25 @@ function shopPreview(item, card) {
   }
 
   if (item.kind === "frame") {
-    const avatar =
-      playerAvatar(session.user.id);
+    const preview =
+      document.createElement("span");
 
-    avatar.dataset.frame =
+    preview.className =
+      "frame-preview player-tint";
+
+    preview.dataset.color =
+      CARD_COLORS.includes(card.color) ? card.color : "purple";
+
+    preview.dataset.frame =
       item.value;
 
-    return avatar;
+    const avatar =
+      playerAvatar(session.user.id, "sm");
+
+    delete avatar.dataset.frame;
+    preview.appendChild(avatar);
+
+    return preview;
   }
 
   const text =
@@ -13062,6 +13080,27 @@ async function saveCardFields(fields) {
 }
 
 
+/*
+ * Card look: a wash of the card color fading into the panel, with
+ * the shop frame (if any) as the card's border.
+ */
+function tintCard(element, card) {
+  element.classList.add("player-tint");
+
+  element.dataset.color =
+    CARD_COLORS.includes(card.color) ? card.color : "purple";
+
+  const frame =
+    shopValue(card.frame, "frame");
+
+  if (frame) {
+    element.dataset.frame = frame;
+  } else {
+    delete element.dataset.frame;
+  }
+}
+
+
 function renderMyCard() {
   if (!session) {
     return;
@@ -13070,21 +13109,19 @@ function renderMyCard() {
   const card =
     cardFor(session.user.id);
 
-  const section =
-    document.getElementById("accountSection");
-
-  section.dataset.color =
-    CARD_COLORS.includes(card.color) ? card.color : "purple";
+  tintCard(
+    document.getElementById("accountSection"),
+    card
+  );
 
   const icon =
-    document.getElementById("myCardIcon");
+    playerAvatar(session.user.id, "lg");
 
-  icon.replaceWith(
-    Object.assign(
-      playerAvatar(session.user.id, "lg"),
-      { id: "myCardIcon" }
-    )
-  );
+  // The frame goes around the whole card instead.
+  delete icon.dataset.frame;
+  icon.id = "myCardIcon";
+
+  document.getElementById("myCardIcon").replaceWith(icon);
 
   document.getElementById("myCardMeta").textContent =
     cardMetaText(card, myCardStats);
@@ -13191,16 +13228,12 @@ async function openPlayerCard(userId) {
   const card =
     cardFor(userId);
 
-  body.dataset.color =
-    CARD_COLORS.includes(card.color) ? card.color : "purple";
-
   body.innerHTML = "";
 
-  const banner =
-    document.createElement("div");
-
-  banner.className =
-    "card-banner";
+  tintCard(
+    body.closest(".player-card-window"),
+    card
+  );
 
   const name =
     document.createElement("strong");
@@ -13272,9 +13305,14 @@ async function openPlayerCard(userId) {
   badges.className =
     "card-badges hidden";
 
+  const avatar =
+    playerAvatar(userId, "xl");
+
+  // The frame goes around the whole card instead.
+  delete avatar.dataset.frame;
+
   body.append(
-    banner,
-    playerAvatar(userId, "xl"),
+    avatar,
     name,
     title,
     coins,
