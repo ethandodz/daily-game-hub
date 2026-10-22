@@ -53,6 +53,16 @@
       --glow-blue: rgba(14, 165, 233, 0.17);
       --tab-active: #a78bfa;
       --tab-bar-bg: rgba(17, 24, 39, 0.86);
+
+      /* Chart series, fixed order (validated on the dark panel) */
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-3: #199e70;
+      --series-4: #c98500;
+      --series-5: #d55181;
+      --series-6: #008300;
+      --series-7: #9085e9;
+      --series-8: #e66767;
     }
 
     /* Light mode follows the device setting. Purple accents stay the same. */
@@ -87,6 +97,16 @@
         --glow-blue: rgba(14, 165, 233, 0.08);
         --tab-active: #7c3aed;
         --tab-bar-bg: rgba(255, 255, 255, 0.88);
+
+        /* Chart series, same hues stepped for the light panel */
+        --series-1: #2a78d6;
+        --series-2: #eb6834;
+        --series-3: #1baf7a;
+        --series-4: #eda100;
+        --series-5: #e87ba4;
+        --series-6: #008300;
+        --series-7: #6250d6;
+        --series-8: #e34948;
       }
     }
 
@@ -1893,6 +1913,175 @@
       width: 100%;
     }
 
+    /* Server stats */
+
+    .stats-periods {
+      margin-bottom: 8px;
+    }
+
+    .stats-periods .filter-button {
+      padding: 7px 12px;
+      font-size: 13px;
+    }
+
+    .stats-select {
+      margin-bottom: 6px;
+    }
+
+    .hidden-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .stats-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .stats-row {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .stats-row-top {
+      display: grid;
+      grid-template-columns: 24px 12px 1fr auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stats-headline {
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .stats-row-sub {
+      margin: 4px 0 0 44px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .series-key {
+      width: 12px;
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    .stats-subtitle {
+      margin: 18px 0 8px;
+      font-size: 14px;
+    }
+
+    .stats-subtitle span {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .stats-h2h {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .stats-chart {
+      position: relative;
+    }
+
+    .stats-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      touch-action: pan-y;
+    }
+
+    .chart-grid {
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+
+    .chart-axis {
+      fill: var(--muted);
+      font-size: 10px;
+    }
+
+    .chart-line {
+      fill: none;
+      stroke-width: 2;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .chart-dot {
+      stroke: var(--panel);
+      stroke-width: 2;
+    }
+
+    .chart-crosshair {
+      stroke: var(--muted);
+      stroke-width: 1;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      top: 0;
+      z-index: 2;
+      min-width: 120px;
+      padding: 8px 10px;
+      font-size: 12px;
+      pointer-events: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .chart-tooltip-title {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .chart-tooltip-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .line-key {
+      display: inline-block;
+      flex: 0 0 auto;
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .stats-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      margin-top: 8px;
+      color: var(--text-soft);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2235,6 +2424,82 @@
           class="social-results"
           id="serverBoard"
         ></div>
+
+        <h3>
+          📊 Stats
+        </h3>
+
+        <div class="filter-scroll stats-periods">
+          <button class="filter-button" data-stats-period="week" type="button">This week</button>
+          <button class="filter-button active" data-stats-period="month" type="button">This month</button>
+          <button class="filter-button" data-stats-period="year" type="button">This year</button>
+          <button class="filter-button" data-stats-period="all" type="button">All time</button>
+        </div>
+
+        <label
+          class="hidden-label"
+          for="statsGame"
+        >
+          Game
+        </label>
+
+        <select
+          class="search stats-select"
+          id="statsGame"
+        ></select>
+
+        <p
+          class="server-meta"
+          id="statsRange"
+        ></p>
+
+        <div
+          class="stats-list"
+          id="statsLeaderboard"
+        ></div>
+
+        <h4
+          class="stats-subtitle"
+          id="statsHeadToHeadTitle"
+        >
+          You vs each member <span>(wins–losses–ties)</span>
+        </h4>
+
+        <div
+          class="stats-list"
+          id="statsHeadToHead"
+        ></div>
+
+        <div
+          class="stats-chart-wrap"
+          id="statsChartWrap"
+        >
+          <h4
+            class="stats-subtitle"
+            id="statsChartTitle"
+          ></h4>
+
+          <div
+            class="stats-chart"
+            id="statsChart"
+          ></div>
+
+          <div
+            class="stats-legend"
+            id="statsLegend"
+          ></div>
+
+          <p
+            class="activity-sub"
+            id="statsChartNote"
+          ></p>
+        </div>
+
+        <p
+          class="status"
+          id="statsStatus"
+          aria-live="polite"
+        ></p>
 
         <h3>
           Invite
@@ -11627,6 +11892,7 @@ window.addEventListener(
 
         renderServerGames();
         await loadServerBoard();
+        await loadServerStats();
       } catch (error) {
         console.error(
           "Server details failed to load:",
@@ -12780,6 +13046,1199 @@ window.addEventListener(
           }
         );
       });
+
+
+    function addDays(dateString, days) {
+      const date =
+        new Date(dateString + "T12:00:00");
+
+      date.setDate(date.getDate() + days);
+
+      return date.toLocaleDateString("en-CA");
+    }
+
+
+    function daysBetween(fromDate, toDate) {
+      return Math.round(
+        (new Date(toDate + "T12:00:00") - new Date(fromDate + "T12:00:00")) /
+        86400000
+      );
+    }
+
+
+    /*
+     * First day of a stats period. Weeks start on Monday.
+     */
+    function periodStartDate(period, today) {
+      const date =
+        new Date(today + "T12:00:00");
+
+      if (period === "week") {
+        date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+      } else if (period === "month") {
+        date.setDate(1);
+      } else if (period === "year") {
+        date.setMonth(0, 1);
+      } else {
+        return null;
+      }
+
+      return date.toLocaleDateString("en-CA");
+    }
+
+
+    /*
+     * Compare two results for head-to-head: 1 if a beat b,
+     * -1 if b beat a, 0 for a tie, null if they can't be compared.
+     */
+    function compareResults(a, b, direction) {
+      const hasNumber =
+        result =>
+          result.numeric_score !== null &&
+          result.numeric_score !== undefined;
+
+      if (
+        (direction !== "lower" && direction !== "higher") ||
+        !hasNumber(a) ||
+        !hasNumber(b)
+      ) {
+        return null;
+      }
+
+      const aFailed = a.completed === false;
+      const bFailed = b.completed === false;
+
+      if (aFailed || bFailed) {
+        return aFailed === bFailed ? 0 : aFailed ? -1 : 1;
+      }
+
+      const difference =
+        Number(a.numeric_score) - Number(b.numeric_score);
+
+      if (difference === 0) {
+        return 0;
+      }
+
+      return (difference < 0) === (direction === "lower") ? 1 : -1;
+    }
+
+
+    /*
+     * Server stats over finished days (fromDate..toDate inclusive).
+     * rows: daily_scores rows for the server's members and games.
+     * games: [{ game_key, direction }]. Only gameKey (or all) counted.
+     */
+    function computeServerStats({ rows, memberIds, games, gameKey, fromDate, toDate, me }) {
+      const dayCount =
+        fromDate > toDate ? 0 : daysBetween(fromDate, toDate) + 1;
+
+      const counted =
+        games.filter(game => !gameKey || game.game_key === gameKey);
+
+      const directionOf =
+        new Map(counted.map(game => [game.game_key, game.direction]));
+
+      const inRange =
+        rows.filter(row =>
+          directionOf.has(row.game_id) &&
+          memberIds.includes(row.user_id) &&
+          row.play_date >= fromDate &&
+          row.play_date <= toDate
+        );
+
+      const players =
+        new Map(
+          memberIds.map(userId => [userId, {
+            userId,
+            played: 0,
+            wins: 0,
+            scored: 0,
+            total: 0,
+            best: null,
+            worst: null,
+            winDays: new Set(),
+            currentWinStreak: 0,
+            bestWinStreak: 0
+          }])
+        );
+
+      const byGameDay =
+        new Map();
+
+      for (const row of inRange) {
+        const key =
+          row.game_id + "|" + row.play_date;
+
+        if (!byGameDay.has(key)) {
+          byGameDay.set(key, []);
+        }
+
+        byGameDay.get(key).push(row);
+
+        const player =
+          players.get(row.user_id);
+
+        player.played += 1;
+
+        const direction =
+          directionOf.get(row.game_id);
+
+        if (
+          gameKey &&
+          row.numeric_score !== null &&
+          row.numeric_score !== undefined
+        ) {
+          const score =
+            Number(row.numeric_score);
+
+          player.scored += 1;
+          player.total += score;
+
+          if (direction === "lower" || direction === "higher") {
+            const better =
+              (x, y) => direction === "lower" ? x < y : x > y;
+
+            if (
+              row.completed !== false &&
+              (player.best === null || better(score, player.best))
+            ) {
+              player.best = score;
+            }
+
+            if (player.worst === null || better(player.worst, score)) {
+              player.worst = score;
+            }
+          }
+        }
+      }
+
+      for (const [key, dayRows] of byGameDay) {
+        const [game, date] =
+          key.split("|");
+
+        rankGameResults(dayRows, directionOf.get(game))
+          .ranked
+          .filter(entry => entry.winner)
+          .forEach(entry => {
+            const player = players.get(entry.result.user_id);
+
+            player.wins += 1;
+            player.winDays.add(date);
+          });
+      }
+
+      // Win streaks: consecutive calendar days with at least one win.
+      for (const player of players.values()) {
+        let run = 0;
+
+        for (let offset = 0; offset < dayCount; offset += 1) {
+          run = player.winDays.has(addDays(fromDate, offset)) ? run + 1 : 0;
+          player.bestWinStreak = Math.max(player.bestWinStreak, run);
+        }
+
+        player.currentWinStreak = run;
+      }
+
+      const possible =
+        dayCount * counted.length;
+
+      const leaderboard =
+        [...players.values()]
+          .map(player => ({
+            userId: player.userId,
+            played: player.played,
+            playedRate: possible ? player.played / possible : 0,
+            wins: player.wins,
+            winRate: player.played ? player.wins / player.played : 0,
+            average: player.scored ? player.total / player.scored : null,
+            best: player.best,
+            worst: player.worst,
+            currentWinStreak: player.currentWinStreak,
+            bestWinStreak: player.bestWinStreak
+          }))
+          .sort(
+            (a, b) =>
+              b.wins - a.wins ||
+              b.winRate - a.winRate ||
+              b.played - a.played
+          );
+
+      // Head-to-head: me against each other member.
+      const headToHead =
+        new Map(
+          memberIds
+            .filter(userId => userId !== me)
+            .map(userId => [userId, { wins: 0, losses: 0, ties: 0 }])
+        );
+
+      for (const [key, dayRows] of byGameDay) {
+        const mine =
+          dayRows.find(row => row.user_id === me);
+
+        if (!mine) {
+          continue;
+        }
+
+        const direction =
+          directionOf.get(key.split("|")[0]);
+
+        for (const theirs of dayRows) {
+          const record =
+            headToHead.get(theirs.user_id);
+
+          if (!record) {
+            continue;
+          }
+
+          const outcome =
+            compareResults(mine, theirs, direction);
+
+          if (outcome === 1) {
+            record.wins += 1;
+          } else if (outcome === -1) {
+            record.losses += 1;
+          } else if (outcome === 0) {
+            record.ties += 1;
+          }
+        }
+      }
+
+      return {
+        dayCount,
+        leaderboard,
+        headToHead,
+        winDaysByPlayer:
+          new Map([...players.values()].map(player => [player.userId, player.winDays])),
+        winCountsByDay:
+          [...byGameDay].reduce((counts, [key, dayRows]) => {
+            const date = key.split("|")[1];
+
+            rankGameResults(dayRows, directionOf.get(key.split("|")[0]))
+              .ranked
+              .filter(entry => entry.winner)
+              .forEach(entry => {
+                const id = entry.result.user_id + "|" + date;
+                counts.set(id, (counts.get(id) || 0) + 1);
+              });
+
+            return counts;
+          }, new Map()),
+        rows: inRange
+      };
+    }
+
+
+    let statsPeriod =
+      "month";
+
+    let statsGameKey =
+      "";
+
+    let statsRowsCache =
+      { serverId: null, rows: [] };
+
+
+    function memberColor(userId) {
+      const index =
+        selectedServerMembers.findIndex(member => member.user_id === userId);
+
+      return index >= 0 && index < 8
+        ? "var(--series-" + (index + 1) + ")"
+        : "var(--muted)";
+    }
+
+
+    function formatStatNumber(value) {
+      if (value === null || value === undefined) {
+        return "–";
+      }
+
+      return Math.abs(value) >= 100 || Number.isInteger(value)
+        ? String(Math.round(value))
+        : value.toFixed(1);
+    }
+
+
+    function formatPercent(rate) {
+      return Math.round(rate * 100) + "%";
+    }
+
+
+    function serverGameDirection(serverGame) {
+      return (
+        serverGame.score_direction ||
+        gameDirections.get(serverGame.game_key) ||
+        "none"
+      );
+    }
+
+
+    /*
+     * All of the server's results from its start through yesterday,
+     * fetched in pages (Supabase returns at most 1000 rows per request).
+     */
+    async function loadServerStatsRows(server, toDate) {
+      const gameKeys =
+        selectedServerGames.map(game => game.game_key);
+
+      const memberIds =
+        selectedServerMembers.map(member => member.user_id);
+
+      const rows =
+        [];
+
+      if (!gameKeys.length || !memberIds.length) {
+        return rows;
+      }
+
+      const pageSize =
+        1000;
+
+      for (let offset = 0; ; offset += pageSize) {
+        const page =
+          await request(
+            "/rest/v1/daily_scores" +
+            "?play_date=gte." + server.start_date +
+            "&play_date=lte." + toDate +
+            "&game_id=in.(" + gameKeys.map(encodeURIComponent).join(",") + ")" +
+            "&user_id=in.(" + memberIds.join(",") + ")" +
+            "&select=user_id,game_id,play_date,numeric_score,score_unit,completed" +
+            "&order=play_date.asc,id.asc" +
+            "&limit=" + pageSize +
+            "&offset=" + offset,
+            {
+              headers: authHeaders()
+            }
+          ) || [];
+
+        rows.push(...page);
+
+        if (page.length < pageSize) {
+          return rows;
+        }
+      }
+    }
+
+
+    async function loadServerStats() {
+      const server =
+        getSelectedServer();
+
+      if (!server) {
+        return;
+      }
+
+      const yesterday =
+        addDays(TODAY, -1);
+
+      if (server.start_date > yesterday) {
+        statsRowsCache = { serverId: server.id, rows: [] };
+        renderServerStats();
+        return;
+      }
+
+      try {
+        const rows =
+          await loadServerStatsRows(server, yesterday);
+
+        if (server.id !== selectedServerId) {
+          return;
+        }
+
+        statsRowsCache = { serverId: server.id, rows };
+        renderServerStats();
+      } catch (error) {
+        console.error(
+          "Server stats failed to load:",
+          error
+        );
+
+        setStatus(statsStatus, "Stats could not be loaded.", "error");
+      }
+    }
+
+
+    function renderStatsControls() {
+      document
+        .querySelectorAll("[data-stats-period]")
+        .forEach(button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.statsPeriod === statsPeriod
+          );
+        });
+
+      const select =
+        document.getElementById("statsGame");
+
+      if (!selectedServerGames.some(game => game.game_key === statsGameKey)) {
+        statsGameKey = "";
+      }
+
+      select.innerHTML = "";
+
+      const allOption =
+        document.createElement("option");
+
+      allOption.value = "";
+      allOption.textContent = "All games";
+      select.appendChild(allOption);
+
+      for (const serverGame of selectedServerGames) {
+        const option =
+          document.createElement("option");
+
+        option.value = serverGame.game_key;
+        option.textContent = getCatalogGame(serverGame.game_key).name;
+        select.appendChild(option);
+      }
+
+      select.value = statsGameKey;
+    }
+
+
+    function renderServerStats() {
+      const server =
+        getSelectedServer();
+
+      if (!server || statsRowsCache.serverId !== server.id) {
+        return;
+      }
+
+      renderStatsControls();
+      setStatus(statsStatus, "");
+
+      const yesterday =
+        addDays(TODAY, -1);
+
+      const leaderboardList =
+        document.getElementById("statsLeaderboard");
+
+      const headToHeadList =
+        document.getElementById("statsHeadToHead");
+
+      const chartWrap =
+        document.getElementById("statsChartWrap");
+
+      leaderboardList.innerHTML = "";
+      headToHeadList.innerHTML = "";
+
+      if (server.start_date > yesterday) {
+        document.getElementById("statsRange").textContent =
+          "Stats start after the first full day. Check back tomorrow.";
+        document.getElementById("statsHeadToHeadTitle").classList.add("hidden");
+        chartWrap.classList.add("hidden");
+        return;
+      }
+
+      const periodStart =
+        periodStartDate(statsPeriod, TODAY);
+
+      const fromDate =
+        periodStart && periodStart > server.start_date
+          ? periodStart
+          : server.start_date;
+
+      const games =
+        selectedServerGames.map(serverGame => ({
+          game_key: serverGame.game_key,
+          direction: serverGameDirection(serverGame)
+        }));
+
+      const singleGame =
+        games.find(game => game.game_key === statsGameKey) || null;
+
+      const stats =
+        computeServerStats({
+          rows: statsRowsCache.rows,
+          memberIds: selectedServerMembers.map(member => member.user_id),
+          games,
+          gameKey: statsGameKey || null,
+          fromDate,
+          toDate: yesterday,
+          me: session.user.id
+        });
+
+      document.getElementById("statsRange").textContent =
+        stats.dayCount
+          ? formatServerDate(fromDate) +
+            (stats.dayCount > 1 ? " – " + formatServerDate(yesterday) : "") +
+            " · " + stats.dayCount + (stats.dayCount === 1 ? " finished day" : " finished days")
+          : "No finished days in this period yet.";
+
+      const hasWinner =
+        !singleGame || singleGame.direction !== "none";
+
+      // Leaderboard
+      let previous = null;
+
+      stats.leaderboard.forEach((entry, index) => {
+        const sameAsPrevious =
+          previous &&
+          previous.wins === entry.wins &&
+          previous.winRate === entry.winRate &&
+          previous.played === entry.played;
+
+        entry.rank =
+          sameAsPrevious ? previous.rank : index + 1;
+
+        previous = entry;
+
+        const row =
+          document.createElement("div");
+
+        row.className =
+          "stats-row";
+
+        const top =
+          document.createElement("div");
+
+        top.className =
+          "stats-row-top";
+
+        const rank =
+          document.createElement("span");
+
+        rank.className =
+          "board-rank";
+
+        rank.textContent =
+          hasWinner && entry.wins > 0 && entry.rank === 1 ? "👑" : String(entry.rank);
+
+        const key =
+          document.createElement("span");
+
+        key.className =
+          "series-key";
+
+        key.style.background =
+          memberColor(entry.userId);
+
+        const name =
+          document.createElement("span");
+
+        name.className =
+          "board-name";
+
+        name.textContent =
+          memberName(entry.userId);
+
+        const headline =
+          document.createElement("span");
+
+        headline.className =
+          "stats-headline";
+
+        headline.textContent =
+          hasWinner
+            ? entry.wins + (entry.wins === 1 ? " win" : " wins")
+            : entry.played + " played";
+
+        top.append(rank, key, name, headline);
+
+        const details =
+          [];
+
+        if (hasWinner) {
+          details.push(formatPercent(entry.winRate) + " win rate");
+        }
+
+        details.push(
+          "played " + entry.played + " (" + formatPercent(entry.playedRate) + ")"
+        );
+
+        if (singleGame && entry.average !== null) {
+          details.push("avg " + formatStatNumber(entry.average));
+
+          if (singleGame.direction !== "none") {
+            details.push(
+              "best " + formatStatNumber(entry.best),
+              "worst " + formatStatNumber(entry.worst)
+            );
+          }
+        }
+
+        if (hasWinner && entry.bestWinStreak > 0) {
+          details.push(
+            "🔥 " + entry.currentWinStreak + " win streak (best " + entry.bestWinStreak + ")"
+          );
+        }
+
+        const sub =
+          document.createElement("div");
+
+        sub.className =
+          "stats-row-sub";
+
+        sub.textContent =
+          details.join(" · ");
+
+        row.append(top, sub);
+        leaderboardList.appendChild(row);
+      });
+
+      // Head-to-head (you against each member)
+      const headToHeadTitle =
+        document.getElementById("statsHeadToHeadTitle");
+
+      headToHeadTitle.classList.toggle(
+        "hidden",
+        !hasWinner || stats.headToHead.size === 0
+      );
+
+      if (hasWinner) {
+        for (const [userId, record] of stats.headToHead) {
+          const row =
+            document.createElement("div");
+
+          row.className =
+            "stats-h2h";
+
+          const name =
+            document.createElement("span");
+
+          name.className =
+            "board-name";
+
+          name.textContent =
+            "vs " + memberName(userId);
+
+          const tally =
+            document.createElement("span");
+
+          tally.className =
+            "stats-headline";
+
+          tally.textContent =
+            record.wins + "–" + record.losses + "–" + record.ties;
+
+          const verdict =
+            document.createElement("span");
+
+          verdict.className =
+            "activity-sub";
+
+          verdict.textContent =
+            record.wins + record.losses + record.ties === 0
+              ? "no games together"
+              : record.wins > record.losses
+                ? "you lead"
+                : record.wins < record.losses
+                  ? "they lead"
+                  : "even";
+
+          row.append(name, verdict, tally);
+          headToHeadList.appendChild(row);
+        }
+      }
+
+      // Chart
+      if (!hasWinner || stats.dayCount === 0) {
+        chartWrap.classList.add("hidden");
+        return;
+      }
+
+      chartWrap.classList.remove("hidden");
+      renderStatsChart(stats, singleGame, fromDate, yesterday);
+    }
+
+
+    /*
+     * Day buckets up to a month, weeks up to ~6 months, then months.
+     */
+    function statsBuckets(fromDate, toDate) {
+      const span =
+        daysBetween(fromDate, toDate) + 1;
+
+      const unit =
+        span <= 31 ? "day" : span <= 183 ? "week" : "month";
+
+      const bucketOf =
+        date => {
+          if (unit === "day") {
+            return date;
+          }
+
+          if (unit === "week") {
+            return periodStartDate("week", date);
+          }
+
+          return date.slice(0, 7) + "-01";
+        };
+
+      const keys =
+        [];
+
+      for (let offset = 0; offset < span; offset += 1) {
+        const key =
+          bucketOf(addDays(fromDate, offset));
+
+        if (keys[keys.length - 1] !== key) {
+          keys.push(key);
+        }
+      }
+
+      const label =
+        key => {
+          const date = new Date(key + "T12:00:00");
+
+          return unit === "month"
+            ? date.toLocaleDateString(undefined, { month: "short", year: "numeric" })
+            : date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        };
+
+      return { unit, keys, bucketOf, label };
+    }
+
+
+    function renderStatsChart(stats, singleGame, fromDate, toDate) {
+      const buckets =
+        statsBuckets(fromDate, toDate);
+
+      const plotted =
+        selectedServerMembers.slice(0, 8).map(member => member.user_id);
+
+      const series =
+        plotted.map(userId => {
+          let values;
+
+          if (!singleGame) {
+            // Cumulative wins at the end of each bucket.
+            let running = 0;
+
+            const winsByBucket =
+              new Map();
+
+            for (const [key, count] of stats.winCountsByDay) {
+              const [winner, date] = key.split("|");
+
+              if (winner === userId) {
+                const bucket = buckets.bucketOf(date);
+                winsByBucket.set(bucket, (winsByBucket.get(bucket) || 0) + count);
+              }
+            }
+
+            values =
+              buckets.keys.map(bucket => {
+                running += winsByBucket.get(bucket) || 0;
+                return running;
+              });
+          } else {
+            // Average score in each bucket; gaps where they didn't play.
+            const sums =
+              new Map();
+
+            stats.rows
+              .filter(row =>
+                row.user_id === userId &&
+                row.numeric_score !== null &&
+                row.numeric_score !== undefined
+              )
+              .forEach(row => {
+                const bucket = buckets.bucketOf(row.play_date);
+                const sum = sums.get(bucket) || { total: 0, count: 0 };
+
+                sum.total += Number(row.numeric_score);
+                sum.count += 1;
+                sums.set(bucket, sum);
+              });
+
+            values =
+              buckets.keys.map(bucket =>
+                sums.has(bucket)
+                  ? sums.get(bucket).total / sums.get(bucket).count
+                  : null
+              );
+          }
+
+          return {
+            userId,
+            name: memberName(userId),
+            color: memberColor(userId),
+            values
+          };
+        });
+
+      const title =
+        document.getElementById("statsChartTitle");
+
+      title.textContent =
+        !singleGame
+          ? "Wins over time"
+          : "Average " +
+            (selectedServerUnit(singleGame.game_key) || "score") +
+            " per " + buckets.unit +
+            (singleGame.direction === "lower" ? " · lower is better" : " · higher is better");
+
+      document.getElementById("statsChartNote").textContent =
+        selectedServerMembers.length > 8
+          ? "Chart shows the first 8 members to join; everyone is in the list above."
+          : "";
+
+      drawLineChart(
+        document.getElementById("statsChart"),
+        document.getElementById("statsLegend"),
+        series,
+        buckets.keys.map(buckets.label),
+        !singleGame,
+        singleGame?.direction === "lower"
+      );
+    }
+
+
+    function selectedServerUnit(gameKey) {
+      const row =
+        statsRowsCache.rows.find(entry => entry.game_id === gameKey && entry.score_unit);
+
+      return row?.score_unit || {
+        lower: null,
+        higher: "points"
+      }[gameDirections.get(gameKey)] || null;
+    }
+
+
+    function niceTicks(min, max, count) {
+      if (min === max) {
+        max = min + 1;
+      }
+
+      const rough =
+        (max - min) / count;
+
+      const magnitude =
+        Math.pow(10, Math.floor(Math.log10(rough)));
+
+      const step =
+        [1, 2, 2.5, 5, 10]
+          .map(factor => factor * magnitude)
+          .find(candidate => candidate >= rough);
+
+      const ticks =
+        [];
+
+      for (
+        let value = Math.floor(min / step) * step;
+        value <= Math.ceil(max / step) * step + step / 2;
+        value += step
+      ) {
+        ticks.push(Number(value.toFixed(6)));
+      }
+
+      return ticks;
+    }
+
+
+    function drawLineChart(container, legend, series, labels, fromZero, lowerIsBetter) {
+      const svgNS =
+        "http://www.w3.org/2000/svg";
+
+      const width =
+        Math.max(container.clientWidth || 0, 260);
+
+      const height =
+        200;
+
+      const margin =
+        { top: 10, right: 12, bottom: 24, left: 36 };
+
+      const allValues =
+        series.flatMap(line => line.values).filter(value => value !== null);
+
+      const ticks =
+        niceTicks(
+          fromZero ? 0 : Math.min(...allValues, Infinity),
+          Math.max(...allValues, fromZero ? 1 : -Infinity),
+          4
+        );
+
+      const yMin = ticks[0];
+      const yMax = ticks[ticks.length - 1];
+
+      const plotWidth =
+        width - margin.left - margin.right;
+
+      const plotHeight =
+        height - margin.top - margin.bottom;
+
+      const x =
+        index =>
+          margin.left +
+          (labels.length === 1 ? plotWidth / 2 : (index / (labels.length - 1)) * plotWidth);
+
+      const y =
+        value =>
+          margin.top + plotHeight - ((value - yMin) / (yMax - yMin || 1)) * plotHeight;
+
+      const svg =
+        document.createElementNS(svgNS, "svg");
+
+      svg.setAttribute("viewBox", "0 0 " + width + " " + height);
+      svg.setAttribute("width", width);
+      svg.setAttribute("height", height);
+      svg.setAttribute("class", "stats-svg");
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", document.getElementById("statsChartTitle").textContent);
+
+      const make =
+        (tag, attributes) => {
+          const element = document.createElementNS(svgNS, tag);
+
+          Object.entries(attributes).forEach(([name, value]) => {
+            element.setAttribute(name, value);
+          });
+
+          return element;
+        };
+
+      // Grid and y-axis labels
+      for (const tick of ticks) {
+        svg.appendChild(make("line", {
+          x1: margin.left,
+          x2: width - margin.right,
+          y1: y(tick),
+          y2: y(tick),
+          class: "chart-grid"
+        }));
+
+        const label =
+          make("text", {
+            x: margin.left - 6,
+            y: y(tick) + 3,
+            "text-anchor": "end",
+            class: "chart-axis"
+          });
+
+        label.textContent = formatStatNumber(tick);
+        svg.appendChild(label);
+      }
+
+      // X-axis labels: first, middle, last
+      [...new Set([0, Math.floor((labels.length - 1) / 2), labels.length - 1])]
+        .forEach(index => {
+          const label =
+            make("text", {
+              x: x(index),
+              y: height - 6,
+              "text-anchor":
+                labels.length === 1 ? "middle" : index === 0 ? "start" : index === labels.length - 1 ? "end" : "middle",
+              class: "chart-axis"
+            });
+
+          label.textContent = labels[index];
+          svg.appendChild(label);
+        });
+
+      // Lines, broken where there is no value; dots for lone points and line ends
+      for (const line of series) {
+        let path = "";
+        let segmentLength = 0;
+
+        const flushLonePoint =
+          index => {
+            if (segmentLength === 1) {
+              svg.appendChild(make("circle", {
+                cx: x(index),
+                cy: y(line.values[index]),
+                r: 4,
+                fill: line.color,
+                class: "chart-dot"
+              }));
+            }
+          };
+
+        line.values.forEach((value, index) => {
+          if (value === null) {
+            flushLonePoint(index - 1);
+            segmentLength = 0;
+            return;
+          }
+
+          path += (segmentLength ? "L" : "M") + x(index).toFixed(1) + " " + y(value).toFixed(1);
+          segmentLength += 1;
+        });
+
+        flushLonePoint(line.values.length - 1);
+
+        if (path) {
+          svg.appendChild(make("path", {
+            d: path,
+            stroke: line.color,
+            class: "chart-line"
+          }));
+        }
+
+        const lastIndex =
+          line.values.map(value => value !== null).lastIndexOf(true);
+
+        if (lastIndex >= 0) {
+          svg.appendChild(make("circle", {
+            cx: x(lastIndex),
+            cy: y(line.values[lastIndex]),
+            r: 4,
+            fill: line.color,
+            class: "chart-dot"
+          }));
+        }
+      }
+
+      // Crosshair + tooltip: tap or hover anywhere to read every player at that point
+      const crosshair =
+        make("line", {
+          y1: margin.top,
+          y2: margin.top + plotHeight,
+          class: "chart-crosshair",
+          visibility: "hidden"
+        });
+
+      svg.appendChild(crosshair);
+
+      const hitArea =
+        make("rect", {
+          x: margin.left - 10,
+          y: 0,
+          width: plotWidth + 20,
+          height: height,
+          fill: "transparent"
+        });
+
+      svg.appendChild(hitArea);
+
+      const tooltip =
+        document.createElement("div");
+
+      tooltip.className =
+        "chart-tooltip hidden";
+
+      const showAt =
+        clientX => {
+          const box = svg.getBoundingClientRect();
+          const localX = ((clientX - box.left) / box.width) * width;
+
+          const index =
+            labels.length === 1
+              ? 0
+              : Math.max(0, Math.min(labels.length - 1, Math.round(((localX - margin.left) / plotWidth) * (labels.length - 1))));
+
+          crosshair.setAttribute("x1", x(index));
+          crosshair.setAttribute("x2", x(index));
+          crosshair.setAttribute("visibility", "visible");
+
+          tooltip.innerHTML = "";
+
+          const heading =
+            document.createElement("div");
+
+          heading.className = "chart-tooltip-title";
+          heading.textContent = labels[index];
+          tooltip.appendChild(heading);
+
+          series
+            .filter(line => line.values[index] !== null)
+            .sort((a, b) =>
+              lowerIsBetter
+                ? a.values[index] - b.values[index]
+                : b.values[index] - a.values[index]
+            )
+            .forEach(line => {
+              const row = document.createElement("div");
+              row.className = "chart-tooltip-row";
+
+              const key = document.createElement("span");
+              key.className = "line-key";
+              key.style.background = line.color;
+
+              const value = document.createElement("strong");
+              value.textContent = formatStatNumber(line.values[index]);
+
+              const name = document.createElement("span");
+              name.textContent = line.name;
+
+              row.append(key, value, name);
+              tooltip.appendChild(row);
+            });
+
+          tooltip.classList.remove("hidden");
+
+          const left =
+            (x(index) / width) * box.width;
+
+          tooltip.style.left =
+            Math.max(0, Math.min(box.width - tooltip.offsetWidth, left - tooltip.offsetWidth / 2)) + "px";
+        };
+
+      const hideTooltip =
+        () => {
+          crosshair.setAttribute("visibility", "hidden");
+          tooltip.classList.add("hidden");
+        };
+
+      hitArea.addEventListener("pointermove", event => showAt(event.clientX));
+      hitArea.addEventListener("pointerdown", event => showAt(event.clientX));
+
+      // A touch "leaves" as soon as the finger lifts, so only a mouse
+      // hides on leave; on a phone the readout stays until a tap elsewhere.
+      hitArea.addEventListener("pointerleave", event => {
+        if (event.pointerType === "mouse") {
+          hideTooltip();
+        }
+      });
+
+      document.addEventListener(
+        "pointerdown",
+        event => {
+          if (!svg.contains(event.target)) {
+            hideTooltip();
+          }
+        },
+        { passive: true }
+      );
+
+      container.innerHTML = "";
+      container.append(svg, tooltip);
+
+      // Legend (always, for 2+ players)
+      legend.innerHTML = "";
+
+      if (series.length > 1) {
+        for (const line of series) {
+          const item = document.createElement("span");
+          item.className = "legend-item";
+
+          const key = document.createElement("span");
+          key.className = "line-key";
+          key.style.background = line.color;
+
+          const name = document.createElement("span");
+          name.textContent = line.name;
+
+          item.append(key, name);
+          legend.appendChild(item);
+        }
+      }
+    }
+
+
+    document
+      .querySelectorAll("[data-stats-period]")
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            statsPeriod = button.dataset.statsPeriod;
+            renderServerStats();
+          }
+        );
+      });
+
+    document
+      .getElementById("statsGame")
+      .addEventListener(
+        "change",
+        event => {
+          statsGameKey = event.target.value;
+          renderServerStats();
+        }
+      );
 
 
     const ACTIVE_TAB_KEY =
