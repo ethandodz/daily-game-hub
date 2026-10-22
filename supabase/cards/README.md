@@ -5,7 +5,7 @@ Run in the Supabase dashboard → **SQL Editor** after the Servers files (`supab
 | Step | File | What it does |
 |---|---|---|
 | 1 | `01_player_cards.sql` | Adds `player_cards` (icon, card color, bio, favorite game). You can see your own card and the cards of people who share a server with you; you can only change your own. Adds `player_card_stats(user_id, today)` for the numbers on a card. Ends with a check that both are ready. |
-| 2 | `02_achievements_and_coins.sql` | Changes the Krillion icon to 🦐 and GuessList to 💯. Adds the achievement list (19 achievements, most with bronze/silver/gold/diamond tiers), up to 3 showcase badges per card, and `player_achievements` / `player_coins` for a card. Ends with a check showing 19 achievements. |
+| 2 | `02_achievements_and_coins.sql` | Changes the Krillion icon to 🦐, GuessList to 💯 and Poople to 💩. Adds the achievement list (19 achievements, most with bronze/silver/gold/diamond tiers), up to 3 showcase badges per card, and `player_achievements` / `player_coins` for a card. Ends with a check showing 19 achievements. |
 
 Rules this implements:
 
