@@ -1,0 +1,23 @@
+const { serverState, setup, server, devices, chromium } = require('../helpers/mock.js');
+const assert = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) process.exitCode = 1; };
+const ME = '11111111-1111-1111-1111-111111111111', MAYA = '33333333-3333-3333-3333-333333333333';
+serverState.servers.push({ id: 'srv-mine', name: 'Family Games', owner_id: ME, invite_code: 'FAM777', start_date: '2026-10-20', created_at: '2026-10-20' });
+serverState.members.push({ server_id: 'srv-mine', user_id: ME, role: 'owner', joined_at: '2026-10-20' }, { server_id: 'srv-mine', user_id: MAYA, role: 'member', joined_at: '2026-10-21' });
+serverState.games.push({ server_id: 'srv-mine', game_key: 'wordle', sort_order: 1 });
+server.listen(0, async () => {
+  const browser = await chromium.launch();
+  const { page, errors } = await setup(browser, { ...devices['iPhone 13'], colorScheme: 'light' });
+  page.on('dialog', d => d.accept());
+  await page.goto(`http://localhost:${server.address().port}/`); await page.waitForTimeout(2000);
+  await page.click('[data-tab-button="social"]'); await page.waitForTimeout(800);
+  assert((await page.textContent('#serverMeta')) .startsWith('Since Oct 20'), 'start date shown: ' + await page.textContent('#serverMeta'));
+  await page.click('[data-social-panel="members"]'); await page.waitForTimeout(200);
+  const buttons = await page.$$eval('#serverMembers .friend-row', r => r.map(x => x.textContent.replace(/\s+/g, ' ').trim()));
+  assert(buttons.length === 2 && buttons[1].includes('@maya') && buttons[1].includes('Remove') && !buttons[0].includes('Remove'), 'owner sees Remove for others only: ' + buttons.join('|'));
+  await page.screenshot({ path: process.argv[3] + '-light-owner.png', fullPage: true });
+  await page.click('#serverMembers .small-button'); await page.waitForTimeout(700);
+  assert(!serverState.members.some(m => m.user_id === MAYA) && (await page.textContent('#serverStatus')).includes('@maya was removed'), 'remove works: ' + await page.textContent('#serverStatus'));
+  assert(await page.locator('#serverMembers .friend-row').count() === 1, 'list updated');
+  assert(errors.length === 0, 'no console errors ' + errors.join('|'));
+  await browser.close(); server.close();
+});

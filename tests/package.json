@@ -1,0 +1,12 @@
+{
+  "name": "daily-game-hub-tests",
+  "private": true,
+  "description": "Automated checks for Daily Game Hub (unit, browser with a fake Supabase, and database policies)",
+  "scripts": {
+    "test": "node run-all.js",
+    "test:sql": "bash sql/run.sh"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
