@@ -19,8 +19,8 @@ m.server.listen(0, async () => {
   const sent = m.requests.filter(r => r.method === 'POST' && r.url.includes('daily_scores')).length - before;
   const status = await page.textContent('#scoreStatus');
   const label = process.env.NO_PROFILE ? 'no username' : process.env.FK_FAIL ? 'database rejects' : 'normal';
-  if (process.env.NO_PROFILE) assert(status === 'Choose a username in the Account tab first, then save your result.' && sent === 0, label + ': friendly message, nothing sent (' + status + ', sent ' + sent + ')');
-  else if (process.env.FK_FAIL) assert(status === 'Choose a username in the Account tab first, then save your result.' && sent === 1, label + ': raw error replaced (' + status + ')');
+  if (process.env.NO_PROFILE) assert(status === 'Choose a username first (Account tab, ⚙️ Settings), then save your result.' && sent === 0, label + ': friendly message, nothing sent (' + status + ', sent ' + sent + ')');
+  else if (process.env.FK_FAIL) assert(status === 'Choose a username first (Account tab, ⚙️ Settings), then save your result.' && sent === 1, label + ': raw error replaced (' + status + ')');
   else assert(status === 'Result saved.' && sent === 1, label + ': saves as before (' + status + ')');
   const unexpected = errors.filter(e => !(process.env.FK_FAIL && e.includes('409')));
   assert(unexpected.length === 0, label + ': no unexpected console errors ' + unexpected.join('|'));

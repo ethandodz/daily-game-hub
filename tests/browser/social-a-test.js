@@ -49,7 +49,7 @@ server.listen(0, async () => {
   assert(await page.evaluate(() => document.getElementById('joinServerModal').classList.contains('open') && !document.getElementById('newServerModal').classList.contains('open')), 'join opens from ＋');
   await page.click('[data-close="joinServerModal"]');
   // signed out: friends area visible
-  await page.click('[data-tab-button="account"]'); await page.click('#signOutButton'); await page.waitForTimeout(300);
+  await page.click('[data-tab-button="account"]'); await page.click('#openSettingsButton'); await page.click('#signOutButton'); await page.waitForTimeout(300);
   await page.click('[data-tab-button="social"]'); await page.waitForTimeout(300);
   assert(await page.isVisible('#serversSignedOut') && await page.isVisible('#serversLoginButton') && !(await page.isVisible('#serversSection')) && !(await page.isVisible('#retiredFriends')), 'signed out: log-in card shows');
   await page.click('#serversLoginButton');

@@ -30,7 +30,7 @@ server.listen(0, async () => {
       assert(groups.length === 2 && groups[0].includes('Wordle') && groups[0].includes('@ethan') && groups[1].includes('Connections') && groups[1].includes('🔥 4 days'), 'social groups: ' + groups.join(' | '));
       await page.click('[data-tab-button="games"]'); await page.waitForTimeout(300);
       assert(await page.locator('.game-card[data-id="wordle"] .friend-results.visible').count() === 1, 'friend results still under game cards');
-      await page.click('[data-tab-button="account"]'); await page.click('#signOutButton'); await page.waitForTimeout(300);
+      await page.click('[data-tab-button="account"]'); await page.click('#openSettingsButton'); await page.click('#signOutButton'); await page.waitForTimeout(300);
       await page.click('[data-tab-button="activity"]'); await page.waitForTimeout(300);
       assert((await page.textContent('#activityStatus')).includes('Log in'), 'signed-out Activity asks to log in');
       assert(!(await page.isVisible('#friendResultsSection')), 'signed-out Social hides results card');

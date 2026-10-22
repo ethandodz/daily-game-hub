@@ -2900,6 +2900,7 @@ signedIn
         "Signed in";
 
    loadProfile();
+    loadMyCard();
     loadDailyGameStatus();
   loadTodayScores();
   loadStreaks();
@@ -2917,6 +2918,7 @@ loadUserGameLibrary
  */
 loadTodayScores();
 loadStreaks();
+renderMyCard();
 backfillMyScoreNumbers();
 joinPendingInvite();
 loadYesterdayBanner();
@@ -3148,6 +3150,11 @@ document
     "click",
     () => {
       session = null;
+      myProfile = null;
+      myCardStats = null;
+      playerCards.clear();
+
+      document.getElementById("settingsModal").classList.remove("open");
 
       localStorage.removeItem(
         SESSION_KEY
@@ -3202,6 +3209,11 @@ async function loadProfile() {
     ) {
       const profile =
         profileRows[0];
+
+      myProfile =
+        profile;
+
+      renderMyCard();
 
       document
         .getElementById(
@@ -8593,6 +8605,8 @@ async function loadServerDetail() {
           )
         : [];
 
+    await loadPlayerCards(userIds);
+
     selectedServerMembers =
       members || [];
 
@@ -8654,6 +8668,9 @@ function renderServerMembers(members, profilesById) {
     if (member.user_id === session.user.id) {
       name.textContent += " (you)";
     }
+
+    name.prepend(playerAvatar(member.user_id, "sm"));
+    makePlayerLink(name, member.user_id);
 
     if (member.role === "owner") {
       const badge =
@@ -9950,6 +9967,9 @@ function createBoardRow(result, rank, winner) {
   name.textContent =
     memberName(result.user_id);
 
+  name.prepend(playerAvatar(result.user_id, "sm"));
+  makePlayerLink(name, result.user_id);
+
   const score =
     document.createElement("span");
 
@@ -10856,6 +10876,9 @@ function renderServerStats() {
 
     name.textContent =
       memberName(entry.userId);
+
+    name.prepend(playerAvatar(entry.userId, "sm"));
+    makePlayerLink(name, entry.userId);
 
     const headline =
       document.createElement("span");
@@ -11831,6 +11854,599 @@ const tabScrollPositions =
  * Views stay in the page, so nothing reloads
  * and every listener and element keeps working.
  */
+/*
+ * Player cards: icon, card color, bio and favorite game.
+ * Cards are visible to the player and people who share a server
+ * with them (enforced by the database). Before the cards table
+ * exists, everyone simply gets the default look.
+ */
+const CARD_COLORS =
+  ["purple", "teal", "orange", "pink", "slate", "red"];
+
+const DEFAULT_CARD =
+  { icon: "", color: "purple", bio: "", favorite_game: null };
+
+const playerCards =
+  new Map();
+
+let myCardStats =
+  null;
+
+let myProfile =
+  null;
+
+let editingCard =
+  null;
+
+
+async function loadPlayerCards(userIds) {
+  const missing =
+    [...new Set(userIds)].filter(Boolean);
+
+  if (!session || !missing.length) {
+    return;
+  }
+
+  try {
+    const rows =
+      await request(
+        "/rest/v1/player_cards" +
+        "?user_id=in.(" + missing.join(",") + ")" +
+        "&select=user_id,icon,color,bio,favorite_game",
+        {
+          headers: authHeaders()
+        }
+      );
+
+    for (const userId of missing) {
+      playerCards.set(
+        userId,
+        (rows || []).find(row => row.user_id === userId) || null
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Player cards failed to load:",
+      error
+    );
+  }
+}
+
+
+function cardFor(userId) {
+  return {
+    ...DEFAULT_CARD,
+    ...(playerCards.get(userId) || {})
+  };
+}
+
+
+function profileFor(userId) {
+  if (userId === session?.user.id) {
+    return myProfile;
+  }
+
+  return selectedServerProfiles.get(userId) || null;
+}
+
+
+function playerDisplayName(userId) {
+  const profile =
+    profileFor(userId);
+
+  return profile
+    ? profile.display_name || "@" + profile.username
+    : "Player";
+}
+
+
+/*
+ * A small rounded square with the player's icon on their card
+ * color. Players without an icon show their first letter.
+ */
+function playerAvatar(userId, size) {
+  const card =
+    cardFor(userId);
+
+  const avatar =
+    document.createElement("span");
+
+  avatar.className =
+    "avatar" + (size ? " avatar-" + size : "");
+
+  avatar.dataset.color =
+    CARD_COLORS.includes(card.color) ? card.color : "purple";
+
+  avatar.setAttribute("aria-hidden", "true");
+
+  const profile =
+    profileFor(userId);
+
+  avatar.textContent =
+    card.icon ||
+    (profile?.username || "?").charAt(0).toUpperCase();
+
+  return avatar;
+}
+
+
+/*
+ * Turn a name into a button that opens the player's card,
+ * without opening or closing the row it sits in.
+ */
+function makePlayerLink(element, userId) {
+  element.classList.add("player-link");
+  element.setAttribute("role", "button");
+  element.tabIndex = 0;
+
+  const open =
+    event => {
+      event.preventDefault();
+      event.stopPropagation();
+      openPlayerCard(userId);
+    };
+
+  element.addEventListener("click", open);
+
+  element.addEventListener(
+    "keydown",
+    event => {
+      if (event.key === "Enter" || event.key === " ") {
+        open(event);
+      }
+    }
+  );
+}
+
+
+function memberSinceText(timestamp) {
+  if (!timestamp) {
+    return "";
+  }
+
+  const date =
+    new Date(timestamp);
+
+  return Number.isNaN(date.getTime())
+    ? ""
+    : "Since " + date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+
+function cardMetaText(card, stats) {
+  const favorite =
+    card.favorite_game
+      ? gameCatalog.get(card.favorite_game)?.name
+      : "";
+
+  return [
+    favorite ? "Fav: " + favorite : "",
+    memberSinceText(stats?.member_since)
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+
+function renderCardStats(container, stats) {
+  container.innerHTML = "";
+
+  const items = [
+    ["played", stats ? stats.played : "–", ""],
+    ["wins", stats ? stats.wins : "–", "👑 "],
+    ["best streak", stats ? stats.best_streak : "–", "🔥 "]
+  ];
+
+  for (const [label, value, icon] of items) {
+    const item =
+      document.createElement("div");
+
+    const number =
+      document.createElement("b");
+
+    number.textContent =
+      icon + value;
+
+    const name =
+      document.createElement("span");
+
+    name.textContent =
+      label;
+
+    item.append(number, name);
+    container.appendChild(item);
+  }
+}
+
+
+async function loadCardStats(userId) {
+  try {
+    const stats =
+      await request(
+        "/rest/v1/rpc/player_card_stats",
+        {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            p_user_id: userId,
+            p_today: TODAY
+          })
+        }
+      );
+
+    return stats && typeof stats === "object" && !Array.isArray(stats)
+      ? stats
+      : null;
+  } catch (error) {
+    console.error(
+      "Card stats failed to load:",
+      error
+    );
+
+    return null;
+  }
+}
+
+
+function renderMyCard() {
+  if (!session) {
+    return;
+  }
+
+  const card =
+    cardFor(session.user.id);
+
+  const section =
+    document.getElementById("accountSection");
+
+  section.dataset.color =
+    CARD_COLORS.includes(card.color) ? card.color : "purple";
+
+  const icon =
+    document.getElementById("myCardIcon");
+
+  icon.replaceWith(
+    Object.assign(
+      playerAvatar(session.user.id, "lg"),
+      { id: "myCardIcon" }
+    )
+  );
+
+  document.getElementById("myCardMeta").textContent =
+    cardMetaText(card, myCardStats);
+
+  const bio =
+    document.getElementById("myCardBio");
+
+  bio.textContent =
+    card.bio;
+
+  bio.classList.toggle("hidden", !card.bio);
+
+  renderCardStats(
+    document.getElementById("myCardStats"),
+    myCardStats
+  );
+}
+
+
+async function loadMyCard() {
+  if (!session) {
+    return;
+  }
+
+  const userId =
+    session.user.id;
+
+  playerCards.delete(userId);
+
+  const [stats] =
+    await Promise.all([
+      loadCardStats(userId),
+      loadPlayerCards([userId])
+    ]);
+
+  if (session?.user.id !== userId) {
+    return;
+  }
+
+  myCardStats =
+    stats;
+
+  renderMyCard();
+}
+
+
+async function openPlayerCard(userId) {
+  const body =
+    document.getElementById("playerCardBody");
+
+  const card =
+    cardFor(userId);
+
+  body.dataset.color =
+    CARD_COLORS.includes(card.color) ? card.color : "purple";
+
+  body.innerHTML = "";
+
+  const banner =
+    document.createElement("div");
+
+  banner.className =
+    "card-banner";
+
+  const name =
+    document.createElement("strong");
+
+  name.className =
+    "card-name";
+
+  name.textContent =
+    playerDisplayName(userId);
+
+  const bio =
+    document.createElement("p");
+
+  bio.className =
+    "card-bio";
+
+  bio.textContent =
+    card.bio;
+
+  const meta =
+    document.createElement("p");
+
+  meta.className =
+    "card-meta";
+
+  meta.textContent =
+    cardMetaText(card, null);
+
+  const stats =
+    document.createElement("div");
+
+  stats.className =
+    "card-stats";
+
+  renderCardStats(stats, null);
+
+  const versus =
+    document.createElement("p");
+
+  versus.className =
+    "card-versus hidden";
+
+  body.append(
+    banner,
+    playerAvatar(userId, "xl"),
+    name,
+    bio,
+    meta,
+    stats,
+    versus
+  );
+
+  bio.classList.toggle("hidden", !card.bio);
+
+  document.getElementById("playerCardModal").classList.add("open");
+
+  const loaded =
+    await loadCardStats(userId);
+
+  if (!loaded || !body.isConnected) {
+    return;
+  }
+
+  meta.textContent =
+    cardMetaText(card, loaded);
+
+  renderCardStats(stats, loaded);
+
+  if (userId !== session?.user.id) {
+    versus.textContent =
+      "Head to head in your servers: you " +
+      loaded.my_wins + " · " +
+      playerDisplayName(userId).replace(/^@/, "") + " " +
+      loaded.their_wins;
+
+    versus.classList.remove("hidden");
+  }
+}
+
+
+function fillFavoriteGameChoices(selected) {
+  const select =
+    document.getElementById("cardFavoriteInput");
+
+  select.innerHTML =
+    '<option value="">None</option>';
+
+  const games =
+    [...gameCatalog.values()]
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+  for (const game of games) {
+    const option =
+      document.createElement("option");
+
+    option.value =
+      game.game_key;
+
+    option.textContent =
+      game.name;
+
+    select.appendChild(option);
+  }
+
+  select.value =
+    selected && gameCatalog.has(selected) ? selected : "";
+}
+
+
+function showEditingChoices() {
+  document
+    .querySelectorAll("#iconChoices [data-icon]")
+    .forEach(button => {
+      button.classList.toggle(
+        "selected",
+        button.dataset.icon === editingCard.icon
+      );
+    });
+
+  document
+    .querySelectorAll("#colorChoices [data-color]")
+    .forEach(button => {
+      button.classList.toggle(
+        "selected",
+        button.dataset.color === editingCard.color
+      );
+    });
+
+  document.getElementById("cardBioCount").textContent =
+    document.getElementById("cardBioInput").value.length + "/60";
+}
+
+
+function openEditCard() {
+  if (!session) {
+    return;
+  }
+
+  const card =
+    cardFor(session.user.id);
+
+  editingCard = {
+    icon: card.icon || "🦊",
+    color: CARD_COLORS.includes(card.color) ? card.color : "purple"
+  };
+
+  document.getElementById("cardBioInput").value =
+    card.bio || "";
+
+  fillFavoriteGameChoices(card.favorite_game);
+  setStatus(document.getElementById("cardStatus"), "");
+  showEditingChoices();
+
+  document.getElementById("editCardModal").classList.add("open");
+}
+
+
+async function saveCard() {
+  if (!session || !editingCard) {
+    return;
+  }
+
+  const status =
+    document.getElementById("cardStatus");
+
+  if (needsUsername) {
+    setStatus(status, "Choose a username first.", "error");
+    return;
+  }
+
+  const button =
+    document.getElementById("saveCardButton");
+
+  const row = {
+    user_id: session.user.id,
+    icon: editingCard.icon,
+    color: editingCard.color,
+    bio: document.getElementById("cardBioInput").value.trim().slice(0, 60),
+    favorite_game: document.getElementById("cardFavoriteInput").value || null,
+    updated_at: new Date().toISOString()
+  };
+
+  button.disabled = true;
+  setStatus(status, "Saving...");
+
+  try {
+    await request(
+      "/rest/v1/player_cards?on_conflict=user_id",
+      {
+        method: "POST",
+        headers: authHeaders("resolution=merge-duplicates,return=minimal"),
+        body: JSON.stringify(row)
+      }
+    );
+
+    playerCards.set(session.user.id, row);
+    renderMyCard();
+
+    if (selectedServerId) {
+      renderServerMembers(selectedServerMembers, selectedServerProfiles);
+      loadServerBoard();
+      renderServerStats();
+    }
+
+    document.getElementById("editCardModal").classList.remove("open");
+  } catch (error) {
+    setStatus(
+      status,
+      "Your card could not be saved. Try again in a moment.",
+      "error"
+    );
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+document
+  .getElementById("iconChoices")
+  .addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target.closest("[data-icon]");
+
+      if (button && editingCard) {
+        editingCard.icon = button.dataset.icon;
+        showEditingChoices();
+      }
+    }
+  );
+
+document
+  .getElementById("colorChoices")
+  .addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target.closest("[data-color]");
+
+      if (button && editingCard) {
+        editingCard.color = button.dataset.color;
+        showEditingChoices();
+      }
+    }
+  );
+
+document
+  .getElementById("cardBioInput")
+  .addEventListener("input", () => {
+    if (editingCard) {
+      showEditingChoices();
+    }
+  });
+
+document
+  .getElementById("saveCardButton")
+  .addEventListener("click", saveCard);
+
+document
+  .getElementById("editCardButton")
+  .addEventListener("click", openEditCard);
+
+document
+  .getElementById("openSettingsButton")
+  .addEventListener(
+    "click",
+    () => {
+      document.getElementById("settingsModal").classList.add("open");
+    }
+  );
+
+
 function switchTab(tab) {
   if (!TABS.includes(tab)) {
     return;
@@ -11896,6 +12512,10 @@ function switchTab(tab) {
     (!session || userGameLibrary.length)
   ) {
     loadActivity();
+  }
+
+  if (tab === "account" && session) {
+    loadMyCard();
   }
 
   if (tab === "social" && session) {
@@ -12220,7 +12840,7 @@ let needsUsername =
   false;
 
 const USERNAME_FIRST_MESSAGE =
-  "Choose a username in the Account tab first, then save your result.";
+  "Choose a username first (Account tab, ⚙️ Settings), then save your result.";
 
 
 function setAccountAttention(needed) {

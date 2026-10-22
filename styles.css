@@ -2630,3 +2630,290 @@ body.signed-out #activitySection .calendar-head,
 body.signed-out #activitySection .calendar-note {
   display: none !important;
 }
+
+/* Player cards */
+.avatar {
+  --card-a: #7c3aed;
+  --card-b: #2563eb;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--card-a), var(--card-b));
+}
+
+.avatar-sm {
+  width: 24px;
+  height: 24px;
+  margin-right: 7px;
+  border-radius: 8px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.avatar-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  font-size: 36px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+.avatar-xl {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin: -46px auto 0;
+  border-radius: 26px;
+  font-size: 50px;
+  box-shadow: 0 0 0 4px var(--panel);
+}
+
+[data-color="teal"] { --card-a: #199e70; --card-b: #3987e5; }
+[data-color="orange"] { --card-a: #d95926; --card-b: #c98500; }
+[data-color="pink"] { --card-a: #d55181; --card-b: #9085e9; }
+[data-color="slate"] { --card-a: #334155; --card-b: #64748b; }
+[data-color="red"] { --card-a: #e66767; --card-b: #d95926; }
+
+.my-card #signedInView {
+  display: grid;
+  gap: 12px;
+}
+
+.my-card #signedInView.hidden {
+  display: none;
+}
+
+.section.my-card {
+  padding: 16px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-who {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.card-who strong,
+.card-name {
+  overflow: hidden;
+  font-size: 1.3rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.card-bio {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 18px;
+  background: var(--panel-light);
+  cursor: pointer;
+}
+
+.card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.card-stats b {
+  display: block;
+  font-size: 1.3rem;
+}
+
+.card-stats span {
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.player-link {
+  cursor: pointer;
+}
+
+.player-link:hover,
+.player-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.player-card-window {
+  padding-top: 12px;
+}
+
+.player-card-window .modal-top {
+  position: relative;
+  z-index: 1;
+  justify-content: flex-end;
+}
+
+#playerCardBody {
+  display: grid;
+  gap: 8px;
+  margin-top: -48px;
+  text-align: center;
+}
+
+.card-banner {
+  height: 76px;
+  margin: 0 -18px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(135deg, var(--card-a, #7c3aed), var(--card-b, #2563eb));
+}
+
+#playerCardBody .card-stats {
+  margin-top: 6px;
+}
+
+.card-versus {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0 4px;
+  font-weight: 700;
+}
+
+.settings-row .status {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-feedback {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider);
+}
+
+.settings-feedback summary {
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.settings-feedback .intro {
+  margin-top: 10px;
+}
+
+.settings-signout {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.edit-heading {
+  margin: 16px 0 8px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.icon-choices {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.icon-choice {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 22px;
+  background: var(--panel-light);
+  cursor: pointer;
+}
+
+.icon-choice.selected {
+  border: 2px solid var(--tab-active);
+  background: var(--glow-purple);
+}
+
+.color-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.color-choice {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--card-a, #7c3aed), var(--card-b, #2563eb));
+  cursor: pointer;
+}
+
+.color-choice.selected {
+  box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--text);
+}
+
+#cardBioCount {
+  float: right;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .sheet-modal.open {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .sheet-modal .modal-card {
+    max-height: 88vh;
+    border-bottom: 0;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .card-banner {
+    border-radius: 22px 22px 0 0;
+  }
+}
+
+.color-choices + .form {
+  margin-top: 16px;
+}
+
+body:not(.signed-out) .footer {
+  display: none;
+}
