@@ -1686,6 +1686,129 @@
       }
     }
 
+    /* Servers */
+
+    body.signed-out #serversSection {
+      display: none !important;
+    }
+
+    .servers-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .servers-head h2 {
+      margin: 0;
+    }
+
+    .servers-head-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .server-switcher {
+      margin-bottom: 10px;
+    }
+
+    .server-meta {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .server-placeholder {
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    .invite-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .invite-code {
+      flex: 1;
+      padding: 10px 12px;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .invite-input {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 20px !important;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .server-member-name {
+      min-width: 0;
+      font-weight: 700;
+    }
+
+    .owner-badge {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 2px 7px;
+      color: white;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      vertical-align: middle;
+      border-radius: 999px;
+      background: var(--purple);
+    }
+
+    .server-games {
+      display: grid;
+      gap: 8px;
+    }
+
+    .server-game-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-light);
+    }
+
+    .server-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .danger-text {
+      color: var(--red);
+    }
+
+    #serversSection:not(.is-owner) .owner-only,
+    #serversSection.is-owner .member-only {
+      display: none;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -1947,10 +2070,151 @@
 
     <section
       class="section"
+      id="serversSection"
+    >
+      <div class="servers-head">
+        <h2>
+          🏆 Servers
+        </h2>
+
+        <div class="servers-head-actions">
+          <button
+            class="arrange-button"
+            id="openJoinServerButton"
+            type="button"
+          >
+            Join
+          </button>
+
+          <button
+            class="arrange-button"
+            id="openCreateServerButton"
+            type="button"
+          >
+            ＋ Create
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="filter-scroll server-switcher"
+        id="serverSwitcher"
+      ></div>
+
+      <p
+        class="intro hidden"
+        id="serversEmpty"
+      >
+        Servers are private groups that compete on the same daily games.
+        Create one and share the invite, or join with a code.
+      </p>
+
+      <div
+        class="hidden"
+        id="serverDetail"
+      >
+        <p
+          class="server-meta"
+          id="serverMeta"
+        ></p>
+
+        <div class="server-placeholder">
+          📊 Daily results, winners and stats are coming next.
+        </div>
+
+        <h3>
+          Invite
+        </h3>
+
+        <div class="invite-row">
+          <div
+            class="invite-code"
+            id="serverInviteCode"
+          ></div>
+
+          <button
+            class="button"
+            id="shareInviteButton"
+            type="button"
+          >
+            Share invite link
+          </button>
+        </div>
+
+        <h3>
+          Members
+        </h3>
+
+        <div
+          class="friend-list"
+          id="serverMembers"
+        ></div>
+
+        <h3>
+          Games
+        </h3>
+
+        <div
+          class="server-games"
+          id="serverGames"
+        ></div>
+
+        <div class="server-actions">
+          <button
+            class="arrange-button owner-only"
+            id="editServerGamesButton"
+            type="button"
+          >
+            Edit games
+          </button>
+
+          <button
+            class="arrange-button owner-only"
+            id="renameServerButton"
+            type="button"
+          >
+            Rename
+          </button>
+
+          <button
+            class="arrange-button owner-only"
+            id="resetInviteButton"
+            type="button"
+          >
+            New invite code
+          </button>
+
+          <button
+            class="arrange-button danger-text owner-only"
+            id="deleteServerButton"
+            type="button"
+          >
+            Delete server
+          </button>
+
+          <button
+            class="arrange-button danger-text member-only"
+            id="leaveServerButton"
+            type="button"
+          >
+            Leave server
+          </button>
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="serverStatus"
+        aria-live="polite"
+      ></p>
+    </section>
+
+    <section
+      class="section"
       id="friendResultsSection"
     >
       <h2>
-        🏆 Friends’ Results Today
+        👥 Friends’ Results Today
       </h2>
 
       <div
@@ -2846,6 +3110,171 @@
 
   </div>
 </div>
+
+  <div
+    class="modal"
+    id="createServerModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Create a Server
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="createServerModal"
+          type="button"
+          aria-label="Close create server window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="form">
+        <div class="field full">
+          <label for="serverNameInput">
+            Server name
+          </label>
+
+          <input
+            id="serverNameInput"
+            type="text"
+            maxlength="40"
+            autocomplete="off"
+            placeholder="Ball Knowers"
+          >
+        </div>
+      </div>
+
+      <p class="manage-section-title">
+        Games this server competes on
+      </p>
+
+      <div
+        class="onboarding-games"
+        id="createServerGames"
+      ></div>
+
+      <button
+        class="button full-width"
+        id="createServerButton"
+        type="button"
+      >
+        Create Server
+      </button>
+
+      <p
+        class="status"
+        id="createServerStatus"
+        aria-live="polite"
+      ></p>
+    </div>
+  </div>
+
+
+  <div
+    class="modal"
+    id="joinServerModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Join a Server
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="joinServerModal"
+          type="button"
+          aria-label="Close join server window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="form">
+        <div class="field full">
+          <label for="joinCodeInput">
+            Invite code
+          </label>
+
+          <input
+            id="joinCodeInput"
+            class="invite-input"
+            type="text"
+            maxlength="6"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="ABC123"
+          >
+
+          <button
+            class="button"
+            id="joinServerButton"
+            type="button"
+          >
+            Join Server
+          </button>
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="joinServerStatus"
+        aria-live="polite"
+      ></p>
+    </div>
+  </div>
+
+
+  <div
+    class="modal"
+    id="serverGamesModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Server Games
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="serverGamesModal"
+          type="button"
+          aria-label="Close server games window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p class="status">
+        Members compete on these games. Removing a game hides it from the
+        server but never deletes anyone’s results.
+      </p>
+
+      <div
+        class="onboarding-games"
+        id="serverGamesPicker"
+      ></div>
+
+      <button
+        class="button full-width"
+        id="saveServerGamesButton"
+        type="button"
+      >
+        Save Games
+      </button>
+
+      <p
+        class="status"
+        id="serverGamesStatus"
+        aria-live="polite"
+      ></p>
+    </div>
+  </div>
+
 
   <div
   class="modal"
@@ -5784,6 +6213,11 @@ loadGameCatalog()
     loadTodayScores();
     loadStreaks();
     backfillMyScoreNumbers();
+    joinPendingInvite();
+
+    if (currentTab === "social") {
+      loadServers();
+    }
 
     if (currentTab === "activity") {
       loadActivity();
@@ -10792,6 +11226,1017 @@ window.addEventListener(
     }
 
 
+    /*
+     * Servers: private groups that compete on the same games.
+     * Membership and visibility are enforced by Supabase RLS
+     * (see supabase/servers); the UI only reflects it.
+     */
+    const SELECTED_SERVER_KEY =
+      "dailyGameHubSelectedServer";
+
+    const PENDING_JOIN_KEY =
+      "dailyGameHubPendingJoin";
+
+    let myServers =
+      [];
+
+    let selectedServerId =
+      null;
+
+    let selectedServerGames =
+      [];
+
+    let gameDirections =
+      new Map();
+
+    try {
+      selectedServerId =
+        localStorage.getItem(SELECTED_SERVER_KEY);
+    } catch (error) {}
+
+
+    function getSelectedServer() {
+      return myServers.find(
+        server => server.id === selectedServerId
+      ) || null;
+    }
+
+
+    function isSelectedServerOwner() {
+      return Boolean(
+        session &&
+        getSelectedServer()?.owner_id === session.user.id
+      );
+    }
+
+
+    function describeDirection(direction) {
+      if (direction === "lower") {
+        return "lower wins";
+      }
+
+      if (direction === "higher") {
+        return "higher wins";
+      }
+
+      return "no winner";
+    }
+
+
+    function formatServerDate(dateString) {
+      return new Date(dateString + "T12:00:00")
+        .toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        });
+    }
+
+
+    async function loadGameDirections() {
+      try {
+        const rows =
+          await request(
+            "/rest/v1/games?select=game_key,score_direction",
+            {
+              headers: authHeaders()
+            }
+          );
+
+        gameDirections =
+          new Map(
+            (rows || []).map(row => [
+              row.game_key,
+              row.score_direction
+            ])
+          );
+      } catch (error) {
+        console.error(
+          "Game directions failed to load:",
+          error
+        );
+      }
+    }
+
+
+    async function loadServers() {
+      if (!session) {
+        myServers = [];
+        renderServers();
+        return;
+      }
+
+      try {
+        const [servers] =
+          await Promise.all([
+            request(
+              "/rest/v1/servers" +
+              "?select=id,name,owner_id,invite_code,start_date,created_at" +
+              "&order=created_at.asc",
+              {
+                headers: authHeaders()
+              }
+            ),
+            gameDirections.size
+              ? Promise.resolve()
+              : loadGameDirections()
+          ]);
+
+        myServers =
+          servers || [];
+
+        if (!getSelectedServer()) {
+          selectedServerId =
+            myServers[0]?.id || null;
+        }
+
+        renderServers();
+        await loadServerDetail();
+      } catch (error) {
+        console.error(
+          "Servers failed to load:",
+          error
+        );
+
+        setStatus(
+          serverStatus,
+          "Servers could not be loaded.",
+          "error"
+        );
+      }
+    }
+
+
+    function rememberSelectedServer(serverId) {
+      selectedServerId =
+        serverId;
+
+      try {
+        localStorage.setItem(SELECTED_SERVER_KEY, serverId);
+      } catch (error) {}
+    }
+
+
+    function selectServer(serverId) {
+      rememberSelectedServer(serverId);
+      setStatus(serverStatus, "");
+      renderServers();
+      loadServerDetail();
+    }
+
+
+    function renderServers() {
+      const switcher =
+        document.getElementById("serverSwitcher");
+
+      switcher.innerHTML = "";
+
+      for (const server of myServers) {
+        const chip =
+          document.createElement("button");
+
+        chip.type =
+          "button";
+
+        chip.className =
+          "filter-button" +
+          (server.id === selectedServerId ? " active" : "");
+
+        chip.textContent =
+          server.name;
+
+        chip.addEventListener(
+          "click",
+          () => {
+            selectServer(server.id);
+          }
+        );
+
+        switcher.appendChild(chip);
+      }
+
+      switcher.classList.toggle(
+        "hidden",
+        myServers.length < 2
+      );
+
+      document
+        .getElementById("serversEmpty")
+        .classList
+        .toggle("hidden", myServers.length > 0);
+
+      document
+        .getElementById("serverDetail")
+        .classList
+        .toggle("hidden", !getSelectedServer());
+
+      document
+        .getElementById("serversSection")
+        .classList
+        .toggle("is-owner", isSelectedServerOwner());
+    }
+
+
+    async function loadServerDetail() {
+      const server =
+        getSelectedServer();
+
+      if (!server) {
+        return;
+      }
+
+      document.getElementById("serverMeta").textContent =
+        server.name +
+        " · scores count from " +
+        formatServerDate(server.start_date);
+
+      document.getElementById("serverInviteCode").textContent =
+        server.invite_code;
+
+      try {
+        const [members, games] =
+          await Promise.all([
+            request(
+              "/rest/v1/server_members" +
+              "?server_id=eq." + encodeURIComponent(server.id) +
+              "&select=user_id,role,joined_at" +
+              "&order=joined_at.asc",
+              {
+                headers: authHeaders()
+              }
+            ),
+            request(
+              "/rest/v1/server_games" +
+              "?server_id=eq." + encodeURIComponent(server.id) +
+              "&select=game_key,sort_order,score_direction" +
+              "&order=sort_order.asc",
+              {
+                headers: authHeaders()
+              }
+            )
+          ]);
+
+        if (server.id !== selectedServerId) {
+          return;
+        }
+
+        selectedServerGames =
+          games || [];
+
+        const userIds =
+          (members || []).map(member => member.user_id);
+
+        const profiles =
+          userIds.length
+            ? await request(
+                "/rest/v1/profiles" +
+                "?user_id=in.(" + userIds.join(",") + ")" +
+                "&select=user_id,username,display_name",
+                {
+                  headers: authHeaders()
+                }
+              )
+            : [];
+
+        renderServerMembers(
+          members || [],
+          new Map(
+            (profiles || []).map(profile => [profile.user_id, profile])
+          )
+        );
+
+        renderServerGames();
+      } catch (error) {
+        console.error(
+          "Server details failed to load:",
+          error
+        );
+
+        setStatus(
+          serverStatus,
+          "Server details could not be loaded.",
+          "error"
+        );
+      }
+    }
+
+
+    function renderServerMembers(members, profilesById) {
+      const list =
+        document.getElementById("serverMembers");
+
+      list.innerHTML = "";
+
+      for (const member of members) {
+        const profile =
+          profilesById.get(member.user_id);
+
+        const row =
+          document.createElement("div");
+
+        row.className =
+          "friend-row";
+
+        const name =
+          document.createElement("div");
+
+        name.className =
+          "server-member-name";
+
+        name.textContent =
+          profile
+            ? profile.display_name || "@" + profile.username
+            : "Player";
+
+        if (member.user_id === session.user.id) {
+          name.textContent += " (you)";
+        }
+
+        if (member.role === "owner") {
+          const badge =
+            document.createElement("span");
+
+          badge.className =
+            "owner-badge";
+
+          badge.textContent =
+            "Owner";
+
+          name.append(" ", badge);
+        }
+
+        row.appendChild(name);
+
+        if (
+          isSelectedServerOwner() &&
+          member.user_id !== session.user.id
+        ) {
+          const removeButton =
+            document.createElement("button");
+
+          removeButton.type =
+            "button";
+
+          removeButton.className =
+            "small-button";
+
+          removeButton.textContent =
+            "Remove";
+
+          removeButton.addEventListener(
+            "click",
+            () => {
+              removeServerMember(
+                member.user_id,
+                name.textContent
+              );
+            }
+          );
+
+          row.appendChild(removeButton);
+        }
+
+        list.appendChild(row);
+      }
+    }
+
+
+    function renderServerGames() {
+      const list =
+        document.getElementById("serverGames");
+
+      list.innerHTML = "";
+
+      if (selectedServerGames.length === 0) {
+        list.innerHTML =
+          '<p class="status">No games yet.</p>';
+        return;
+      }
+
+      for (const serverGame of selectedServerGames) {
+        const row =
+          document.createElement("div");
+
+        row.className =
+          "server-game-row";
+
+        const name =
+          document.createElement("div");
+
+        name.className =
+          "activity-name";
+
+        name.textContent =
+          getCatalogGame(serverGame.game_key).name;
+
+        const rule =
+          document.createElement("div");
+
+        rule.className =
+          "activity-sub";
+
+        rule.textContent =
+          describeDirection(
+            serverGame.score_direction ||
+            gameDirections.get(serverGame.game_key)
+          );
+
+        row.append(
+          createGameBadge(serverGame.game_key),
+          name,
+          rule
+        );
+
+        list.appendChild(row);
+      }
+    }
+
+
+    /*
+     * Checkbox list of games: the player's library first,
+     * then other official games, then anything already chosen.
+     */
+    function renderServerGamePicker(container, selectedKeys) {
+      const myCustomOrOfficial =
+        game =>
+          game.is_official ||
+          game.created_by === session.user.id ||
+          selectedKeys.has(game.game_key);
+
+      const keys =
+        sortByGameOrder(
+          [...gameCatalog.values()]
+            .filter(myCustomOrOfficial)
+            .map(game => game.game_key)
+        );
+
+      container.innerHTML = "";
+
+      for (const gameKey of keys) {
+        const game =
+          getCatalogGame(gameKey);
+
+        const label =
+          document.createElement("label");
+
+        label.className =
+          "onboarding-game" +
+          (selectedKeys.has(gameKey) ? " selected" : "");
+
+        const checkbox =
+          document.createElement("input");
+
+        checkbox.type =
+          "checkbox";
+
+        checkbox.className =
+          "onboarding-checkbox";
+
+        checkbox.value =
+          gameKey;
+
+        checkbox.checked =
+          selectedKeys.has(gameKey);
+
+        checkbox.addEventListener(
+          "change",
+          () => {
+            label.classList.toggle("selected", checkbox.checked);
+          }
+        );
+
+        const info =
+          document.createElement("div");
+
+        info.className =
+          "onboarding-game-info";
+
+        const name =
+          document.createElement("div");
+
+        name.className =
+          "onboarding-game-name";
+
+        name.textContent =
+          (game.icon ? game.icon + " " : "") + game.name;
+
+        const rule =
+          document.createElement("div");
+
+        rule.className =
+          "onboarding-game-category";
+
+        rule.textContent =
+          describeDirection(gameDirections.get(gameKey));
+
+        info.append(name, rule);
+        label.append(checkbox, info);
+        container.appendChild(label);
+      }
+    }
+
+
+    function pickedGameKeys(container) {
+      return [...container.querySelectorAll("input:checked")]
+        .map(checkbox => checkbox.value);
+    }
+
+
+    async function openCreateServer() {
+      if (!session) {
+        document.getElementById("accountModal").classList.add("open");
+        return;
+      }
+
+      if (!gameDirections.size) {
+        await loadGameDirections();
+      }
+
+      document.getElementById("serverNameInput").value = "";
+
+      renderServerGamePicker(
+        document.getElementById("createServerGames"),
+        new Set(favoriteGames)
+      );
+
+      setStatus(createServerStatus, "");
+      document.getElementById("createServerModal").classList.add("open");
+    }
+
+
+    async function createServer() {
+      const name =
+        document.getElementById("serverNameInput").value.trim();
+
+      const gameKeys =
+        pickedGameKeys(document.getElementById("createServerGames"));
+
+      if (!name) {
+        setStatus(createServerStatus, "Give your server a name.", "error");
+        return;
+      }
+
+      if (gameKeys.length === 0) {
+        setStatus(createServerStatus, "Pick at least one game.", "error");
+        return;
+      }
+
+      const button =
+        document.getElementById("createServerButton");
+
+      button.disabled = true;
+      setStatus(createServerStatus, "Creating server...");
+
+      try {
+        const serverId =
+          await request(
+            "/rest/v1/rpc/create_server",
+            {
+              method: "POST",
+              headers: authHeaders(),
+              body: JSON.stringify({
+                p_name: name,
+                p_game_keys: gameKeys,
+                p_start_date: TODAY
+              })
+            }
+          );
+
+        rememberSelectedServer(serverId);
+        document.getElementById("createServerModal").classList.remove("open");
+        await loadServers();
+        setStatus(serverStatus, "Server created. Share the invite to bring people in.", "success");
+      } catch (error) {
+        setStatus(createServerStatus, error.message, "error");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+
+    function openJoinServer() {
+      if (!session) {
+        document.getElementById("accountModal").classList.add("open");
+        return;
+      }
+
+      document.getElementById("joinCodeInput").value = "";
+      setStatus(joinServerStatus, "");
+      document.getElementById("joinServerModal").classList.add("open");
+    }
+
+
+    async function joinServer(code, statusElement) {
+      const cleanCode =
+        String(code || "").trim().toUpperCase();
+
+      if (!/^[A-Z0-9]{6}$/.test(cleanCode)) {
+        setStatus(statusElement, "Invite codes are 6 letters and numbers.", "error");
+        return false;
+      }
+
+      setStatus(statusElement, "Joining...");
+
+      try {
+        const serverId =
+          await request(
+            "/rest/v1/rpc/join_server",
+            {
+              method: "POST",
+              headers: authHeaders(),
+              body: JSON.stringify({
+                p_invite_code: cleanCode
+              })
+            }
+          );
+
+        rememberSelectedServer(serverId);
+        await loadServers();
+
+        setStatus(
+          serverStatus,
+          "You joined " + (getSelectedServer()?.name || "the server") + ".",
+          "success"
+        );
+
+        return true;
+      } catch (error) {
+        setStatus(statusElement, error.message, "error");
+        return false;
+      }
+    }
+
+
+    async function openServerGames() {
+      if (!gameDirections.size) {
+        await loadGameDirections();
+      }
+
+      renderServerGamePicker(
+        document.getElementById("serverGamesPicker"),
+        new Set(selectedServerGames.map(game => game.game_key))
+      );
+
+      setStatus(serverGamesStatus, "");
+      document.getElementById("serverGamesModal").classList.add("open");
+    }
+
+
+    async function saveServerGames() {
+      const server =
+        getSelectedServer();
+
+      const picked =
+        pickedGameKeys(document.getElementById("serverGamesPicker"));
+
+      if (picked.length === 0) {
+        setStatus(serverGamesStatus, "Keep at least one game.", "error");
+        return;
+      }
+
+      const current =
+        new Set(selectedServerGames.map(game => game.game_key));
+
+      const toRemove =
+        [...current].filter(key => !picked.includes(key));
+
+      const toAdd =
+        picked.filter(key => !current.has(key));
+
+      setStatus(serverGamesStatus, "Saving...");
+
+      try {
+        if (toRemove.length) {
+          await request(
+            "/rest/v1/server_games" +
+            "?server_id=eq." + encodeURIComponent(server.id) +
+            "&game_key=in.(" + toRemove.map(encodeURIComponent).join(",") + ")",
+            {
+              method: "DELETE",
+              headers: authHeaders("return=minimal")
+            }
+          );
+        }
+
+        if (toAdd.length) {
+          const nextOrder =
+            selectedServerGames.reduce(
+              (highest, game) => Math.max(highest, game.sort_order),
+              0
+            ) + 1;
+
+          await request(
+            "/rest/v1/server_games",
+            {
+              method: "POST",
+              headers: authHeaders("return=minimal"),
+              body: JSON.stringify(
+                toAdd.map((gameKey, index) => ({
+                  server_id: server.id,
+                  game_key: gameKey,
+                  sort_order: nextOrder + index
+                }))
+              )
+            }
+          );
+        }
+
+        document.getElementById("serverGamesModal").classList.remove("open");
+        await loadServerDetail();
+        setStatus(serverStatus, "Games updated.", "success");
+      } catch (error) {
+        setStatus(serverGamesStatus, error.message, "error");
+      }
+    }
+
+
+    async function shareInvite() {
+      const server =
+        getSelectedServer();
+
+      const link =
+        location.origin +
+        location.pathname +
+        "?join=" +
+        server.invite_code;
+
+      const text =
+        "Join my Daily Game Hub server “" + server.name + "”. " +
+        "Invite code: " + server.invite_code;
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: server.name,
+            text: text,
+            url: link
+          });
+          return;
+        }
+
+        await navigator.clipboard.writeText(text + "\n" + link);
+        setStatus(serverStatus, "Invite link copied.", "success");
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          return;
+        }
+
+        window.prompt("Copy this invite link:", link);
+      }
+    }
+
+
+    async function renameServer() {
+      const server =
+        getSelectedServer();
+
+      const name =
+        window.prompt("New server name:", server.name);
+
+      if (name === null || !name.trim() || name.trim() === server.name) {
+        return;
+      }
+
+      try {
+        await request(
+          "/rest/v1/servers?id=eq." + encodeURIComponent(server.id),
+          {
+            method: "PATCH",
+            headers: authHeaders("return=minimal"),
+            body: JSON.stringify({
+              name: name.trim().slice(0, 40)
+            })
+          }
+        );
+
+        await loadServers();
+        setStatus(serverStatus, "Server renamed.", "success");
+      } catch (error) {
+        setStatus(serverStatus, error.message, "error");
+      }
+    }
+
+
+    async function resetInviteCode() {
+      const server =
+        getSelectedServer();
+
+      if (!window.confirm(
+        "Make a new invite code? The current code and links will stop working."
+      )) {
+        return;
+      }
+
+      try {
+        await request(
+          "/rest/v1/rpc/reset_invite_code",
+          {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({
+              p_server_id: server.id
+            })
+          }
+        );
+
+        await loadServers();
+        setStatus(serverStatus, "New invite code ready.", "success");
+      } catch (error) {
+        setStatus(serverStatus, error.message, "error");
+      }
+    }
+
+
+    async function removeServerMember(userId, displayName) {
+      if (!window.confirm("Remove " + displayName + " from this server?")) {
+        return;
+      }
+
+      try {
+        await request(
+          "/rest/v1/server_members" +
+          "?server_id=eq." + encodeURIComponent(selectedServerId) +
+          "&user_id=eq." + encodeURIComponent(userId),
+          {
+            method: "DELETE",
+            headers: authHeaders("return=minimal")
+          }
+        );
+
+        await loadServerDetail();
+        setStatus(serverStatus, displayName + " was removed.", "success");
+      } catch (error) {
+        setStatus(serverStatus, error.message, "error");
+      }
+    }
+
+
+    async function leaveServer() {
+      const server =
+        getSelectedServer();
+
+      if (!window.confirm("Leave " + server.name + "?")) {
+        return;
+      }
+
+      try {
+        await request(
+          "/rest/v1/server_members" +
+          "?server_id=eq." + encodeURIComponent(server.id) +
+          "&user_id=eq." + encodeURIComponent(session.user.id),
+          {
+            method: "DELETE",
+            headers: authHeaders("return=minimal")
+          }
+        );
+
+        selectedServerId = null;
+        await loadServers();
+        setStatus(serverStatus, "You left " + server.name + ".", "success");
+      } catch (error) {
+        setStatus(serverStatus, error.message, "error");
+      }
+    }
+
+
+    async function deleteServer() {
+      const server =
+        getSelectedServer();
+
+      if (!window.confirm(
+        "Delete " + server.name + " for everyone? " +
+        "Members’ results are kept, but the server and its members list are removed."
+      )) {
+        return;
+      }
+
+      try {
+        await request(
+          "/rest/v1/servers?id=eq." + encodeURIComponent(server.id),
+          {
+            method: "DELETE",
+            headers: authHeaders("return=minimal")
+          }
+        );
+
+        selectedServerId = null;
+        await loadServers();
+        setStatus(serverStatus, server.name + " was deleted.", "success");
+      } catch (error) {
+        setStatus(serverStatus, error.message, "error");
+      }
+    }
+
+
+    /*
+     * Invite links look like ...?join=ABC123. The code is kept
+     * until the player is signed in, then joined automatically.
+     */
+    function captureInviteLink() {
+      const params =
+        new URLSearchParams(location.search);
+
+      const code =
+        params.get("join");
+
+      if (!code) {
+        return;
+      }
+
+      try {
+        localStorage.setItem(PENDING_JOIN_KEY, code);
+      } catch (error) {}
+
+      if (!session) {
+        document.getElementById("accountModal").classList.add("open");
+
+        setStatus(
+          authStatus,
+          "Log in or create an account to join the server."
+        );
+      }
+
+      params.delete("join");
+
+      const query =
+        params.toString();
+
+      history.replaceState(
+        null,
+        "",
+        location.pathname + (query ? "?" + query : "") + location.hash
+      );
+    }
+
+
+    async function joinPendingInvite() {
+      let code = null;
+
+      try {
+        code = localStorage.getItem(PENDING_JOIN_KEY);
+      } catch (error) {}
+
+      if (!code || !session) {
+        return;
+      }
+
+      try {
+        localStorage.removeItem(PENDING_JOIN_KEY);
+      } catch (error) {}
+
+      switchTab("social");
+      await joinServer(code, serverStatus);
+    }
+
+
+    [
+      ["openCreateServerButton", openCreateServer],
+      ["createServerButton", createServer],
+      ["openJoinServerButton", openJoinServer],
+      ["editServerGamesButton", openServerGames],
+      ["saveServerGamesButton", saveServerGames],
+      ["shareInviteButton", shareInvite],
+      ["renameServerButton", renameServer],
+      ["resetInviteButton", resetInviteCode],
+      ["leaveServerButton", leaveServer],
+      ["deleteServerButton", deleteServer]
+    ].forEach(([id, handler]) => {
+      document
+        .getElementById(id)
+        .addEventListener("click", handler);
+    });
+
+    document
+      .getElementById("joinServerButton")
+      .addEventListener(
+        "click",
+        async () => {
+          const joined =
+            await joinServer(
+              document.getElementById("joinCodeInput").value,
+              joinServerStatus
+            );
+
+          if (joined) {
+            document.getElementById("joinServerModal").classList.remove("open");
+          }
+        }
+      );
+
+    document
+      .getElementById("joinCodeInput")
+      .addEventListener(
+        "keydown",
+        event => {
+          if (event.key === "Enter") {
+            document.getElementById("joinServerButton").click();
+          }
+        }
+      );
+
+    captureInviteLink();
+
+
     const ACTIVE_TAB_KEY =
       "dailyGameHubActiveTab";
 
@@ -10879,6 +12324,10 @@ window.addEventListener(
         (!session || userGameLibrary.length)
       ) {
         loadActivity();
+      }
+
+      if (tab === "social" && session) {
+        loadServers();
       }
     }
 
