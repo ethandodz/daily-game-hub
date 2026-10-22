@@ -2492,12 +2492,16 @@
   placeholder="Paste your result here..."
 ></textarea>
 
-          >
+          <p
+            class="status"
+            id="scoreDetected"
+            aria-live="polite"
+          ></p>
         </div>
 
         <div class="field">
           <label for="numericScore">
-            Numeric score (optional)
+            Score (filled in from your result when possible)
           </label>
 
           <input
@@ -5779,6 +5783,7 @@ loadGameCatalog()
      */
     loadTodayScores();
     loadStreaks();
+    backfillMyScoreNumbers();
 
     if (currentTab === "activity") {
       loadActivity();
@@ -6797,6 +6802,7 @@ async function loadProfile() {
     ""
   );
 
+  prepareScoreReading();
 
   document
     .getElementById(
@@ -8291,6 +8297,8 @@ document
               ""
             );
 
+            prepareScoreReading();
+
             document
               .getElementById(
                 "scoreModal"
@@ -8355,32 +8363,42 @@ document
             return;
           }
 
+          const readScore =
+            readGameScore(
+              selectedScoreGame,
+              resultTextValue
+            );
+
+          const useReadScore =
+            readScore &&
+            numericScoreValue === "";
+
           const scoreRecord = {
             user_id:
               session.user.id,
-
             game_id:
               selectedScoreGame,
-
             play_date:
               TODAY,
-
             completed:
-              true,
+              !readScore?.failed,
 
             result_text:
               resultTextValue ||
               null,
 
             numeric_score:
-              numericScoreValue === ""
-                ? null
-                : Number(
-                    numericScoreValue
-                  ),
-
+              useReadScore
+                ? readScore.score
+                : numericScoreValue === ""
+                  ? null
+                  : Number(
+                      numericScoreValue
+                    ),
             score_unit:
-              scoreUnitValue ||
+              (useReadScore
+                ? readScore.unit
+                : scoreUnitValue) ||
               null
           };
 
@@ -9858,6 +9876,336 @@ window.addEventListener(
     savedOffset
   );
 }
+
+
+    /*
+     * Score reading: turn a pasted share result into a number
+     * so servers can rank results and build stats.
+     * Each reader returns { score, unit, failed } or null.
+     * A failed game (e.g. Wordle X/6) scores one worse than the
+     * worst possible finish and is saved with completed = false.
+     */
+    function readGuessFraction(text, pattern, maxGuesses) {
+      const match =
+        text.match(pattern);
+
+      if (!match) {
+        return null;
+      }
+
+      if (match[1].toUpperCase() === "X") {
+        return {
+          score: maxGuesses + 1,
+          unit: "guesses",
+          failed: true
+        };
+      }
+
+      const guesses =
+        Number(match[1]);
+
+      return guesses >= 1 && guesses <= maxGuesses
+        ? { score: guesses, unit: "guesses", failed: false }
+        : null;
+    }
+
+
+    function readNumber(text, pattern, unit) {
+      const match =
+        text.match(pattern);
+
+      return match
+        ? { score: Number(match[1]), unit, failed: false }
+        : null;
+    }
+
+
+    const SCORE_READERS = {
+      wordle: text =>
+        readGuessFraction(text, /Wordle\s+[\d,.]+\s+([1-6X])\/6/i, 6),
+
+      worldle: text =>
+        readGuessFraction(text, /Worldle\s+#\d+[^\n]*?\b([1-6X])\/6/i, 6),
+
+      weddle: text =>
+        readGuessFraction(text, /Weddle\b[^\n]*?\s([1-8X])\/8\b/i, 8),
+
+      poeltl: text =>
+        readGuessFraction(text, /Poeltl\s+#\d+\s*\|\s*([1-8X])\/8/i, 8),
+
+      poople: text =>
+        readNumber(text, /Poople\s+#\d+\s+(\d+)\/\d+/i, "guesses"),
+
+      globle: text => {
+        const matches =
+          [...text.matchAll(/=\s*(\d+)\s*$/gm)];
+
+        return matches.length
+          ? {
+              score: Number(matches[matches.length - 1][1]),
+              unit: "guesses",
+              failed: false
+            }
+          : null;
+      },
+
+      contexto: text =>
+        readNumber(text, /got it in\s+(\d+)\s+guess/i, "guesses"),
+
+      framed: text => {
+        const line =
+          text
+            .split("\n")
+            .find(row => row.includes("🎥"));
+
+        if (!line) {
+          return null;
+        }
+
+        const squares =
+          [...line.matchAll(/🟥|🟩|⬛/g)].map(match => match[0]);
+
+        if (squares.length !== 6) {
+          return null;
+        }
+
+        const solvedAt =
+          squares.indexOf("🟩");
+
+        return solvedAt === -1
+          ? { score: 7, unit: "guesses", failed: true }
+          : { score: solvedAt + 1, unit: "guesses", failed: false };
+      },
+
+      connections: text => {
+        const rows =
+          text
+            .split("\n")
+            .map(row => [...row.matchAll(/🟨|🟩|🟦|🟪/g)].map(match => match[0]))
+            .filter(row => row.length === 4);
+
+        if (rows.length === 0) {
+          return null;
+        }
+
+        const solved =
+          rows.filter(row => row.every(square => square === row[0])).length;
+
+        const mistakes =
+          rows.length - solved;
+
+        // A game ends after 4 groups or 4 mistakes;
+        // anything else is a partial paste.
+        if (solved < 4 && mistakes < 4) {
+          return null;
+        }
+
+        return {
+          score: Math.min(mistakes, 4),
+          unit: "mistakes",
+          failed: solved < 4
+        };
+      },
+
+      strands: text => {
+        if (!/Strands\s+#\d+/i.test(text)) {
+          return null;
+        }
+
+        return {
+          score: (text.match(/💡/g) || []).length,
+          unit: "hints",
+          failed: false
+        };
+      },
+
+      minutecryptic: text => {
+        if (/no hints/i.test(text)) {
+          return { score: 0, unit: "hints", failed: false };
+        }
+
+        return readNumber(text, /(\d+)\s+hints?\b/i, "hints");
+      },
+
+      guesslist: text =>
+        readNumber(text, /Score:\s*(\d+)\s*\/\s*\d+/i, "points"),
+
+      krillion: text =>
+        readNumber(text, /Krillion\s+#\d+[^\n]*\n\s*(\d+)\s*(\n|$)/i, "points"),
+
+      magnitudle: text =>
+        readNumber(text, /Overall Score\s+(\d+)/i, "points"),
+
+      maptap: text =>
+        readNumber(text, /Final score:\s*(\d+)/i, "points"),
+
+      whentaken: text =>
+        readNumber(text, /I scored\s+(\d+)\s*\/\s*1000/i, "points")
+    };
+
+
+    function readGameScore(gameId, resultText) {
+      const reader =
+        SCORE_READERS[gameId];
+
+      if (!reader || !resultText) {
+        return null;
+      }
+
+      try {
+        return reader(resultText);
+      } catch (error) {
+        return null;
+      }
+    }
+
+
+    let scoreNumberEdited =
+      false;
+
+
+    /*
+     * Show what was read from the pasted result and fill the
+     * score box, unless the player typed their own number.
+     */
+    function showDetectedScore(fillInputs) {
+      const resultTextValue =
+        document.getElementById("resultText").value.trim();
+
+      const readScore =
+        readGameScore(selectedScoreGame, resultTextValue);
+
+      const detected =
+        document.getElementById("scoreDetected");
+
+      if (readScore) {
+        detected.textContent =
+          readScore.failed
+            ? "Read as: not solved (counts as " +
+              readScore.score + " " + readScore.unit + ")"
+            : "Read as: " + readScore.score + " " +
+              (readScore.score === 1
+                ? readScore.unit.replace(/s$/, "")
+                : readScore.unit);
+
+        if (fillInputs && !scoreNumberEdited) {
+          document.getElementById("numericScore").value =
+            readScore.score;
+
+          document.getElementById("scoreUnit").value =
+            readScore.unit;
+        }
+      } else if (
+        resultTextValue &&
+        SCORE_READERS[selectedScoreGame]
+      ) {
+        detected.textContent =
+          "Couldn’t read a score from this. You can type it below.";
+      } else {
+        detected.textContent = "";
+      }
+    }
+
+
+    function prepareScoreReading() {
+      scoreNumberEdited = false;
+
+      showDetectedScore(
+        document.getElementById("numericScore").value === ""
+      );
+    }
+
+
+    document
+      .getElementById("resultText")
+      .addEventListener(
+        "input",
+        () => {
+          showDetectedScore(true);
+        }
+      );
+
+    document
+      .getElementById("numericScore")
+      .addEventListener(
+        "input",
+        () => {
+          scoreNumberEdited = true;
+        }
+      );
+
+
+    const SCORE_BACKFILL_KEY =
+      "dailyGameHubScoreBackfill";
+
+    const SCORE_READERS_VERSION =
+      "1";
+
+
+    /*
+     * One-time pass over the player's own saved results that
+     * have no number yet. Runs again only when the readers change.
+     */
+    async function backfillMyScoreNumbers() {
+      if (!session) {
+        return;
+      }
+
+      const doneKey =
+        SCORE_BACKFILL_KEY + "-" + session.user.id;
+
+      try {
+        if (localStorage.getItem(doneKey) === SCORE_READERS_VERSION) {
+          return;
+        }
+      } catch (error) {}
+
+      try {
+        const rows =
+          await request(
+            "/rest/v1/daily_scores" +
+            "?user_id=eq." +
+            encodeURIComponent(session.user.id) +
+            "&numeric_score=is.null" +
+            "&result_text=not.is.null" +
+            "&select=id,game_id,result_text",
+            {
+              headers: authHeaders()
+            }
+          );
+
+        for (const row of rows || []) {
+          const readScore =
+            readGameScore(row.game_id, row.result_text);
+
+          if (!readScore) {
+            continue;
+          }
+
+          await request(
+            "/rest/v1/daily_scores?id=eq." + row.id,
+            {
+              method: "PATCH",
+              headers: authHeaders("return=minimal"),
+              body: JSON.stringify({
+                numeric_score: readScore.score,
+                score_unit: readScore.unit,
+                completed: !readScore.failed
+              })
+            }
+          );
+        }
+
+        try {
+          localStorage.setItem(doneKey, SCORE_READERS_VERSION);
+        } catch (error) {}
+      } catch (error) {
+        console.error(
+          "Score number backfill failed:",
+          error
+        );
+      }
+    }
 
 
     /*
