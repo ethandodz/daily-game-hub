@@ -21,6 +21,9 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
+  <!-- Keep in step with version.json (tools/bump-version.py does both) -->
+  <meta name="app-version" content="2026.10.22.1">
+
   <style>
     * {
       box-sizing: border-box;
@@ -2470,6 +2473,41 @@
       margin-top: 10px;
     }
 
+    .update-bar {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(86px + env(safe-area-inset-bottom));
+      z-index: 21;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 10px 10px 14px;
+      font-weight: 800;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .update-bar.hidden {
+      display: none;
+    }
+
+    .update-bar .button {
+      padding: 8px 14px;
+    }
+
+    @media (min-width: 900px) {
+      .update-bar {
+        left: auto;
+        right: 24px;
+        bottom: 24px;
+        width: 360px;
+      }
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2545,6 +2583,22 @@
         </button>
       </div>
     </header>
+
+    <div
+      class="update-bar hidden"
+      id="updateBar"
+      role="status"
+    >
+      <span>A new version is ready.</span>
+
+      <button
+        class="button"
+        id="updateRefreshButton"
+        type="button"
+      >
+        Refresh
+      </button>
+    </div>
 
     <nav
       class="tab-bar"
@@ -16688,6 +16742,66 @@ window.addEventListener(
       .addEventListener("click", saveNewPassword);
 
     handleEmailLink();
+
+
+    /*
+     * "New version available": compare the running version with the
+     * one on the server (version.json, never cached) and offer a
+     * refresh when they differ.
+     */
+    const APP_VERSION =
+      document.querySelector('meta[name="app-version"]')?.content || "";
+
+    const UPDATE_CHECK_MS =
+      15 * 60 * 1000;
+
+
+    async function checkForUpdate() {
+      if (!APP_VERSION || document.visibilityState !== "visible") {
+        return;
+      }
+
+      try {
+        const response =
+          await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const latest =
+          (await response.json()).version;
+
+        document
+          .getElementById("updateBar")
+          .classList
+          .toggle("hidden", !latest || latest === APP_VERSION);
+      } catch (error) {
+        // Offline or blocked: try again next time.
+      }
+    }
+
+
+    document
+      .getElementById("updateRefreshButton")
+      .addEventListener(
+        "click",
+        () => {
+          location.reload();
+        }
+      );
+
+    setTimeout(checkForUpdate, 5000);
+    setInterval(checkForUpdate, UPDATE_CHECK_MS);
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.visibilityState === "visible") {
+          checkForUpdate();
+        }
+      }
+    );
 
 
     function reloadIfNewDay(event) {
