@@ -2297,6 +2297,34 @@
       padding-top: calc(22px + env(safe-area-inset-top));
     }
 
+    .search-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-wrap .search {
+      margin-bottom: 0;
+      padding-right: 46px;
+    }
+
+    .search-wrap .search::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    .search-clear {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      width: 34px;
+      height: 34px;
+      color: var(--text);
+      font-size: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--panel-light);
+      transform: translateY(-50%);
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2452,13 +2480,33 @@
       </div>
     </section>
 
-    <input
-      class="search"
-      id="searchInput"
-      type="search"
-      placeholder="Search games..."
-      autocomplete="off"
-    >
+    <div class="search-wrap">
+      <!-- Not a login field: keep browsers and password managers from filling it -->
+      <input
+        class="search"
+        id="searchInput"
+        name="game-search"
+        type="search"
+        placeholder="Search games..."
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-bwignore="true"
+        data-form-type="other"
+      >
+
+      <button
+        class="search-clear hidden"
+        id="clearSearchButton"
+        type="button"
+        aria-label="Clear search"
+      >
+        ✕
+      </button>
+    </div>
 
     <div class="arrange-row">
   <button
@@ -6331,14 +6379,31 @@ async function saveGameOrder() {
       updateProgress();
     }
 
+    /*
+     * Read the search box. Browsers and password managers sometimes
+     * put a saved email in it, which hid every game; game names never
+     * contain "@", so a value like that is cleared instead of used.
+     */
+    function currentSearchText() {
+      const input =
+        document.getElementById("searchInput");
+
+      if (input.value.includes("@")) {
+        input.value = "";
+      }
+
+      document
+        .getElementById("clearSearchButton")
+        .classList
+        .toggle("hidden", input.value === "");
+
+      return input.value.trim();
+    }
+
+
     function applyFilters() {
       const searchValue =
-        document
-          .getElementById(
-            "searchInput"
-          )
-          .value
-          .trim()
+        currentSearchText()
           .toLowerCase();
 
       const categoryFilters = [
@@ -6425,15 +6490,20 @@ async function saveGameOrder() {
         }
       });
 
-      document
-        .getElementById(
+      const emptyMessage =
+        document.getElementById(
           "emptyMessage"
-        )
-        .style
-        .display =
-          visibleCount > 0
-            ? "none"
-            : "block";
+        );
+
+      emptyMessage.style.display =
+        visibleCount > 0
+          ? "none"
+          : "block";
+
+      emptyMessage.textContent =
+        searchValue
+          ? "No games match “" + currentSearchText() + "”. Tap ✕ in the search box to see your games."
+          : "No games match your search or selected filter.";
     }
 
 document
@@ -6544,6 +6614,20 @@ document
     "input",
     updateLocalUI
   );
+
+    document
+      .getElementById("clearSearchButton")
+      .addEventListener(
+        "click",
+        () => {
+          const input =
+            document.getElementById("searchInput");
+
+          input.value = "";
+          updateLocalUI();
+          input.focus();
+        }
+      );
 
 
     document
