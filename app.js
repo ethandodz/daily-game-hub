@@ -3947,8 +3947,7 @@ todaysScores.find(
   "resultText"
 )
 .value =
-  existingScore?.result_text ||
-  "";
+  cleanResultText(existingScore?.result_text);
 
 
   document
@@ -5425,8 +5424,7 @@ existingScore
   "resultText"
 )
 .value =
-  existingScore.result_text ||
-  "";
+  cleanResultText(existingScore.result_text);
 
   document
 .getElementById(
@@ -5566,7 +5564,7 @@ document
           !readScore?.failed,
 
         result_text:
-          resultTextValue ||
+          cleanResultText(resultTextValue) ||
           null,
 
         numeric_score:
@@ -5646,10 +5644,11 @@ await loadStreaks();
 function formatScore(
   score
 ) {
-  if (
-    score.result_text
-  ) {
-    return score.result_text;
+  const cleanedText =
+    cleanResultText(score.result_text);
+
+  if (cleanedText) {
+    return cleanedText;
   }
 
   if (
@@ -7069,6 +7068,37 @@ savedOffset
  * A failed game (e.g. Wordle X/6) scores one worse than the
  * worst possible finish and is saved with completed = false.
  */
+/*
+ * Clean a shared result for display and saving: remove links that
+ * games append, so everyone's results look the same. Scores and game
+ * detection read the original text first (some rely on the link).
+ */
+function cleanResultText(text) {
+  if (!text) {
+    return "";
+  }
+
+  return String(text)
+    .replace(/\r\n?/g, "\n")
+    // https://framed.wtf, https://www.minutecryptic.com/?utm_source=share
+    .replace(/[ \t]*https?:\/\/\S+/gi, "")
+    // "www.maptap.gg October 17" -> "MapTap October 17"
+    .replace(/\bwww\.([a-z0-9-]+)\.[a-z.]+\S*/gi, (match, site) =>
+      gameCatalog.get(site.toLowerCase())?.name || ""
+    )
+    .split("\n")
+    .map(line => line.replace(/[ \t]+$/, ""))
+    // lines that are only hashtags (#globle) or an emptied label ("Play at:")
+    .filter(line =>
+      !/^\s*(#[\w-]+\s*)+$/.test(line) &&
+      !/^\s*[A-Za-z][A-Za-z ]{0,24}:\s*$/.test(line)
+    )
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+
 function readGuessFraction(text, pattern, maxGuesses) {
   const match =
     text.match(pattern);
@@ -7465,8 +7495,8 @@ function openResultForGame(gameId, text) {
     return true;
   }
 
-  // The pasted text replaces whatever was in the window.
-  document.getElementById("resultText").value = text.trim();
+  // The pasted text replaces whatever was in the window, without links.
+  document.getElementById("resultText").value = cleanResultText(text);
   document.getElementById("numericScore").value = "";
   document.getElementById("scoreUnit").value = "";
   showDetectedScore(true);
@@ -7505,7 +7535,7 @@ function handlePastedText(text) {
   }
 
   openPasteWindow(
-    trimmed,
+    cleanResultText(trimmed),
     gameId
       ? "This looks like " + getCatalogGame(gameId).name +
         ", which isn’t in your games. Add it in Manage Games, or pick a game below."
@@ -9903,7 +9933,7 @@ function createBoardRow(result, rank, winner) {
     "friend-result-score board-full";
 
   full.textContent =
-    result.result_text || formatScore(result);
+    formatScore(result);
 
   row.appendChild(full);
 
