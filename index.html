@@ -2340,6 +2340,48 @@
       font-size: 15px;
     }
 
+    .yesterday-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 8px 8px 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .yesterday-banner.hidden {
+      display: none;
+    }
+
+    .yesterday-lines {
+      display: grid;
+      flex: 1;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .yesterday-line {
+      padding: 6px 0;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: left;
+      border: 0;
+      background: transparent;
+    }
+
+    .yesterday-close {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      color: var(--muted);
+      border: 0;
+      border-radius: 9px;
+      background: var(--panel-light);
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2465,6 +2507,25 @@
     >
 
     <div class="games-tools">
+
+    <div
+      class="yesterday-banner hidden"
+      id="yesterdayBanner"
+    >
+      <div
+        class="yesterday-lines"
+        id="yesterdayLines"
+      ></div>
+
+      <button
+        class="yesterday-close"
+        id="yesterdayCloseButton"
+        type="button"
+        aria-label="Hide until tomorrow"
+      >
+        ✕
+      </button>
+    </div>
 
     <section class="progress-card">
       <div class="progress-top">
@@ -7262,6 +7323,7 @@ loadGameCatalog()
     loadStreaks();
     backfillMyScoreNumbers();
     joinPendingInvite();
+    loadYesterdayBanner();
 
     if (currentTab === "social") {
       loadServers();
@@ -13617,6 +13679,224 @@ window.addEventListener(
         }
       }
     );
+
+
+    /*
+     * Games tab banner: yesterday's final winners in each server.
+     * Loaded with a few requests for all servers together; hidden
+     * until tomorrow once dismissed.
+     */
+    const YESTERDAY_DISMISSED_KEY =
+      "dailyGameHubYesterdayDismissed";
+
+
+    async function loadYesterdayBanner() {
+      const banner =
+        document.getElementById("yesterdayBanner");
+
+      banner.classList.add("hidden");
+
+      let dismissedOn = null;
+
+      try {
+        dismissedOn = localStorage.getItem(YESTERDAY_DISMISSED_KEY);
+      } catch (error) {}
+
+      if (!session || dismissedOn === TODAY) {
+        return;
+      }
+
+      const yesterday =
+        addDays(TODAY, -1);
+
+      try {
+        const servers =
+          (await request(
+            "/rest/v1/servers?select=id,name,start_date&order=created_at.asc",
+            { headers: authHeaders() }
+          ) || []).filter(server => server.start_date <= yesterday);
+
+        if (!servers.length) {
+          return;
+        }
+
+        const ids =
+          servers.map(server => server.id).join(",");
+
+        const [serverGames, members] =
+          await Promise.all([
+            request(
+              "/rest/v1/server_games?server_id=in.(" + ids + ")&select=server_id,game_key,score_direction",
+              { headers: authHeaders() }
+            ),
+            request(
+              "/rest/v1/server_members?server_id=in.(" + ids + ")&select=server_id,user_id",
+              { headers: authHeaders() }
+            ),
+            gameDirections.size ? Promise.resolve() : loadGameDirections()
+          ]);
+
+        const userIds =
+          [...new Set((members || []).map(member => member.user_id))];
+
+        const gameKeys =
+          [...new Set((serverGames || []).map(game => game.game_key))];
+
+        if (!userIds.length || !gameKeys.length) {
+          return;
+        }
+
+        const [scores, profiles] =
+          await Promise.all([
+            request(
+              "/rest/v1/daily_scores" +
+              "?play_date=eq." + yesterday +
+              "&game_id=in.(" + gameKeys.map(encodeURIComponent).join(",") + ")" +
+              "&user_id=in.(" + userIds.join(",") + ")" +
+              "&select=user_id,game_id,numeric_score,completed",
+              { headers: authHeaders() }
+            ),
+            request(
+              "/rest/v1/profiles?user_id=in.(" + userIds.join(",") + ")&select=user_id,username,display_name",
+              { headers: authHeaders() }
+            )
+          ]);
+
+        const nameOf =
+          userId => {
+            if (userId === session.user.id) {
+              return "you";
+            }
+
+            const profile =
+              (profiles || []).find(entry => entry.user_id === userId);
+
+            return profile
+              ? profile.display_name || "@" + profile.username
+              : "Player";
+          };
+
+        const lines =
+          [];
+
+        for (const server of servers) {
+          const memberIds =
+            new Set(
+              (members || [])
+                .filter(member => member.server_id === server.id)
+                .map(member => member.user_id)
+            );
+
+          const wins =
+            new Map();
+
+          (serverGames || [])
+            .filter(game => game.server_id === server.id)
+            .forEach(game => {
+              const direction =
+                game.score_direction ||
+                gameDirections.get(game.game_key) ||
+                "none";
+
+              rankGameResults(
+                (scores || []).filter(score =>
+                  score.game_id === game.game_key &&
+                  memberIds.has(score.user_id)
+                ),
+                direction
+              )
+                .ranked
+                .filter(entry => entry.winner)
+                .forEach(entry => {
+                  wins.set(
+                    entry.result.user_id,
+                    (wins.get(entry.result.user_id) || 0) + 1
+                  );
+                });
+            });
+
+          if (!wins.size) {
+            continue;
+          }
+
+          const ranking =
+            [...wins.entries()].sort((a, b) => b[1] - a[1]);
+
+          const mine =
+            wins.get(session.user.id) || 0;
+
+          const others =
+            ranking
+              .filter(([userId]) => userId !== session.user.id)
+              .slice(0, 2)
+              .map(([userId, count]) => nameOf(userId) + " " + count)
+              .join(" · ");
+
+          lines.push({
+            serverId: server.id,
+            text:
+              (mine ? "👑 " : "") +
+              "Yesterday in " + server.name + ": " +
+              (mine
+                ? "you won " + mine + (mine === 1 ? " game" : " games")
+                : "you won none") +
+              (others ? " · " + others : "")
+          });
+        }
+
+        const container =
+          document.getElementById("yesterdayLines");
+
+        container.innerHTML = "";
+
+        lines.forEach(line => {
+          const button =
+            document.createElement("button");
+
+          button.type =
+            "button";
+
+          button.className =
+            "yesterday-line";
+
+          button.textContent =
+            line.text;
+
+          button.addEventListener(
+            "click",
+            () => {
+              rememberSelectedServer(line.serverId);
+              serverBoardDay = "yesterday";
+              socialPanel = "today";
+              switchTab("social");
+            }
+          );
+
+          container.appendChild(button);
+        });
+
+        banner.classList.toggle("hidden", lines.length === 0);
+      } catch (error) {
+        console.error(
+          "Yesterday banner failed to load:",
+          error
+        );
+      }
+    }
+
+
+    document
+      .getElementById("yesterdayCloseButton")
+      .addEventListener(
+        "click",
+        () => {
+          try {
+            localStorage.setItem(YESTERDAY_DISMISSED_KEY, TODAY);
+          } catch (error) {}
+
+          document.getElementById("yesterdayBanner").classList.add("hidden");
+        }
+      );
 
 
     /*
