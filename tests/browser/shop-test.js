@@ -12,16 +12,17 @@ server.listen(0, async () => {
   const text = sel => page.textContent(sel).then(t => t.replace(/\s+/g, ' ').trim());
   const tile = id => page.locator(`#shopGrid [data-item="${id}"] .shop-action`);
   const mine = () => serverState.cards.find(c => c.user_id === ME) || {};
-  assert(await page.isVisible('#shopSection') && await text('#shopBalance') === '🪙 1,240', 'shop shows balance');
+  assert(await page.isVisible('#shopSection') && await text('#shopBalance') === '1,240', 'shop shows balance');
+  assert(await page.locator('#myCoinsButton .coin-icon').count() === 1 && await page.evaluate(async () => (await fetch('icons/coin.svg')).ok), 'tiles coin icon shown');
   await page.click('#shopSection summary'); await page.waitForTimeout(200);
   assert(await text('#shopKinds .active') === 'Icons', 'icons first');
-  assert(await tile('icon_crown').textContent() === '🪙 300', 'price shown');
+  assert(await tile('icon_crown').textContent() === '300', 'price shown');
   assert(await tile('icon_trophy').isDisabled() && (await tile('icon_trophy').textContent()) === '🔒 On Fire Silver', 'badge item locked: ' + await tile('icon_trophy').textContent());
   await page.screenshot({ path: out + '-icons.png' });
   // Buy and use an icon
   await tile('icon_crown').click(); await page.waitForTimeout(700);
   assert(serverState.purchases.includes('icon_crown'), 'bought through buy_item');
-  assert(await text('#shopBalance') === '🪙 940' && await text('#myCoinsButton') === '🪙 940', 'balance goes down');
+  assert(await text('#shopBalance') === '940' && await text('#myCoinsButton') === '940', 'balance goes down');
   assert((await text('#shopStatus')).includes('You bought Crown'), 'bought message');
   assert(await tile('icon_crown').textContent() === 'Use', 'bought item can be used');
   await tile('icon_crown').click(); await page.waitForTimeout(500);
@@ -41,7 +42,7 @@ server.listen(0, async () => {
   assert(await text('#myCardTitle') === 'Champion' && mine().title === 'title_champ', 'title on card');
   await page.click('[data-shop-kind="name_color"]'); await tile('name_mint').click(); await page.waitForTimeout(700);
   await tile('name_mint').click(); await page.waitForTimeout(500);
-  assert(await page.getAttribute('#accountName', 'data-name-color') === 'mint' && await text('#shopBalance') === '🪙 740', 'name color bought and used');
+  assert(await page.getAttribute('#accountName', 'data-name-color') === 'mint' && await text('#shopBalance') === '740', 'name color bought and used');
   await page.screenshot({ path: out + '-card.png', fullPage: true });
   // Bought icons appear when editing the card; saving keeps shop items
   await page.click('#editCardButton'); await page.waitForTimeout(200);
