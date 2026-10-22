@@ -15107,24 +15107,29 @@ window.addEventListener(
     handleEmailLink();
 
 
-    function reloadIfNewDay() {
+    function reloadIfNewDay(event) {
       if (new Date().toLocaleDateString("en-CA") !== TODAY) {
+        // Skip the other "came back" handlers (library sync) so no
+        // request is cut off by the reload.
+        event?.stopImmediatePropagation();
         location.reload();
       }
     }
 
     // Home Screen apps can stay open for days; "today" is fixed at load.
+    // Capture phase so this runs before the existing sync listeners.
     document.addEventListener(
       "visibilitychange",
-      () => {
+      event => {
         if (document.visibilityState === "visible") {
-          reloadIfNewDay();
+          reloadIfNewDay(event);
         }
-      }
+      },
+      { capture: true }
     );
 
-    window.addEventListener("focus", reloadIfNewDay);
-    window.addEventListener("pageshow", reloadIfNewDay);
+    window.addEventListener("focus", reloadIfNewDay, { capture: true });
+    window.addEventListener("pageshow", reloadIfNewDay, { capture: true });
 
 
     /*
