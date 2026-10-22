@@ -1,6 +1,7 @@
 const { extract } = require('../helpers/extract.js');
 eval(extract('const GAME_SIGNATURES', 'function libraryCard(') + '\nglobalThis.d = detectGameFromText; globalThis.SIG = GAME_SIGNATURES;');
 const samples = {
+  boxoffice: "boxofficega.me\nMarch 1, 2024\n✅ 120\n✅ 0\n❌ 0\n✅ 120\n✅ 160\n🏆 400",
   connections: "Connections\nPuzzle #1223\n🟦🟦🟦🟦\n🟨🟨🟨🟨\n🟪🟪🟪🟪\n🟩🟩🟩🟩",
   contexto: "I played contexto.me 10/20/2026 and got it in 115 guesses and 2 hints.\n\n🟩🟩 16",
   framed: "Framed #1685\n🎥 🟥 🟥 🟥 🟥 🟥 🟥\n\nhttps://framed.wtf",

@@ -46,7 +46,8 @@ insert into auth.users values ('aaaaaaaa-0000-0000-0000-000000000001'),('bbbbbbb
   ('cccccccc-0000-0000-0000-000000000003'),('dddddddd-0000-0000-0000-000000000004'),('eeeeeeee-0000-0000-0000-000000000005');
 insert into public.games (game_key, name, url, category, is_official) values
   ('wordle','Wordle','u','word',true),('connections','Connections','u','word',true),('krillion','Krillion','u','trivia',true),
-  ('framed','Framed','u','movies',true),('immaculate','Immaculate Grid','u','sports',true);
+  ('framed','Framed','u','movies',true),('immaculate','Immaculate Grid','u','sports',true),
+  ('boxoffice','Box Office Game','u','movies',true);
 insert into public.friendships (requester_id, addressee_id, status) values
   ('aaaaaaaa-0000-0000-0000-000000000001','bbbbbbbb-0000-0000-0000-000000000002','accepted');
 insert into public.daily_scores (user_id, game_id, play_date, numeric_score) values

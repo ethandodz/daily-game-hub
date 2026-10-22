@@ -1,6 +1,8 @@
 const { extract } = require('../helpers/extract.js');
 eval(extract('function readGuessFraction(', 'let scoreNumberEdited') + '\nglobalThis.readGameScore = readGameScore;');
 const cases = [
+  ['boxoffice', "boxofficega.me\nMarch 1, 2024\n✅ 120\n✅ 0\n❌ 0\n✅ 120\n✅ 160\n🏆 400", 400, 'points', false],
+  ['boxoffice', "boxofficega.me\nMarch 2, 2024\n❌ 0\n❌ 0\n✅ 80\n❌ 0\n❌ 0\n🏆 80", 80, 'points', false],
   ['connections', "Connections\n🟩🟩🟩🟩\n🟪🟪🟪🟪", null, null, null],
   ['connections', "Connections\nPuzzle #1223\n🟦🟦🟦🟦\n🟨🟨🟨🟨\n🟪🟪🟪🟪\n🟩🟩🟩🟩", 0, 'mistakes', false],
   ['connections', "Connections\nPuzzle #1223\n🟦🟨🟦🟦\n🟨🟨🟨🟨\n🟪🟦🟪🟪\n🟩🟩🟩🟩\n🟦🟦🟦🟦\n🟪🟪🟪🟪", 2, 'mistakes', false],

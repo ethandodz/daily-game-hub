@@ -21,12 +21,14 @@ t('WhenTaken: #WhenTaken #966 line kept (not only hashtags)', '#WhenTaken #966 (
 t('Score line with a value kept', 'Score: 120/490', 'Score: 120/490');
 t('link in the middle of a line', 'Great game! https://example.com/x today', 'Great game! today');
 t('Windows line endings and extra blank lines tidied', 'Wordle 1 3/6\r\n\r\n\r\n\r\n🟩🟩🟩🟩🟩\r\n', 'Wordle 1 3/6\n\n🟩🟩🟩🟩🟩');
+t('Box Office: web address line removed', 'boxofficega.me\nMarch 1, 2024\n✅ 120\n✅ 0\n❌ 0\n✅ 120\n✅ 160\n🏆 400', 'March 1, 2024\n✅ 120\n✅ 0\n❌ 0\n✅ 120\n✅ 160\n🏆 400');
 t('empty / missing', '', '');
 t('only a link', 'https://framed.wtf', '');
 // Editing a saved result shows the cleaned text, so the score and the
 // game must read the same from cleaned text as from the original.
 eval(extract('function readGuessFraction(', 'let scoreNumberEdited') + extract('const GAME_SIGNATURES', 'function libraryCard(') + '\nglobalThis.read = readGameScore; globalThis.detect = detectGameFromText;');
 const samples = {
+  boxoffice: "boxofficega.me\nMarch 1, 2024\n✅ 120\n✅ 0\n❌ 0\n✅ 120\n✅ 160\n🏆 400",
   connections: "Connections\nPuzzle #1223\n🟦🟦🟦🟦\n🟨🟨🟨🟨\n🟪🟪🟪🟪\n🟩🟩🟩🟩",
   contexto: "I played contexto.me 10/20/2026 and got it in 115 guesses and 2 hints.\n\n🟩🟩 16",
   framed: "Framed #1684\n🎥 🟥 🟥 🟥 🟩 ⬛ ⬛\n\nhttps://framed.wtf",

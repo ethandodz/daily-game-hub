@@ -7088,9 +7088,11 @@ function cleanResultText(text) {
     )
     .split("\n")
     .map(line => line.replace(/[ \t]+$/, ""))
-    // lines that are only hashtags (#globle) or an emptied label ("Play at:")
+    // lines that are only hashtags (#globle), only a web address
+    // (boxofficega.me) or an emptied label ("Play at:")
     .filter(line =>
       !/^\s*(#[\w-]+\s*)+$/.test(line) &&
+      !/^\s*[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}\/?\s*$/i.test(line) &&
       !/^\s*[A-Za-z][A-Za-z ]{0,24}:\s*$/.test(line)
     )
     .join("\n")
@@ -7254,7 +7256,10 @@ const SCORE_READERS = {
     readNumber(text, /Final score:\s*(\d+)/i, "points"),
 
   whentaken: text =>
-    readNumber(text, /I scored\s+(\d+)\s*\/\s*1000/i, "points")
+    readNumber(text, /I scored\s+(\d+)\s*\/\s*1000/i, "points"),
+
+  boxoffice: text =>
+    readNumber(text, /🏆\s*(\d+)/, "points")
 };
 
 
@@ -7461,7 +7466,9 @@ const GAME_SIGNATURES = {
   krillion: /\bKrillion\b/i,
   magnitudle: /Size It Up|magnitudle/i,
   maptap: /maptap/i,
-  whentaken: /#?WhenTaken\b/i
+  whentaken: /#?WhenTaken\b/i,
+  // Also its shape, so a copy without the web address is still recognised.
+  boxoffice: /boxofficega\.me|Box Office Game|^[✅❌] ?\d+\s*$[\s\S]*^🏆 ?\d+\s*$/im
 };
 
 

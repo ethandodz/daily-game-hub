@@ -96,3 +96,4 @@ select public.check('scores untouched by server delete', (select count(*) from d
 select public.check('anon cannot call create_server', not has_function_privilege('anon', 'public.create_server(text, text[], date)', 'execute'));
 select public.check('anon cannot call join_server', not has_function_privilege('anon', 'public.join_server(text)', 'execute'));
 select public.check('authenticated cannot call new_invite_code directly', not has_function_privilege('authenticated', 'public.new_invite_code()', 'execute'));
+select public.check('Box Office Game: higher score wins', (select score_direction from games where game_key = 'boxoffice') = 'higher');
