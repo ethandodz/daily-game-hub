@@ -15,6 +15,12 @@
 
   <title>Daily Game Hub</title>
 
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Game Hub">
+
   <style>
     * {
       box-sizing: border-box;
@@ -2262,6 +2268,35 @@
       color: var(--text);
     }
 
+    /* Logo, and room for the iPhone status bar */
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+    }
+
+    .signed-out-home-icon img {
+      display: block;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto;
+      border-radius: 14px;
+    }
+
+    /* On a Home Screen app the page can sit under the clock/battery
+       bar, which blurs it; start the content below that bar. */
+    .container {
+      padding-top: calc(22px + env(safe-area-inset-top));
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2314,7 +2349,16 @@
 
     <header>
       <div>
-        <h1 class="logo">◆ Daily Game Hub</h1>
+        <h1 class="logo">
+          <img
+            class="logo-icon"
+            src="icons/icon.svg"
+            alt=""
+            width="30"
+            height="30"
+          >
+          Daily Game Hub
+        </h1>
         <p class="date" id="currentDate"></p>
       </div>
 
@@ -2479,7 +2523,12 @@
   id="signedOutHome"
 >
   <div class="signed-out-home-icon">
-    ◆
+    <img
+      src="icons/icon.svg"
+      alt=""
+      width="56"
+      height="56"
+    >
   </div>
 
   <h2>
