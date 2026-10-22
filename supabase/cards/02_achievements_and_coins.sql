@@ -1,10 +1,11 @@
 -- Player cards, step 2: achievements (badges), showcase badges and coins.
--- Also updates two game icons. Safe to run again.
+-- Also updates three game icons. Safe to run again.
 -- Run after 01_player_cards.sql.
 
 -- Game icons
 update public.games set icon = '🦐' where game_key = 'krillion';
 update public.games set icon = '💯' where game_key = 'guesslist';
+update public.games set icon = '💩' where game_key = 'poople';
 
 
 -- Up to 3 badges shown on your card (achievement ids).
