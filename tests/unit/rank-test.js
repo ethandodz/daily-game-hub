@@ -1,0 +1,23 @@
+const { extract } = require('../helpers/extract.js');
+eval(extract('function rankGameResults(', 'let serverBoardDay') + '\nglobalThis.rankGameResults = rankGameResults;');
+let bad = 0;
+const t = (label, results, dir, expect) => {
+  const r = rankGameResults(results, dir);
+  const got = r.ranked.map(x => x.result.u + x.rank + (x.winner ? '*' : '')).join(' ') + ' | ' + r.unranked.map(x => x.u).join(' ');
+  const ok = got === expect; if (!ok) bad++;
+  console.log((ok ? 'PASS ' : 'FAIL ') + label.padEnd(36) + got + (ok ? '' : '   expected: ' + expect));
+};
+const R = (u, n, completed = true) => ({ u, numeric_score: n, completed });
+t('lower wins', [R('a', 5), R('b', 3), R('c', 4)], 'lower', 'b1* c2 a3 | ');
+t('higher wins', [R('a', 290), R('b', 385), R('c', 330)], 'higher', 'b1* c2 a3 | ');
+t('tie for first shares crown', [R('a', 3), R('b', 3), R('c', 5)], 'lower', 'a1* b1* c3 | ');
+t('tie in middle', [R('a', 2), R('b', 4), R('c', 4), R('d', 6)], 'lower', 'a1* b2 c2 d4 | ');
+t('fail ranks last, never wins', [R('a', 7, false), R('b', 6)], 'lower', 'b1* a2 | ');
+t('everyone failed: no crown', [R('a', 7, false), R('b', 7, false)], 'lower', 'a1 b1 | ');
+t('connections 4 mistakes fail vs 3', [R('a', 4, false), R('b', 3)], 'lower', 'b1* a2 | ');
+t('missing number listed after', [R('a', null), R('b', 4)], 'lower', 'b1* | a');
+t('numbers from database as strings', [R('a', '10'), R('b', '9')], 'lower', 'b1* a2 | ');
+t('no winner game: list only', [R('a', 3), R('b', 2)], 'none', ' | a b');
+t('nobody played', [], 'lower', ' | ');
+console.log(bad ? bad + ' FAILED' : 'ALL PASS');
+if (bad) process.exitCode = 1;

@@ -1,0 +1,21 @@
+const m = require('../helpers/mock.js');
+const assert = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) process.exitCode = 1; };
+m.server.listen(0, async () => {
+  const browser = await m.chromium.launch();
+  const { page, errors } = await m.setup(browser, { ...m.devices['iPhone 13'] });
+  let served = null;
+  await page.route('**/version.json*', route => served ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ version: served }) }) : route.continue());
+  await page.clock.install();
+  await page.goto(`http://localhost:${m.server.address().port}/`); await page.waitForTimeout(1200);
+  await page.clock.fastForward('00:06'); await page.waitForTimeout(500);
+  assert(!(await page.isVisible('#updateBar')), 'same version: no bar');
+  served = '2099.01.01.1';
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); await page.waitForTimeout(500);
+  assert(await page.isVisible('#updateBar'), 'newer version on the site: bar appears when the app comes back');
+  await page.screenshot({ path: process.argv[3] + '-bar.png' });
+  let loads = 0; page.on('load', () => loads++);
+  await page.click('#updateRefreshButton'); await page.waitForTimeout(1500);
+  assert(loads === 1, 'Refresh reloads the app');
+  assert(errors.length === 0, 'no console errors ' + errors.join('|'));
+  await browser.close(); m.server.close();
+});
