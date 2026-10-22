@@ -61,7 +61,7 @@ select public.check('card: can save own card', (select icon from player_cards wh
 select public.expect_error('card: cannot save a card for someone else', format('insert into public.player_cards (user_id) values (%L)', :'B'), 'row-level security');
 update public.player_cards set bio = 'new bio' where user_id = :'A';
 select public.check('card: can edit own card', (select bio from player_cards where user_id = :'A') = 'new bio');
-select public.expect_error('card: only allowed icons', format('update public.player_cards set icon = %L where user_id = %L', '👑', :'A'), 'player_cards_icon_check');
+select public.expect_error('card: only allowed icons', format('update public.player_cards set icon = %L where user_id = %L', '👑', :'A'), 'own that icon');
 select public.expect_error('card: only allowed colors', format('update public.player_cards set color = %L where user_id = %L', 'gold', :'A'), 'player_cards_color_check');
 select public.expect_error('card: bio up to 60 characters', format('update public.player_cards set bio = %L where user_id = %L', repeat('x', 61), :'A'), 'player_cards_bio_check');
 
@@ -134,4 +134,32 @@ select public.expect_error('showcase: no more than 3', format('update public.pla
 reset role;
 set role anon;
 select public.expect_error('coins: signed-out visitors cannot get coins', format('select public.player_coins(%L, current_date)', :'A'), 'permission denied');
+reset role;
+
+-- Shop. A has 776 coins at this point (see above).
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.expect_error('shop: can''t use a shop icon before buying', format('update public.player_cards set icon = %L where user_id = %L', '👑', :'A'), 'own that icon');
+select public.buy_item('icon_crown', current_date) as bought \gset
+select public.check('shop: buying returns the new balance', (:'bought'::json->>'balance')::int = 476, :'bought');
+select public.check('shop: balance goes down', (public.player_coins(:'A', current_date)->>'balance')::int = 476);
+select public.check('shop: purchase in coin history', (public.player_coins(:'A', current_date)->'history')::text like '%Bought Crown%-300%');
+update public.player_cards set icon = '👑' where user_id = :'A';
+select public.check('shop: bought icon can be used', (select icon from player_cards where user_id = :'A') = '👑');
+select public.expect_error('shop: can''t buy twice', 'select public.buy_item(''icon_crown'', current_date)', 'already own');
+select public.expect_error('shop: not enough coins', 'select public.buy_item(''frame_rainbow'', current_date)', 'Not enough coins');
+select public.expect_error('shop: badge items can''t be bought', 'select public.buy_item(''frame_crown'', current_date)', 'Unlock it with a badge');
+select public.expect_error('shop: unknown item', 'select public.buy_item(''nope'', current_date)', 'not in the shop');
+update public.player_cards set frame = 'frame_crown', title = 'title_champ' where user_id = :'A';
+select public.check('shop: badge items unlocked by a month win can be used', (select frame || ',' || title from player_cards where user_id = :'A') = 'frame_crown,title_champ');
+select public.expect_error('shop: locked badge items can''t be used', format('update public.player_cards set frame = %L where user_id = %L', 'frame_fire', :'A'), 'own that frame');
+select public.expect_error('shop: unbought name colors can''t be used', format('update public.player_cards set name_color = %L where user_id = %L', 'name_gold', :'A'), 'own that name color');
+select public.expect_error('shop: an item of the wrong kind can''t be used', format('update public.player_cards set frame = %L where user_id = %L', 'icon_crown', :'A'), 'own that frame');
+select public.expect_error('shop: purchases can''t be added directly', format('insert into public.purchases (user_id, item_id, price) values (%L, %L, 1)', :'A', 'frame_gold'), 'permission denied');
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.check('shop: can''t see other players'' purchases', (select count(*) from purchases) = 0);
+select public.check('shop: others see the equipped items', (select frame from player_cards where user_id = :'A') = 'frame_crown');
+reset role;
+set role anon;
+select public.expect_error('shop: signed-out visitors can''t buy', 'select public.buy_item(''icon_gem'', current_date)', 'permission denied');
 reset role;

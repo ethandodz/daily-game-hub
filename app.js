@@ -3154,6 +3154,8 @@ document
       myCardStats = null;
       myAchievements = null;
       myCoins = null;
+      shopItems = null;
+      myPurchases = new Set();
       playerCards.clear();
 
       document.getElementById("settingsModal").classList.remove("open");
@@ -11865,8 +11867,16 @@ const tabScrollPositions =
 const CARD_COLORS =
   ["purple", "teal", "orange", "pink", "slate", "red"];
 
-const DEFAULT_CARD =
-  { icon: "", color: "purple", bio: "", favorite_game: null, showcase: [] };
+const DEFAULT_CARD = {
+  icon: "",
+  color: "purple",
+  bio: "",
+  favorite_game: null,
+  showcase: [],
+  frame: null,
+  name_color: null,
+  title: null
+};
 
 const playerCards =
   new Map();
@@ -11901,10 +11911,11 @@ async function loadPlayerCards(userIds) {
       );
 
   try {
-    // showcase arrives with the achievements database file;
-    // until it has been run, load cards without it.
+    // showcase and the shop columns arrive with later database
+    // files; until those have been run, load cards without them.
     const rows =
-      await fetchCards("user_id,icon,color,bio,favorite_game,showcase")
+      await fetchCards("user_id,icon,color,bio,favorite_game,showcase,frame,name_color,title")
+        .catch(() => fetchCards("user_id,icon,color,bio,favorite_game,showcase"))
         .catch(() => fetchCards("user_id,icon,color,bio,favorite_game"));
 
     for (const userId of missing) {
@@ -11975,6 +11986,14 @@ function playerAvatar(userId, size) {
     card.icon ||
     (profile?.username || "?").charAt(0).toUpperCase();
 
+  const frame =
+    shopValue(card.frame, "frame");
+
+  if (frame) {
+    avatar.dataset.frame =
+      frame;
+  }
+
   return avatar;
 }
 
@@ -11984,6 +12003,14 @@ function playerAvatar(userId, size) {
  * without opening or closing the row it sits in.
  */
 function makePlayerLink(element, userId) {
+  const nameColor =
+    shopValue(cardFor(userId).name_color, "name_color");
+
+  if (nameColor) {
+    element.dataset.nameColor =
+      nameColor;
+  }
+
   element.classList.add("player-link");
   element.setAttribute("role", "button");
   element.tabIndex = 0;
@@ -12585,6 +12612,437 @@ document
   .addEventListener("click", openCoins);
 
 
+/*
+ * Shop: icons, card frames, name colors and titles. Items cost
+ * coins or are unlocked by a badge tier. Buying and the rules for
+ * what a card may use are enforced by the database.
+ */
+let shopItems =
+  null;
+
+let myPurchases =
+  new Set();
+
+let shopKind =
+  "icon";
+
+
+async function loadShop() {
+  try {
+    const [items, purchases] =
+      await Promise.all([
+        request(
+          "/rest/v1/shop_items?select=*&order=sort_order.asc",
+          {
+            headers: authHeaders()
+          }
+        ),
+        request(
+          "/rest/v1/purchases?select=item_id",
+          {
+            headers: authHeaders()
+          }
+        )
+      ]);
+
+    shopItems =
+      Array.isArray(items) && items.length
+        ? new Map(items.map(item => [item.id, item]))
+        : null;
+
+    myPurchases =
+      new Set((purchases || []).map(row => row.item_id));
+  } catch (error) {
+    console.error(
+      "Shop failed to load:",
+      error
+    );
+
+    shopItems = null;
+  }
+}
+
+
+// The style key of an equipped item, if it is of the right kind.
+function shopValue(itemId, kind) {
+  const item =
+    itemId && shopItems?.get(itemId);
+
+  return item && item.kind === kind ? item.value : null;
+}
+
+
+function ownsItem(item) {
+  if (myPurchases.has(item.id)) {
+    return true;
+  }
+
+  if (!item.unlock_id) {
+    return false;
+  }
+
+  const family =
+    (myAchievements || []).find(entry => entry.id === item.unlock_id);
+
+  return Boolean(family && family.unlocked >= item.unlock_tier);
+}
+
+
+function unlockText(item) {
+  const family =
+    (myAchievements || []).find(entry => entry.id === item.unlock_id);
+
+  if (!family) {
+    return "Badge";
+  }
+
+  return family.name +
+    (family.tiers.length > 1 ? " " + TIER_NAMES[item.unlock_tier - 1] : "");
+}
+
+
+const CARD_ITEM_FIELDS = {
+  frame: "frame",
+  name_color: "name_color",
+  title: "title"
+};
+
+
+function itemInUse(item, card) {
+  return item.kind === "icon"
+    ? card.icon === item.value
+    : card[CARD_ITEM_FIELDS[item.kind]] === item.id;
+}
+
+
+function shopPreview(item, card) {
+  if (item.kind === "icon") {
+    const avatar =
+      document.createElement("span");
+
+    avatar.className =
+      "avatar";
+
+    avatar.dataset.color =
+      CARD_COLORS.includes(card.color) ? card.color : "purple";
+
+    avatar.textContent =
+      item.value;
+
+    return avatar;
+  }
+
+  if (item.kind === "frame") {
+    const avatar =
+      playerAvatar(session.user.id);
+
+    avatar.dataset.frame =
+      item.value;
+
+    return avatar;
+  }
+
+  const text =
+    document.createElement("span");
+
+  if (item.kind === "name_color") {
+    text.className =
+      "shop-name";
+
+    text.dataset.nameColor =
+      item.value;
+
+    text.textContent =
+      myProfile ? "@" + myProfile.username : "@you";
+  } else {
+    text.className =
+      "card-title";
+
+    text.textContent =
+      item.value;
+  }
+
+  return text;
+}
+
+
+function renderShop() {
+  const section =
+    document.getElementById("shopSection");
+
+  if (!shopItems || !myCoins || !session) {
+    section.classList.add("hidden");
+    return;
+  }
+
+  section.classList.remove("hidden");
+
+  document.getElementById("shopBalance").textContent =
+    coinsText(myCoins);
+
+  document
+    .querySelectorAll("[data-shop-kind]")
+    .forEach(button => {
+      const active =
+        button.dataset.shopKind === shopKind;
+
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+
+  const card =
+    cardFor(session.user.id);
+
+  const grid =
+    document.getElementById("shopGrid");
+
+  grid.innerHTML = "";
+
+  for (const item of shopItems.values()) {
+    if (item.kind !== shopKind) {
+      continue;
+    }
+
+    const owned =
+      ownsItem(item);
+
+    const inUse =
+      owned && itemInUse(item, card);
+
+    const tile =
+      document.createElement("div");
+
+    tile.className =
+      "shop-item" + (inUse ? " in-use" : "");
+
+    tile.dataset.item =
+      item.id;
+
+    const name =
+      document.createElement("b");
+
+    name.textContent =
+      item.name;
+
+    const action =
+      document.createElement("button");
+
+    action.type =
+      "button";
+
+    action.className =
+      "shop-action";
+
+    if (inUse) {
+      action.textContent =
+        "In use";
+
+      action.dataset.action =
+        item.kind === "icon" ? "" : "remove";
+
+      action.disabled =
+        item.kind === "icon";
+    } else if (owned) {
+      action.textContent =
+        "Use";
+
+      action.dataset.action =
+        "use";
+    } else if (item.price) {
+      action.textContent =
+        "🪙 " + item.price.toLocaleString("en-US");
+
+      action.dataset.action =
+        "buy";
+
+      action.classList.toggle(
+        "too-expensive",
+        Number(myCoins.balance) < item.price
+      );
+    } else {
+      action.textContent =
+        "🔒 " + unlockText(item);
+
+      action.disabled = true;
+    }
+
+    tile.append(shopPreview(item, card), name, action);
+    grid.appendChild(tile);
+  }
+}
+
+
+async function buyItem(item) {
+  const status =
+    document.getElementById("shopStatus");
+
+  if (Number(myCoins?.balance) < item.price) {
+    setStatus(
+      status,
+      "You need " + (item.price - Number(myCoins.balance)).toLocaleString("en-US") +
+      " more coins for " + item.name + ".",
+      "error"
+    );
+    return;
+  }
+
+  if (!confirm("Buy " + item.name + " for " + item.price + " coins?")) {
+    return;
+  }
+
+  try {
+    await request(
+      "/rest/v1/rpc/buy_item",
+      {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          p_item_id: item.id,
+          p_today: TODAY
+        })
+      }
+    );
+
+    myPurchases.add(item.id);
+
+    const coins =
+      await loadCoins(session.user.id);
+
+    if (coins) {
+      myCoins = coins;
+    }
+
+    renderMyCard();
+
+    setStatus(
+      status,
+      "You bought " + item.name + "! Tap Use to put it on your card.",
+      "success"
+    );
+  } catch (error) {
+    setStatus(
+      status,
+      error.message || "That didn't work. Try again in a moment.",
+      "error"
+    );
+  }
+}
+
+
+async function useItem(item, remove) {
+  const status =
+    document.getElementById("shopStatus");
+
+  const fields =
+    item.kind === "icon"
+      ? { icon: item.value }
+      : { [CARD_ITEM_FIELDS[item.kind]]: remove ? null : item.id };
+
+  try {
+    await saveCardFields(fields);
+    setStatus(status, "");
+  } catch (error) {
+    setStatus(
+      status,
+      "Your card could not be saved. Try again in a moment.",
+      "error"
+    );
+  }
+}
+
+
+document
+  .getElementById("shopKinds")
+  .addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target.closest("[data-shop-kind]");
+
+      if (button) {
+        shopKind = button.dataset.shopKind;
+        setStatus(document.getElementById("shopStatus"), "");
+        renderShop();
+      }
+    }
+  );
+
+document
+  .getElementById("shopGrid")
+  .addEventListener(
+    "click",
+    event => {
+      const button =
+        event.target.closest("[data-action]");
+
+      const item =
+        button && shopItems?.get(button.closest("[data-item]").dataset.item);
+
+      if (!item || !button.dataset.action) {
+        return;
+      }
+
+      if (button.dataset.action === "buy") {
+        buyItem(item);
+      } else {
+        useItem(item, button.dataset.action === "remove");
+      }
+    }
+  );
+
+
+/*
+ * Save the card with some fields changed. Badge and shop columns are
+ * only sent once their database files have been run.
+ */
+async function saveCardFields(fields) {
+  const card =
+    cardFor(session.user.id);
+
+  const row = {
+    user_id: session.user.id,
+    icon: card.icon || "🦊",
+    color: CARD_COLORS.includes(card.color) ? card.color : "purple",
+    bio: card.bio || "",
+    favorite_game: card.favorite_game || null,
+    ...fields,
+    updated_at: new Date().toISOString()
+  };
+
+  if (myAchievements) {
+    row.showcase =
+      fields.showcase || card.showcase || [];
+  } else {
+    delete row.showcase;
+  }
+
+  if (shopItems) {
+    for (const column of Object.values(CARD_ITEM_FIELDS)) {
+      row[column] =
+        column in fields ? fields[column] : card[column] || null;
+    }
+  }
+
+  await request(
+    "/rest/v1/player_cards?on_conflict=user_id",
+    {
+      method: "POST",
+      headers: authHeaders("resolution=merge-duplicates,return=minimal"),
+      body: JSON.stringify(row)
+    }
+  );
+
+  playerCards.set(session.user.id, { showcase: [], ...row });
+  renderMyCard();
+
+  if (selectedServerId) {
+    renderServerMembers(selectedServerMembers, selectedServerProfiles);
+    loadServerBoard();
+    renderServerStats();
+  }
+}
+
+
 function renderMyCard() {
   if (!session) {
     return;
@@ -12647,7 +13105,28 @@ function renderMyCard() {
     shown > 0 || !(myAchievements || []).some(family => family.unlocked)
   );
 
+  const nameColor =
+    shopValue(card.name_color, "name_color");
+
+  const accountName =
+    document.getElementById("accountName");
+
+  if (nameColor) {
+    accountName.dataset.nameColor = nameColor;
+  } else {
+    delete accountName.dataset.nameColor;
+  }
+
+  const title =
+    document.getElementById("myCardTitle");
+
+  title.textContent =
+    shopValue(card.title, "title") || "";
+
+  title.classList.toggle("hidden", !title.textContent);
+
   renderAchievements();
+  renderShop();
 }
 
 
@@ -12666,7 +13145,8 @@ async function loadMyCard() {
       loadCardStats(userId),
       loadAchievements(userId),
       loadCoins(userId),
-      loadPlayerCards([userId])
+      loadPlayerCards([userId]),
+      shopItems ? Promise.resolve() : loadShop()
     ]);
 
   if (session?.user.id !== userId) {
@@ -12712,6 +13192,23 @@ async function openPlayerCard(userId) {
 
   name.textContent =
     playerDisplayName(userId);
+
+  const nameColor =
+    shopValue(card.name_color, "name_color");
+
+  if (nameColor) {
+    name.dataset.nameColor =
+      nameColor;
+  }
+
+  const title =
+    document.createElement("span");
+
+  title.className =
+    "card-title";
+
+  title.textContent =
+    shopValue(card.title, "title") || "";
 
   const bio =
     document.createElement("p");
@@ -12761,6 +13258,7 @@ async function openPlayerCard(userId) {
     banner,
     playerAvatar(userId, "xl"),
     name,
+    title,
     coins,
     bio,
     meta,
@@ -12770,6 +13268,7 @@ async function openPlayerCard(userId) {
   );
 
   bio.classList.toggle("hidden", !card.bio);
+  title.classList.toggle("hidden", !title.textContent);
 
   document.getElementById("playerCardModal").classList.add("open");
 
@@ -12886,6 +13385,36 @@ function openEditCard() {
   document.getElementById("cardBioInput").value =
     card.bio || "";
 
+  const iconChoices =
+    document.getElementById("iconChoices");
+
+  iconChoices
+    .querySelectorAll(".shop-icon")
+    .forEach(button => button.remove());
+
+  for (const item of shopItems ? shopItems.values() : []) {
+    if (item.kind === "icon" && ownsItem(item)) {
+      const button =
+        document.createElement("button");
+
+      button.type =
+        "button";
+
+      button.className =
+        "icon-choice shop-icon";
+
+      button.dataset.icon =
+        item.value;
+
+      button.setAttribute("aria-label", "Icon " + item.name);
+
+      button.textContent =
+        item.value;
+
+      iconChoices.appendChild(button);
+    }
+  }
+
   fillFavoriteGameChoices(card.favorite_game);
   setStatus(document.getElementById("cardStatus"), "");
   showEditingChoices();
@@ -12911,42 +13440,17 @@ async function saveCard() {
   const button =
     document.getElementById("saveCardButton");
 
-  const row = {
-    user_id: session.user.id,
-    icon: editingCard.icon,
-    color: editingCard.color,
-    bio: document.getElementById("cardBioInput").value.trim().slice(0, 60),
-    favorite_game: document.getElementById("cardFavoriteInput").value || null,
-    updated_at: new Date().toISOString()
-  };
-
-  // Only once the achievements database file has been run.
-  if (myAchievements) {
-    row.showcase =
-      editingCard.showcase;
-  }
-
   button.disabled = true;
   setStatus(status, "Saving...");
 
   try {
-    await request(
-      "/rest/v1/player_cards?on_conflict=user_id",
-      {
-        method: "POST",
-        headers: authHeaders("resolution=merge-duplicates,return=minimal"),
-        body: JSON.stringify(row)
-      }
-    );
-
-    playerCards.set(session.user.id, { showcase: [], ...row });
-    renderMyCard();
-
-    if (selectedServerId) {
-      renderServerMembers(selectedServerMembers, selectedServerProfiles);
-      loadServerBoard();
-      renderServerStats();
-    }
+    await saveCardFields({
+      icon: editingCard.icon,
+      color: editingCard.color,
+      bio: document.getElementById("cardBioInput").value.trim().slice(0, 60),
+      favorite_game: document.getElementById("cardFavoriteInput").value || null,
+      showcase: editingCard.showcase
+    });
 
     document.getElementById("editCardModal").classList.remove("open");
   } catch (error) {

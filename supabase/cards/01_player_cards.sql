@@ -11,17 +11,23 @@ create table if not exists public.player_cards (
   updated_at timestamptz not null default now()
 );
 
--- Free icons and colors. Unlockable ones get added here later.
-alter table public.player_cards
-  drop constraint if exists player_cards_icon_check;
+-- Free icons and colors. Once the shop (03_shop.sql) is installed,
+-- icons are checked by its trigger instead, so this check is skipped.
+do $$
+begin
+  if to_regclass('public.shop_items') is null then
+    alter table public.player_cards
+      drop constraint if exists player_cards_icon_check;
 
-alter table public.player_cards
-  add constraint player_cards_icon_check
-  check (icon in (
-    '🦊', '🐸', '🦖', '🐙', '🦉', '🐼', '🐯', '🐨',
-    '🐧', '🦈', '🐝', '🦋', '🎯', '🧩', '🎬', '🌍',
-    '🦐', '⚾', '🏈', '🏀', '🎲', '🧠', '🎮', '🍕'
-  ));
+    alter table public.player_cards
+      add constraint player_cards_icon_check
+      check (icon in (
+        '🦊', '🐸', '🦖', '🐙', '🦉', '🐼', '🐯', '🐨',
+        '🐧', '🦈', '🐝', '🦋', '🎯', '🧩', '🎬', '🌍',
+        '🦐', '⚾', '🏈', '🏀', '🎲', '🧠', '🎮', '🍕'
+      ));
+  end if;
+end $$;
 
 alter table public.player_cards
   drop constraint if exists player_cards_color_check;
