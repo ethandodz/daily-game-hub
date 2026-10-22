@@ -169,4 +169,10 @@ async function setup(browser, opts, signedIn=true) {
   if (signedIn) await ctx.addInitScript(([me]) => { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded','1'); localStorage.setItem('dailyGameHubSession', JSON.stringify({access_token:'x',refresh_token:'y',user:{id:me,email:'test@example.com'}})); } }, [ME]);
   return { ctx, page, errors };
 }
-module.exports = { day, today, serverState, requests, setup, server, devices, chromium, tables, ME };
+// Games show as app icons; tap one to pop its card open (closing any other first).
+async function openCard(page, id) {
+  await page.evaluate(() => closePoppedCard(true));
+  await page.click(`.game-card[data-id="${id}"]`);
+  await page.waitForFunction(id => { const c = document.querySelector(`.game-card[data-id="${id}"]`); return c && c.classList.contains('popped') && !c.getAnimations().length; }, id);
+}
+module.exports = { openCard, day, today, serverState, requests, setup, server, devices, chromium, tables, ME };

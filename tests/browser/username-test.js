@@ -22,7 +22,7 @@ m.server.listen(0, async () => {
   // saving a result now works
   await page.evaluate(() => document.querySelectorAll('.modal.open').forEach(x => x.classList.remove('open')));
   await page.click('[data-filter="all"]');
-  await page.click('.game-card[data-id="krillion"] .result-button'); await page.fill('#resultText', 'Krillion #97 🦐\n290'); await page.click('#saveScoreButton'); await page.waitForTimeout(500);
+  await m.openCard(page, 'krillion'); await page.click('.game-card[data-id="krillion"] .result-button'); await page.fill('#resultText', 'Krillion #97 🦐\n290'); await page.click('#saveScoreButton'); await page.waitForTimeout(500);
   assert(await page.textContent('#scoreStatus') === 'Result saved.', 'can save a result afterwards');
   // Account tab button still works
   await page.evaluate(() => document.querySelectorAll('.modal.open').forEach(x => x.classList.remove('open')));

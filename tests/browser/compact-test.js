@@ -1,6 +1,8 @@
-const { setup, server, devices, chromium } = require('../helpers/mock.js');
+// Games tab: a Home Screen of app icons; tap one to pop its card open.
+const { setup, server, devices, chromium, openCard } = require('../helpers/mock.js');
 const out = process.argv[3];
 const assert = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) process.exitCode = 1; };
+const GREEN = 'rgb(16, 185, 129)';
 server.listen(0, async () => {
   const url = `http://localhost:${server.address().port}/`;
   const browser = await chromium.launch();
@@ -10,19 +12,32 @@ server.listen(0, async () => {
     await page.click('[data-filter="all"]'); await page.waitForTimeout(300);
     await page.screenshot({ path: `${out}-${scheme}-grid.png` });
     if (scheme === 'light') {
-      const boxes = await page.$$eval('.game-card', c => c.filter(x => x.style.display !== 'none').slice(0, 4).map(x => { const r = x.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
-      assert(boxes[0][1] === boxes[1][1] && boxes[2][1] > boxes[0][1], '2 cards per row: ' + JSON.stringify(boxes));
-      assert(boxes.every(b => b[3] - b[2] <= 8 && b[3] >= b[2]), 'cards are square or slightly taller: ' + JSON.stringify(boxes));
-      assert(await page.isVisible('.game-card[data-id="connections"] .play-button') && await page.isVisible('.game-card[data-id="connections"] .result-button'), 'Play and Result visible on compact card');
-      assert(!(await page.isVisible('.game-card[data-id="wordle"] .friend-results')), 'details hidden on compact card');
-      // quick result from compact card
+      const boxes = await page.$$eval('.game-card', c => c.filter(x => x.style.display !== 'none').slice(0, 5).map(x => { const r = x.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
+      assert(boxes.slice(0, 4).every(b => b[1] === boxes[0][1]) && boxes[4][1] > boxes[0][1], '4 icons per row: ' + JSON.stringify(boxes));
+      assert(!(await page.isVisible('.game-card[data-id="connections"] .play-button')) && await page.isVisible('.game-card[data-id="connections"] h3'), 'grid shows only icon and name');
+      const ring = id => page.$eval(`.game-card[data-id="${id}"] .game-icon`, i => getComputedStyle(i).boxShadow);
+      assert((await ring('wordle')).includes(GREEN), 'green ring on a game played today');
+      assert(!(await ring('connections')).includes(GREEN) && !(await ring('connections')).includes('148, 163, 184'), 'no ring on a game not played: ' + await ring('connections'));
+      // tap an icon: its card pops forward
+      const before = await page.$eval('.game-card[data-id="framed"]', x => x.getBoundingClientRect().top);
+      await openCard(page, 'connections');
+      const pop = await page.$eval('.game-card[data-id="connections"]', x => { const r = x.getBoundingClientRect(); return { popped: x.classList.contains('popped'), centered: Math.abs(r.left - (innerWidth - r.width) / 2) <= 1, blurred: document.body.classList.contains('card-popped'), ghost: !!document.querySelector('.game-card-ghost') }; });
+      assert(pop.popped && pop.centered && pop.blurred && pop.ghost, 'tapping an icon pops its card to the middle ' + JSON.stringify(pop));
+      assert(await page.$eval('.game-card[data-id="framed"]', x => x.getBoundingClientRect().top) === before, 'other icons stay where they are');
+      assert(await page.isVisible('.game-card[data-id="connections"] .play-button') && await page.isVisible('.game-card[data-id="connections"] .result-button'), 'Play and Result on the popped card');
+      await page.screenshot({ path: `${out}-popped.png` });
       await page.click('.game-card[data-id="connections"] .result-button'); await page.waitForTimeout(200);
-      assert(await page.evaluate(() => document.getElementById('scoreModal').classList.contains('open')), 'Result opens from compact card');
-      await page.locator('[data-close="scoreModal"]').first().click();
-      // expand
+      assert(await page.evaluate(() => document.getElementById('scoreModal').classList.contains('open')), 'Result opens from the popped card');
+      await page.locator('[data-close="scoreModal"]').first().click(); await page.waitForTimeout(150);
+      assert(await page.evaluate(() => document.querySelector('.game-card[data-id="connections"]').classList.contains('popped')), 'card stays open after closing the result window');
+      // tap outside: back to the grid
+      await page.mouse.click(20, 780); await page.waitForFunction(() => !document.querySelector('.popped'));
+      assert(await page.evaluate(() => !document.querySelector('.popped') && !document.body.classList.contains('card-popped') && !document.querySelector('.game-card-ghost')), 'tapping outside closes it');
+      // expand from the popped card
+      await openCard(page, 'wordle');
       await page.click('.game-card[data-id="wordle"] .expand-button'); await page.waitForTimeout(300);
-      const r = await page.$eval('.game-card[data-id="wordle"]', x => { const b = x.getBoundingClientRect(); return [b.width, b.height, innerWidth, innerHeight]; });
-      assert(r[0] === r[2] && r[1] === r[3], 'expanded card fills the screen');
+      const r = await page.$eval('.game-card[data-id="wordle"]', x => { const b = x.getBoundingClientRect(); return [b.width, b.height, innerWidth, innerHeight, x.classList.contains('popped')]; });
+      assert(r[0] === r[2] && r[1] === r[3] && !r[4], 'expand fills the screen');
       assert(await page.isVisible('.game-card[data-id="wordle"] .friend-results') && await page.isVisible('.game-card[data-id="wordle"] .history-button') && await page.isVisible('.game-card[data-id="wordle"] .description'), 'expanded shows description, history, friends');
       await page.screenshot({ path: `${out}-expanded.png` });
       await page.click('.game-card[data-id="wordle"] .history-button'); await page.waitForTimeout(400);
@@ -30,13 +45,19 @@ server.listen(0, async () => {
       assert(top, 'History pop-up appears above expanded card');
       await page.click('[data-close="historyModal"]');
       await page.click('.game-card[data-id="wordle"] .expand-button'); await page.waitForTimeout(200);
-      assert(!(await page.evaluate(() => document.body.classList.contains('card-open') || !!document.querySelector('.expanded'))), 'close button returns to grid');
-      await page.click('.game-card[data-id="framed"] .expand-button'); await page.keyboard.press('Escape'); await page.waitForTimeout(100);
-      assert(!(await page.evaluate(() => !!document.querySelector('.expanded'))), 'Escape closes expanded card');
-      // played toggle still in compact
+      assert(!(await page.evaluate(() => document.body.classList.contains('card-open') || document.body.classList.contains('card-popped') || !!document.querySelector('.expanded, .popped'))), 'closing returns to the grid');
+      // Escape closes a popped card
+      await page.click('.game-card[data-id="framed"]'); await page.waitForTimeout(350); await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+      assert(!(await page.evaluate(() => !!document.querySelector('.popped'))), 'Escape closes the popped card');
+      // played toggle and favorite from the popped card
+      await openCard(page, 'framed');
       await page.click('.game-card[data-id="framed"] .complete-button'); await page.waitForTimeout(300);
-      assert(await page.evaluate(() => document.querySelector('.game-card[data-id="framed"]').classList.contains('completed')), '✓ marks played from compact card');
-      await page.click('.game-card[data-id="framed"] .favorite-button'); await page.waitForTimeout(200);
+      assert(await page.evaluate(() => document.querySelector('.game-card[data-id="framed"]').classList.contains('completed')), '✓ marks played from the popped card');
+      await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+      assert((await ring('framed')).includes(GREEN), 'ring appears once played');
+      // switching tabs closes it
+      await openCard(page, 'connections'); await page.click('[data-tab-button="activity"]'); await page.click('[data-tab-button="games"]'); await page.waitForTimeout(200);
+      assert(!(await page.evaluate(() => !!document.querySelector('.popped') || document.body.classList.contains('card-popped'))), 'switching tabs closes it');
       await page.screenshot({ path: `${out}-light-grid2.png` });
     }
     assert(errors.length === 0, `${scheme}: no console errors ${errors.join(' | ')}`);
@@ -46,6 +67,8 @@ server.listen(0, async () => {
   await page.goto(url); await page.waitForTimeout(2000);
   await page.click('[data-filter="all"]'); await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}-desktop.png` });
+  await openCard(page, 'wordle');
+  await page.screenshot({ path: `${out}-desktop-popped.png` });
   await page.click('.game-card[data-id="wordle"] .expand-button'); await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}-desktop-expanded.png` });
   assert(errors.length === 0, 'desktop: no console errors');
