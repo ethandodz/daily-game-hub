@@ -2333,6 +2333,13 @@
       display: none !important;
     }
 
+    .paste-result-button {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 12px;
+      font-size: 15px;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2487,6 +2494,14 @@
         ></span>
       </div>
     </section>
+
+    <button
+      class="button secondary paste-result-button"
+      id="pasteResultButton"
+      type="button"
+    >
+      📋 Paste a result
+    </button>
 
     <div class="search-wrap">
       <!-- Not a login field: keep browsers and password managers from filling it -->
@@ -3788,6 +3803,71 @@
 
   </div>
 </div>
+
+  <div
+    class="modal"
+    id="pasteModal"
+  >
+    <div class="modal-card">
+      <div class="modal-top">
+        <h2>
+          Paste a Result
+        </h2>
+
+        <button
+          class="close-button"
+          data-close="pasteModal"
+          type="button"
+          aria-label="Close paste window"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="form">
+        <div class="field full">
+          <label for="pasteText">
+            Your result
+          </label>
+
+          <textarea
+            id="pasteText"
+            rows="6"
+            maxlength="2000"
+            placeholder="Paste the share text from the game here..."
+          ></textarea>
+        </div>
+
+        <div
+          class="field full hidden"
+          id="pasteGameField"
+        >
+          <label for="pasteGameSelect">
+            Which game is it?
+          </label>
+
+          <select id="pasteGameSelect"></select>
+        </div>
+
+        <div class="field full">
+          <button
+            class="button"
+            id="pasteContinueButton"
+            type="button"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="pasteStatus"
+        aria-live="polite"
+      ></p>
+    </div>
+  </div>
+
 
   <div
     class="modal modal-top-layer"
@@ -11647,6 +11727,178 @@ window.addEventListener(
         return running;
       };
     })(loadTodayScores);
+
+
+    /*
+     * "Paste a result": read the clipboard, work out which game the
+     * share text is from, and open that game's Enter Result window
+     * filled in, so saving is one tap.
+     */
+    const GAME_SIGNATURES = {
+      wordle: /^\s*Wordle\s+[\d,.]+\s+[1-6X]\/6/im,
+      worldle: /#Worldle\b/i,
+      weddle: /\bWeddle\b/i,
+      poeltl: /\bPoeltl\s+#\d+/i,
+      poople: /\bPoople\s+#\d+/i,
+      globle: /globle|🌎[^\n]*🌍/i,
+      contexto: /contexto/i,
+      framed: /\bFramed\s+#\d+|framed\.wtf/i,
+      connections: /^\s*Connections\b[\s\S]*Puzzle\s+#\d+/im,
+      strands: /\bStrands\s+#\d+/i,
+      minutecryptic: /Minute Cryptic|minutecryptic/i,
+      guesslist: /\bGuessList\b/i,
+      krillion: /\bKrillion\b/i,
+      magnitudle: /Size It Up|magnitudle/i,
+      maptap: /maptap/i,
+      whentaken: /#?WhenTaken\b/i
+    };
+
+
+    function detectGameFromText(text) {
+      return Object.keys(GAME_SIGNATURES).find(gameId =>
+        GAME_SIGNATURES[gameId].test(text || "")
+      ) || null;
+    }
+
+
+    function libraryCard(gameId) {
+      const card =
+        document.querySelector('.game-card[data-id="' + gameId + '"]');
+
+      return card && card.dataset.userVisible !== "false" ? card : null;
+    }
+
+
+    function openResultForGame(gameId, text) {
+      const card =
+        libraryCard(gameId);
+
+      if (!card) {
+        return false;
+      }
+
+      document.getElementById("pasteModal").classList.remove("open");
+      openScoreModalForGame(card);
+
+      if (!session || needsUsername) {
+        return true;
+      }
+
+      // The pasted text replaces whatever was in the window.
+      document.getElementById("resultText").value = text.trim();
+      document.getElementById("numericScore").value = "";
+      document.getElementById("scoreUnit").value = "";
+      showDetectedScore(true);
+
+      setStatus(
+        scoreStatus,
+        "Pasted as " + card.dataset.name + ". Check it, then Save Result."
+      );
+
+      return true;
+    }
+
+
+    function openPasteWindow(text, message) {
+      document.getElementById("pasteText").value = text || "";
+      document.getElementById("pasteGameField").classList.add("hidden");
+      setStatus(pasteStatus, message || "");
+      document.getElementById("pasteModal").classList.add("open");
+    }
+
+
+    function handlePastedText(text) {
+      const trimmed =
+        String(text || "").trim();
+
+      if (!trimmed) {
+        openPasteWindow("", "Your clipboard is empty. Copy the share text from the game, or paste it here.");
+        return;
+      }
+
+      const gameId =
+        detectGameFromText(trimmed);
+
+      if (gameId && openResultForGame(gameId, trimmed)) {
+        return;
+      }
+
+      openPasteWindow(
+        trimmed,
+        gameId
+          ? "This looks like " + getCatalogGame(gameId).name +
+            ", which isn’t in your games. Add it in Manage Games, or pick a game below."
+          : "Couldn’t tell which game this is. Pick it below."
+      );
+
+      const select =
+        document.getElementById("pasteGameSelect");
+
+      select.innerHTML = "";
+
+      cards()
+        .filter(card => card.dataset.userVisible !== "false")
+        .forEach(card => {
+          const option = document.createElement("option");
+          option.value = card.dataset.id;
+          option.textContent = card.dataset.name;
+          select.appendChild(option);
+        });
+
+      document.getElementById("pasteGameField").classList.remove("hidden");
+    }
+
+
+    async function pasteResult() {
+      if (!session) {
+        document.getElementById("accountModal").classList.add("open");
+        setStatus(authStatus, "Log in to save results.", "error");
+        return;
+      }
+
+      let text = null;
+
+      try {
+        text = await navigator.clipboard.readText();
+      } catch (error) {
+        text = null;
+      }
+
+      if (text === null) {
+        openPasteWindow("", "Paste your result here.");
+        document.getElementById("pasteText").focus();
+        return;
+      }
+
+      handlePastedText(text);
+    }
+
+
+    document
+      .getElementById("pasteResultButton")
+      .addEventListener("click", pasteResult);
+
+    document
+      .getElementById("pasteContinueButton")
+      .addEventListener(
+        "click",
+        () => {
+          const text =
+            document.getElementById("pasteText").value;
+
+          const pickedGame =
+            document.getElementById("pasteGameField").classList.contains("hidden")
+              ? null
+              : document.getElementById("pasteGameSelect").value;
+
+          if (pickedGame && text.trim()) {
+            openResultForGame(pickedGame, text);
+            return;
+          }
+
+          handlePastedText(text);
+        }
+      );
 
 
     /*
