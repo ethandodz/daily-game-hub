@@ -2235,6 +2235,33 @@
       background: transparent;
     }
 
+    .stats-average-top {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stats-average-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      margin: 8px 0 0 2px;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .stats-average-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .stats-average-item strong {
+      color: var(--text);
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -2635,6 +2662,18 @@
           <div
             class="stats-list"
             id="statsLeaderboard"
+          ></div>
+
+          <h4
+            class="stats-subtitle hidden"
+            id="statsAveragesTitle"
+          >
+            Average score by game
+          </h4>
+
+          <div
+            class="stats-list"
+            id="statsAverages"
           ></div>
 
           <h4
@@ -14258,6 +14297,11 @@ window.addEventListener(
         leaderboardList.appendChild(row);
       });
 
+      renderGameAverages(
+        singleGame ? [] : games,
+        stats.rows
+      );
+
       // Head-to-head (you against each member)
       const headToHeadTitle =
         document.getElementById("statsHeadToHeadTitle");
@@ -14321,6 +14365,152 @@ window.addEventListener(
 
       chartWrap.classList.remove("hidden");
       renderStatsChart(stats, singleGame, fromDate, yesterday);
+    }
+
+
+    /*
+     * All-games view: each game's average per member, best first.
+     * Averages can't be combined across games (guesses vs points),
+     * so they are listed per game. Failed games count at their
+     * fail score, as in the single-game view.
+     */
+    function renderGameAverages(games, rows) {
+      const list =
+        document.getElementById("statsAverages");
+
+      list.innerHTML = "";
+
+      const lines =
+        games
+          .map(game => {
+            const totals =
+              new Map();
+
+            rows
+              .filter(row =>
+                row.game_id === game.game_key &&
+                row.numeric_score !== null &&
+                row.numeric_score !== undefined
+              )
+              .forEach(row => {
+                const total =
+                  totals.get(row.user_id) || { sum: 0, count: 0 };
+
+                total.sum += Number(row.numeric_score);
+                total.count += 1;
+                totals.set(row.user_id, total);
+              });
+
+            const averages =
+              [...totals.entries()]
+                .map(([userId, total]) => ({
+                  userId,
+                  average: total.sum / total.count,
+                  count: total.count
+                }))
+                .sort((a, b) =>
+                  game.direction === "higher"
+                    ? b.average - a.average
+                    : a.average - b.average
+                );
+
+            return { game, averages };
+          })
+          .filter(line => line.averages.length);
+
+      document
+        .getElementById("statsAveragesTitle")
+        .classList
+        .toggle("hidden", lines.length === 0);
+
+      for (const { game, averages } of lines) {
+        const row =
+          document.createElement("div");
+
+        row.className =
+          "stats-row";
+
+        const top =
+          document.createElement("div");
+
+        top.className =
+          "stats-average-top";
+
+        const name =
+          document.createElement("span");
+
+        name.className =
+          "board-name";
+
+        name.textContent =
+          getCatalogGame(game.game_key).name;
+
+        const rule =
+          document.createElement("span");
+
+        rule.className =
+          "activity-sub";
+
+        rule.textContent =
+          (selectedServerUnit(game.game_key) || "score") +
+          (game.direction === "none" ? "" : " · " + describeDirection(game.direction));
+
+        top.append(
+          createGameBadge(game.game_key),
+          name,
+          rule
+        );
+
+        const values =
+          document.createElement("div");
+
+        values.className =
+          "stats-average-values";
+
+        const best =
+          averages[0].average;
+
+        averages.forEach((entry, index) => {
+          const item =
+            document.createElement("span");
+
+          item.className =
+            "stats-average-item";
+
+          const key =
+            document.createElement("span");
+
+          key.className =
+            "series-key";
+
+          key.style.background =
+            memberColor(entry.userId);
+
+          const label =
+            document.createElement("span");
+
+          label.textContent =
+            (game.direction !== "none" && entry.average === best ? "👑 " : "") +
+            shortMemberName(entry.userId) + " ";
+
+          const value =
+            document.createElement("strong");
+
+          value.textContent =
+            formatStatNumber(entry.average);
+
+          item.append(key, label, value);
+
+          if (index < averages.length - 1) {
+            item.append(" ");
+          }
+
+          values.appendChild(item);
+        });
+
+        row.append(top, values);
+        list.appendChild(row);
+      }
     }
 
 
