@@ -22,9 +22,9 @@ server.listen(0, async () => {
     await browser.close(); server.close(); return;
   }
   // Coins
-  assert(await text('#myCoinsButton') === '🪙 1,240', 'coins on card: ' + await text('#myCoinsButton'));
+  assert(await text('#myCoinsButton') === '1,240', 'coins on card: ' + await text('#myCoinsButton'));
   await page.click('#myCoinsButton'); await page.waitForTimeout(200);
-  assert(await text('#coinsTitle') === '🪙 1,240', 'coins window title');
+  assert(await text('#coinsTitle') === '1,240', 'coins window title');
   const coinRows = await page.$$eval('#coinHistory .coin-row', r => r.map(x => [...x.children].map(c => c.textContent).join(' ')));
   assert(coinRows.length === 3 && coinRows[0] === 'Badge Badge: Winner Silver +50' && coinRows[1].endsWith('Won Wordle +15'), 'coin history: ' + coinRows.join(' | '));
   await page.screenshot({ path: out + '-coins.png' });
@@ -61,7 +61,7 @@ server.listen(0, async () => {
   await page.locator('#serverMembers .player-link', { hasText: '@ethan' }).click(); await page.waitForTimeout(600);
   const theirs = await page.$$eval('#playerCardBody .badge-tile', t => t.map(x => x.textContent.replace(/\s+/g, ' ').trim()));
   assert(theirs.join(' | ') === '💎KrillionaireSilver | 🔥On FireSilver', 'their badges (locked picks hidden): ' + theirs.join(' | '));
-  assert(await text('#playerCardBody .coins-pill') === '🪙 980', 'their coins');
+  assert(await text('#playerCardBody .coins-pill') === '980', 'their coins');
   await page.screenshot({ path: out + '-player.png' });
   assert(errors.length === 0, 'no console errors ' + errors.join('|'));
   await browser.close(); server.close();

@@ -12244,8 +12244,30 @@ async function loadCoins(userId) {
 }
 
 
-function coinsText(coins) {
-  return "🪙 " + Number(coins.balance || 0).toLocaleString("en-US");
+// The app's own tiles coin (icons/coin.svg) followed by an amount.
+function coinIcon() {
+  const icon =
+    document.createElement("span");
+
+  icon.className =
+    "coin-icon";
+
+  icon.setAttribute("aria-hidden", "true");
+
+  return icon;
+}
+
+
+function showCoins(element, amount) {
+  element.replaceChildren(
+    coinIcon(),
+    Number(amount || 0).toLocaleString("en-US")
+  );
+
+  element.setAttribute(
+    "aria-label",
+    Number(amount || 0).toLocaleString("en-US") + " coins"
+  );
 }
 
 
@@ -12475,8 +12497,7 @@ function openCoins() {
     return;
   }
 
-  document.getElementById("coinsTitle").textContent =
-    coinsText(myCoins);
+  showCoins(document.getElementById("coinsTitle"), myCoins.balance);
 
   const list =
     document.getElementById("coinHistory");
@@ -12777,8 +12798,7 @@ function renderShop() {
 
   section.classList.remove("hidden");
 
-  document.getElementById("shopBalance").textContent =
-    coinsText(myCoins);
+  showCoins(document.getElementById("shopBalance"), myCoins.balance);
 
   document
     .querySelectorAll("[data-shop-kind]")
@@ -12849,8 +12869,7 @@ function renderShop() {
       action.dataset.action =
         "use";
     } else if (item.price) {
-      action.textContent =
-        "🪙 " + item.price.toLocaleString("en-US");
+      showCoins(action, item.price);
 
       action.dataset.action =
         "buy";
@@ -13089,8 +13108,7 @@ function renderMyCard() {
   coinsButton.classList.toggle("hidden", !myCoins);
 
   if (myCoins) {
-    coinsButton.textContent =
-      coinsText(myCoins);
+    showCoins(coinsButton, myCoins.balance);
   }
 
   const shown =
@@ -13284,8 +13302,7 @@ async function openPlayerCard(userId) {
   }
 
   if (coinTotal) {
-    coins.textContent =
-      coinsText(coinTotal);
+    showCoins(coins, coinTotal.balance);
 
     coins.classList.remove("hidden");
   }

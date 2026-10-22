@@ -3334,3 +3334,12 @@ body:not(.signed-out) .footer {
   padding: 7px 11px;
   font-size: 0.85rem;
 }
+
+.coin-icon {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 0.3em;
+  vertical-align: -0.2em;
+  background: url("icons/coin.svg") center / contain no-repeat;
+}
