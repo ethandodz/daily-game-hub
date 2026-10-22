@@ -7136,6 +7136,11 @@ function readNumber(text, pattern, unit) {
 }
 
 
+// Perceptle was added as a custom game, so it keeps that key.
+const PERCEPTLE_KEY =
+  "custom-d624eb38-1792591388191-perceptle";
+
+
 const SCORE_READERS = {
   wordle: text =>
     readGuessFraction(text, /Wordle\s+[\d,.]+\s+([1-6X])\/6/i, 6),
@@ -7259,7 +7264,28 @@ const SCORE_READERS = {
     readNumber(text, /I scored\s+(\d+)\s*\/\s*1000/i, "points"),
 
   boxoffice: text =>
-    readNumber(text, /🏆\s*(\d+)/, "points")
+    readNumber(text, /🏆\s*(\d+)/, "points"),
+
+  duotrigordle: text => {
+    const match =
+      text.match(/Guesses:\s*(\d+|X)\s*\/\s*37\b/i);
+
+    if (!match) {
+      return null;
+    }
+
+    // Unsolved boards show as 🟥🟥.
+    return match[1].toUpperCase() === "X" || text.includes("🟥")
+      ? { score: 38, unit: "guesses", failed: true }
+      : { score: Number(match[1]), unit: "guesses", failed: false };
+  },
+
+  // Rarity already counts each missed square as 100, so lower always wins.
+  immaculate: text =>
+    readNumber(text, /Rarity:\s*(\d+)/i, "rarity"),
+
+  [PERCEPTLE_KEY]: text =>
+    readNumber(text, /Perceptle\s+#\d+[^\n]*?\((\d+)\)/i, "points")
 };
 
 
@@ -7358,7 +7384,7 @@ const SCORE_BACKFILL_KEY =
   "dailyGameHubScoreBackfill";
 
 const SCORE_READERS_VERSION =
-  "1";
+  "2";
 
 
 /*
@@ -7468,7 +7494,10 @@ const GAME_SIGNATURES = {
   maptap: /maptap/i,
   whentaken: /#?WhenTaken\b/i,
   // Also its shape, so a copy without the web address is still recognised.
-  boxoffice: /boxofficega\.me|Box Office Game|^[✅❌] ?\d+\s*$[\s\S]*^🏆 ?\d+\s*$/im
+  boxoffice: /boxofficega\.me|Box Office Game|^[✅❌] ?\d+\s*$[\s\S]*^🏆 ?\d+\s*$/im,
+  duotrigordle: /Duotrigordle/i,
+  immaculate: /Immaculate Grid/i,
+  [PERCEPTLE_KEY]: /Perceptle/i
 };
 
 

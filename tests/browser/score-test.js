@@ -43,11 +43,11 @@ server.listen(0, async () => {
   assert(await page.inputValue('#numericScore') === '400', 'typed number is not overwritten');
   await page.fill('#resultText', 'great game today');
   assert((await page.textContent('#scoreDetected')).startsWith('Couldn’t read'), 'unreadable text shows a hint');
-  // game without a reader: no message
+  // Immaculate Grid is read by its rarity
   await page.locator('[data-close="scoreModal"]').first().click().catch(() => {});
   await page.click('.game-card[data-id="immaculate"] .result-button'); await page.waitForTimeout(200);
-  await page.fill('#resultText', 'Immaculate Grid 7/9');
-  assert(await page.textContent('#scoreDetected') === '', 'games without a reader show nothing');
+  await page.fill('#resultText', '🏈 Immaculate Grid 1191 6/9:\nRarity: 430\n🟩🟩⬜️');
+  assert((await page.textContent('#scoreDetected')).startsWith('Read as: 430 rarity'), 'Immaculate Grid reads rarity: ' + await page.textContent('#scoreDetected'));
   assert(errors.length === 0, 'no console errors ' + errors.join(' | '));
   await browser.close(); server.close();
 });

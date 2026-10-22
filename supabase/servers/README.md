@@ -10,7 +10,7 @@ Each file is safe to run again if something is interrupted.
 | 3 | `03_server_security.sql` | Membership helper functions and policies: members see their servers; owners rename/delete, manage games and remove members; anyone can leave except the owner. Only the server name can be edited directly. |
 | 4 | `04_server_functions.sql` | `create_server(name, game_keys, start_date)`, `join_server(invite_code)`, `reset_invite_code(server_id)`. |
 | 5 | `05_server_score_visibility.sql` | Adds a `daily_scores` read policy so members see each other's results for that server's games, from the server's start date on. Existing policies are unchanged. |
-| 6 | `06_more_game_directions.sql` | Sets Box Office Game to higher-wins. Ends with a check query listing every game. |
+| 6 | `06_more_game_directions.sql` | Sets winners for Box Office Game and Perceptle (higher wins) and Duotrigordle and Immaculate Grid (lower wins). Ends with a check query listing every game. |
 
 Rules this implements:
 
