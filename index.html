@@ -2325,6 +2325,14 @@
       transform: translateY(-50%);
     }
 
+    .modal-top-layer {
+      z-index: 40;
+    }
+
+    body.signed-out #usernameModal {
+      display: none !important;
+    }
+
     @media (min-width: 900px) {
       .container {
         padding-bottom: 60px;
@@ -3780,6 +3788,63 @@
 
   </div>
 </div>
+
+  <div
+    class="modal modal-top-layer"
+    id="usernameModal"
+  >
+    <div class="modal-card">
+      <h2>
+        Choose your username
+      </h2>
+
+      <p class="status">
+        Friends and servers see you by this name, and you need one to save
+        results. 3–24 lowercase letters, numbers or underscores.
+      </p>
+
+      <div class="form">
+        <div class="field full">
+          <label for="welcomeUsernameInput">
+            Username
+          </label>
+
+          <input
+            id="welcomeUsernameInput"
+            type="text"
+            maxlength="24"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="lowercase_letters"
+          >
+
+          <button
+            class="button"
+            id="welcomeUsernameSaveButton"
+            type="button"
+          >
+            Save Username
+          </button>
+        </div>
+      </div>
+
+      <p
+        class="status"
+        id="welcomeUsernameStatus"
+        aria-live="polite"
+      ></p>
+
+      <button
+        class="link-button"
+        id="welcomeSignOutButton"
+        type="button"
+      >
+        Not you? Sign out
+      </button>
+    </div>
+  </div>
+
 
   <div
     class="modal"
@@ -7419,16 +7484,15 @@ async function loadProfile() {
     }
 
 
-    document
-      .getElementById(
-        "saveProfileButton"
-      )
-      .addEventListener(
-        "click",
-        async () => {
+    /*
+     * Save the player's username (this creates their profile).
+     * Used by the Account tab and the "Choose your username" window.
+     * Resolves true when saved.
+     */
+    async function saveUsername(rawUsername, statusElement) {
           if (!session) {
             setStatus(
-              profileStatus,
+              statusElement,
               "Log in before saving a username.",
               "error"
             );
@@ -7437,11 +7501,7 @@ async function loadProfile() {
           }
 
           const username =
-            document
-              .getElementById(
-                "usernameInput"
-              )
-              .value
+            String(rawUsername || "")
               .trim()
               .toLowerCase();
 
@@ -7451,7 +7511,7 @@ async function loadProfile() {
 
           if (!usernameIsValid) {
             setStatus(
-              profileStatus,
+              statusElement,
               "Use 3–24 lowercase letters, numbers, or underscores.",
               "error"
             );
@@ -7461,7 +7521,7 @@ async function loadProfile() {
 
           try {
             setStatus(
-              profileStatus,
+              statusElement,
               "Saving username..."
             );
 
@@ -7488,13 +7548,15 @@ async function loadProfile() {
             );
 
             setStatus(
-              profileStatus,
+              statusElement,
               "Username saved.",
               "success"
             );
 
             await loadProfile();
             await loadFriends();
+
+            return true;
  } catch (error) {
             const errorMessage =
               String(
@@ -7513,7 +7575,7 @@ async function loadProfile() {
               )
             ) {
               setStatus(
-                profileStatus,
+                statusElement,
                 "That username is already taken.",
                 "error"
               );
@@ -7523,13 +7585,13 @@ async function loadProfile() {
               )
             ) {
               setStatus(
-                profileStatus,
+                statusElement,
                 "Username must be 3–24 characters using only lowercase letters, numbers, or underscores.",
                 "error"
               );
             } else {
               setStatus(
-                profileStatus,
+                statusElement,
                 errorMessage ||
                   "Could not save username.",
                 "error"
@@ -7537,6 +7599,22 @@ async function loadProfile() {
             }
           }
 
+
+          return false;
+    }
+
+
+    document
+      .getElementById(
+        "saveProfileButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+          saveUsername(
+            document.getElementById("usernameInput").value,
+            profileStatus
+          );
         }
       );
 
@@ -15424,6 +15502,39 @@ window.addEventListener(
       .addEventListener("click", sendPasswordReset);
 
     document
+      .getElementById("welcomeUsernameSaveButton")
+      .addEventListener(
+        "click",
+        () => {
+          saveUsername(
+            document.getElementById("welcomeUsernameInput").value,
+            welcomeUsernameStatus
+          );
+        }
+      );
+
+    document
+      .getElementById("welcomeUsernameInput")
+      .addEventListener(
+        "keydown",
+        event => {
+          if (event.key === "Enter") {
+            document.getElementById("welcomeUsernameSaveButton").click();
+          }
+        }
+      );
+
+    document
+      .getElementById("welcomeSignOutButton")
+      .addEventListener(
+        "click",
+        () => {
+          document.getElementById("usernameModal").classList.remove("open");
+          document.getElementById("signOutButton").click();
+        }
+      );
+
+    document
       .getElementById("saveNewPasswordButton")
       .addEventListener("click", saveNewPassword);
 
@@ -15469,6 +15580,11 @@ window.addEventListener(
     function setAccountAttention(needed) {
       needsUsername =
         needed;
+
+      document
+        .getElementById("usernameModal")
+        .classList
+        .toggle("open", Boolean(needed && session));
 
       document
         .querySelector('[data-tab-button="account"]')
