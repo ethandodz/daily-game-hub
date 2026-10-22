@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.22.1">
+  <meta name="app-version" content="2026.10.22.2">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.22.1">
+  <link rel="stylesheet" href="styles.css?v=2026.10.22.2">
 </head>
 
 <body>
@@ -698,8 +698,8 @@
         class="section"
         id="activitySection"
       >
-        <h2>
-          📈 Activity
+        <h2 class="hidden-label">
+          Activity
         </h2>
 
         <div class="activity-stats">
@@ -722,31 +722,12 @@
           </div>
         </div>
 
-        <h3>
-          🔥 Streaks
-        </h3>
 
-        <div
-          class="activity-list"
-          id="activityStreaks"
-        ></div>
 
-        <h3>
-          📅 Days Played
-        </h3>
-
-        <div
-          class="calendar"
-          id="activityCalendar"
-          role="img"
-          aria-label="Games played per day, last 12 weeks"
-        ></div>
-
-        <div class="calendar-foot">
-          <span
-            class="activity-sub"
-            id="activityCalendarNote"
-          >Tap a day to see how many games you played.</span>
+        <div class="calendar-head">
+          <h3>
+            📅 Days Played
+          </h3>
 
           <span class="calendar-legend">
             Less
@@ -759,23 +740,57 @@
           </span>
         </div>
 
-        <h3>
-          📊 Your Averages
-        </h3>
-
         <div
-          class="activity-list"
-          id="activityAverages"
+          class="calendar"
+          id="activityCalendar"
+          role="img"
+          aria-label="Games played per day, last 16 weeks"
         ></div>
 
-        <h3>
-          🗓️ Recent Results
-        </h3>
+        <p
+          class="activity-sub calendar-note"
+          id="activityCalendarNote"
+        >Tap a day to see how many games you played.</p>
 
-        <div
-          class="activity-list"
-          id="activityRecent"
-        ></div>
+        <div class="activity-games-head">
+          <h3>
+            🎮 Your Games
+          </h3>
+
+          <span
+            class="activity-sub"
+            id="activityGamesNote"
+          ></span>
+        </div>
+
+        <table
+          class="activity-games hidden"
+          id="activityGames"
+        >
+          <thead>
+            <tr>
+              <th scope="col">Game</th>
+              <th scope="col" title="Current streak">🔥</th>
+              <th scope="col">Avg</th>
+              <th scope="col">Best</th>
+              <th scope="col">Played</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <p
+          class="status hidden"
+          id="activityGamesEmpty"
+        >
+          Save a result to start your game stats.
+        </p>
+
+        <button
+          class="button secondary full-width hidden"
+          id="activityGamesToggle"
+          type="button"
+        ></button>
 
         <p
           class="status"
@@ -2062,7 +2077,7 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.22.1"></script>
+  <script src="app.js?v=2026.10.22.2"></script>
 </body>
 </html>
 

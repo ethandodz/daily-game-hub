@@ -15,19 +15,20 @@ m.server.listen(0, async () => {
     await page.click('[data-tab-button="activity"]'); await page.waitForTimeout(1200);
     if (scheme === 'dark') {
       const cells = await page.$$eval('#activityCalendar .calendar-cell', c => c.map(x => x.className));
-      assert(cells.length === 84, '12 weeks of days (' + cells.length + ')');
+      assert(cells.length === 112, '16 weeks of days (' + cells.length + ')');
       assert(cells.filter(c => c.includes('today')).length === 1 && cells.find(c => c.includes('today')).includes('level-2'), 'today outlined, 4 games = level 2');
       assert(cells.some(c => c.includes('future')) || new Date().getDay() === 0, 'rest of this week left blank');
       await page.waitForTimeout(800);
       await page.$eval('#activityCalendar .calendar-cell.today', c => c.click());
       assert((await page.textContent('#activityCalendarNote')).endsWith(': 4 games'), 'tap a day shows its count: ' + await page.textContent('#activityCalendarNote'));
-      const rows = await page.$$eval('#activityAverages .activity-row', r => r.map(x => [...x.children].map(c => c.textContent.trim()).join(' | ')));
-      assert(rows[0].includes('Wordle') && rows[0].includes('best 2 · 4 played · lower wins') && rows[0].endsWith('avg 4 guesses'), 'wordle: avg includes fail as 7, best 2: ' + rows[0]);
-      assert(rows.some(r => r.includes('Krillion') && r.includes('best 420') && r.endsWith('avg 360 points')), 'krillion higher-wins best: ' + rows.join(' / '));
-      assert(!rows.some(r => r.includes('Framed')), 'results without numbers are left out');
+      const rows = await page.$$eval('#activityGames tbody tr', r => r.map(x => [...x.children].map(c => c.textContent)));
+      const row = n => rows.find(r => r[0] === n) || [];
+      assert(row('Wordle').join('|') === 'Wordle|4|4|2|4', 'wordle: streak 4, avg 4 (fail counts as 7), best 2, played 4: ' + row('Wordle').join('|'));
+      assert(row('Krillion').join('|') === 'Krillion|2|360|420|2', 'krillion: higher wins, best 420: ' + row('Krillion').join('|'));
+      assert(row('Framed').join('|') === 'Framed|1|–|–|1', 'a result without a number: played counts, no average: ' + row('Framed').join('|'));
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'no sideways scrolling');
-      assert(await page.evaluate(() => [...document.querySelectorAll('#activitySection .activity-row, #activityCalendar')].every(e => e.getBoundingClientRect().right <= document.getElementById('activitySection').getBoundingClientRect().right + 0.5)), 'everything fits inside the Activity card');
-      assert(await page.evaluate(() => [...document.querySelectorAll('#activityAverages .activity-row')].every(r => { const a = r.querySelector('.activity-sub').getBoundingClientRect(), b = r.querySelector('.activity-average').getBoundingClientRect(); return a.right <= b.left + 0.5; })), 'average text never overlaps the details');
+      assert(await page.evaluate(() => [...document.querySelectorAll('#activityGames, #activityCalendar')].every(e => e.getBoundingClientRect().right <= document.getElementById('activitySection').getBoundingClientRect().right + 0.5)), 'everything fits inside the Activity card');
+
     }
     const a = await page.locator('#activityCalendar').boundingBox();
     await page.screenshot({ path: process.argv[3] + '-' + scheme + '.png', fullPage: true, clip: { x: 0, y: a.y - 60 + await page.evaluate(() => scrollY), width: 390, height: 520 } });

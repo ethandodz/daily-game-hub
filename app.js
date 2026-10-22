@@ -7859,7 +7859,7 @@ function formatDays(count) {
 
 
 /*
- * Activity: last 12 weeks as a calendar (columns are weeks,
+ * Activity: last 16 weeks as a calendar (columns are weeks,
  * Monday at the top), shaded by how many games were played.
  */
 function renderActivityCalendar(scores) {
@@ -7874,7 +7874,7 @@ function renderActivityCalendar(scores) {
   });
 
   const weeks =
-    12;
+    16;
 
   const firstDay =
     addDays(periodStartDate("week", TODAY), -7 * (weeks - 1));
@@ -7936,111 +7936,203 @@ function renderActivityCalendar(scores) {
 
 
 /*
- * Activity: all-time average, personal best and games played for
- * each game with numbered results. Failed games count at their
- * fail score, as in server stats.
+ * All of the player's results, oldest first. Supabase returns at most
+ * 1000 rows per request, so this reads page by page.
  */
-function renderActivityAverages(scores) {
-  const list =
-    document.getElementById("activityAverages");
+async function loadMyScoreHistory() {
+  const rows =
+    [];
+
+  const pageSize =
+    1000;
+
+  for (let offset = 0; ; offset += pageSize) {
+    const page =
+      await request(
+        "/rest/v1/daily_scores" +
+        "?user_id=eq." + encodeURIComponent(session.user.id) +
+        "&select=id,game_id,play_date,numeric_score,score_unit,completed" +
+        "&order=play_date.asc,id.asc" +
+        "&limit=" + pageSize +
+        "&offset=" + offset,
+        {
+          headers: authHeaders()
+        }
+      ) || [];
+
+    rows.push(...page);
+
+    if (page.length < pageSize) {
+      return rows;
+    }
+  }
+}
+
+
+const ACTIVITY_SHOW_ALL_KEY =
+  "dailyGameHubActivityShowAll";
+
+const ACTIVITY_TOP_COUNT =
+  5;
+
+let activityShowAll =
+  false;
+
+try {
+  activityShowAll =
+    localStorage.getItem(ACTIVITY_SHOW_ALL_KEY) === "true";
+} catch (error) {}
+
+
+/*
+ * Activity: one row per game (most played first) with the current
+ * streak, average, personal best and games played. Top 5 by default;
+ * the rest behind "Show all". Fails count at their fail score in the
+ * average; best ignores fails. Tap a row for that game's history.
+ */
+function renderActivityGames(scores, datesByGame) {
+  const table =
+    document.getElementById("activityGames");
+
+  const toggle =
+    document.getElementById("activityGamesToggle");
 
   const byGame =
     new Map();
 
-  scores
-    .filter(score =>
-      score.numeric_score !== null &&
-      score.numeric_score !== undefined
-    )
-    .forEach(score => {
-      if (!byGame.has(score.game_id)) {
-        byGame.set(score.game_id, []);
-      }
+  scores.forEach(score => {
+    if (!byGame.has(score.game_id)) {
+      byGame.set(score.game_id, []);
+    }
 
-      byGame.get(score.game_id).push(score);
-    });
+    byGame.get(score.game_id).push(score);
+  });
 
-  list.innerHTML = "";
+  const games =
+    [...byGame.entries()]
+      .map(([gameId, results]) => {
+        const direction =
+          gameDirections.get(gameId) || "none";
 
-  if (byGame.size === 0) {
-    list.innerHTML =
-      '<p class="status">Averages appear once your results have scores.</p>';
+        const numbered =
+          results.filter(result =>
+            result.numeric_score !== null &&
+            result.numeric_score !== undefined
+          );
+
+        const solved =
+          numbered
+            .filter(result => result.completed !== false)
+            .map(result => Number(result.numeric_score));
+
+        return {
+          gameId,
+          played: results.length,
+          streak: calculateStreak(datesByGame.get(gameId) || []),
+          average:
+            numbered.length
+              ? numbered.reduce((sum, result) => sum + Number(result.numeric_score), 0) / numbered.length
+              : null,
+          best:
+            !solved.length || direction === "none"
+              ? null
+              : direction === "lower"
+                ? Math.min(...solved)
+                : Math.max(...solved)
+        };
+      })
+      .sort((a, b) =>
+        b.played - a.played ||
+        getCatalogGame(a.gameId).name.localeCompare(getCatalogGame(b.gameId).name)
+      );
+
+  document.getElementById("activityGamesNote").textContent =
+    games.length > ACTIVITY_TOP_COUNT && !activityShowAll
+      ? "top " + ACTIVITY_TOP_COUNT + " by played"
+      : games.length
+        ? "by played · tap a game for history"
+        : "";
+
+  const body =
+    table.querySelector("tbody");
+
+  body.innerHTML = "";
+
+  if (!games.length) {
+    table.classList.add("hidden");
+    toggle.classList.add("hidden");
+    document.getElementById("activityGamesEmpty").classList.remove("hidden");
     return;
   }
 
-  [...byGame.entries()]
-    .sort((a, b) => b[1].length - a[1].length)
-    .forEach(([gameId, results]) => {
-      const direction =
-        gameDirections.get(gameId) || "none";
+  table.classList.remove("hidden");
+  document.getElementById("activityGamesEmpty").classList.add("hidden");
 
-      const values =
-        results.map(result => Number(result.numeric_score));
+  const shown =
+    activityShowAll ? games : games.slice(0, ACTIVITY_TOP_COUNT);
 
-      const solved =
-        results
-          .filter(result => result.completed !== false)
-          .map(result => Number(result.numeric_score));
+  for (const game of shown) {
+    const row =
+      document.createElement("tr");
 
-      const average =
-        values.reduce((sum, value) => sum + value, 0) / values.length;
+    row.tabIndex = 0;
+    row.setAttribute("role", "button");
+    row.setAttribute("aria-label", getCatalogGame(game.gameId).name + " history");
 
-      const best =
-        !solved.length || direction === "none"
-          ? null
-          : direction === "lower"
-            ? Math.min(...solved)
-            : Math.max(...solved);
+    const cells = [
+      getCatalogGame(game.gameId).name,
+      game.streak > 0 ? String(game.streak) : "–",
+      formatStatNumber(game.average),
+      formatStatNumber(game.best),
+      String(game.played)
+    ];
 
-      const unit =
-        results.find(result => result.score_unit)?.score_unit || "";
+    cells.forEach((text, index) => {
+      const cell =
+        document.createElement("td");
 
-      const row =
-        document.createElement("div");
+      cell.textContent = text;
 
-      row.className =
-        "activity-row";
+      if (index === 1) {
+        cell.className = game.streak > 0 ? "activity-streak-cell" : "muted-cell";
+      }
 
-      const info =
-        document.createElement("div");
-
-      info.className =
-        "activity-info";
-
-      const name =
-        document.createElement("div");
-
-      name.className =
-        "activity-name";
-
-      name.textContent =
-        getCatalogGame(gameId).name;
-
-      const detail =
-        document.createElement("div");
-
-      detail.className =
-        "activity-sub";
-
-      detail.textContent =
-        (best === null ? "" : "best " + formatStatNumber(best) + " · ") +
-        results.length + " played" +
-        (direction === "none" ? "" : " · " + describeDirection(direction));
-
-      info.append(name, detail);
-
-      const averageElement =
-        document.createElement("div");
-
-      averageElement.className =
-        "activity-average";
-
-      averageElement.textContent =
-        "avg " + formatStatNumber(average) + (unit ? " " + unit : "");
-
-      row.append(createGameBadge(gameId), info, averageElement);
-      list.appendChild(row);
+      row.appendChild(cell);
     });
+
+    const open =
+      () => {
+        openGameHistory(game.gameId);
+      };
+
+    row.addEventListener("click", open);
+    row.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
+    });
+
+    body.appendChild(row);
+  }
+
+  toggle.classList.toggle("hidden", games.length <= ACTIVITY_TOP_COUNT);
+
+  toggle.textContent =
+    activityShowAll
+      ? "Show top " + ACTIVITY_TOP_COUNT + " ▴"
+      : "Show all " + games.length + " games ▾";
+
+  toggle.onclick =
+    () => {
+      activityShowAll = !activityShowAll;
+
+      try {
+        localStorage.setItem(ACTIVITY_SHOW_ALL_KEY, String(activityShowAll));
+      } catch (error) {}
+
+      renderActivityGames(scores, datesByGame);
+    };
 }
 
 
@@ -8053,20 +8145,12 @@ let activityLoaded =
  * Read-only; streaks count submitted results only.
  */
 async function loadActivity() {
-  const streakList =
-    document.getElementById("activityStreaks");
-
-  const recentList =
-    document.getElementById("activityRecent");
-
   if (!session) {
     activityLoaded = false;
-    streakList.innerHTML = "";
-    recentList.innerHTML = "";
 
     setStatus(
       activityStatus,
-      "Log in to see your streaks and recent results."
+      "Log in to see your streaks and game stats."
     );
 
     return;
@@ -8076,41 +8160,9 @@ async function loadActivity() {
     setStatus(activityStatus, "Loading activity...");
   }
 
-  const recentStart =
-    new Date(TODAY + "T12:00:00");
-
-  recentStart.setDate(recentStart.getDate() - 13);
-
   try {
-    const [allScores, recentScores] =
-      await Promise.all([
-        request(
-          "/rest/v1/daily_scores" +
-          "?user_id=eq." +
-          encodeURIComponent(session.user.id) +
-          "&select=game_id,play_date,numeric_score,score_unit,completed",
-          {
-            headers: authHeaders()
-          }
-        ),
-        request(
-          "/rest/v1/daily_scores" +
-          "?user_id=eq." +
-          encodeURIComponent(session.user.id) +
-          "&play_date=gte." +
-          recentStart.toLocaleDateString("en-CA") +
-          "&select=" +
-          "game_id," +
-          "play_date," +
-          "result_text," +
-          "numeric_score," +
-          "score_unit" +
-          "&order=play_date.desc",
-          {
-            headers: authHeaders()
-          }
-        )
-      ]);
+    const allScores =
+      await loadMyScoreHistory();
 
     // Summary tiles
     const libraryGames =
@@ -8167,163 +8219,13 @@ async function loadActivity() {
     document.getElementById("statResults").textContent =
       String((allScores || []).length);
 
-    // Active streaks
-    streakList.innerHTML = "";
-
-    if (streaks.length === 0) {
-      streakList.innerHTML =
-        '<p class="status">' +
-        "No active streaks yet. Submit a result to start one." +
-        "</p>";
-    }
-
-    for (const streak of streaks) {
-      const row =
-        document.createElement("div");
-
-      row.className =
-        "activity-row";
-
-      const info =
-        document.createElement("div");
-
-      info.className =
-        "activity-info";
-
-      const name =
-        document.createElement("div");
-
-      name.className =
-        "activity-name";
-
-      name.textContent =
-        getCatalogGame(streak.gameId).name;
-
-      const best =
-        document.createElement("div");
-
-      best.className =
-        "activity-sub";
-
-      best.textContent =
-        "Best: " + formatDays(streak.best);
-
-      info.append(name, best);
-
-      const current =
-        document.createElement("div");
-
-      current.className =
-        "activity-streak";
-
-      current.textContent =
-        "🔥 " + formatDays(streak.current);
-
-      row.append(
-        createGameBadge(streak.gameId),
-        info,
-        current
-      );
-
-      streakList.appendChild(row);
-    }
-
-    renderActivityCalendar(allScores || []);
+    renderActivityCalendar(allScores);
 
     if (!gameDirections.size) {
       await loadGameDirections();
     }
 
-    renderActivityAverages(allScores || []);
-
-    // Recent results, grouped by day
-    recentList.innerHTML = "";
-
-    if (!recentScores || recentScores.length === 0) {
-      recentList.innerHTML =
-        '<p class="status">' +
-        "No results in the last two weeks." +
-        "</p>";
-    }
-
-    let currentDay =
-      null;
-
-    for (const score of recentScores || []) {
-      if (score.play_date !== currentDay) {
-        currentDay = score.play_date;
-
-        const dayLabel =
-          document.createElement("div");
-
-        dayLabel.className =
-          "history-date activity-day";
-
-        dayLabel.textContent =
-          formatHistoryDate(score.play_date);
-
-        recentList.appendChild(dayLabel);
-      }
-
-      const resultButton =
-        document.createElement("button");
-
-      resultButton.type =
-        "button";
-
-      resultButton.className =
-        "activity-result";
-
-      const header =
-        document.createElement("div");
-
-      header.className =
-        "activity-result-header";
-
-      const name =
-        document.createElement("div");
-
-      name.className =
-        "activity-name";
-
-      name.textContent =
-        getCatalogGame(score.game_id).name;
-
-      const historyHint =
-        document.createElement("span");
-
-      historyHint.className =
-        "activity-sub";
-
-      historyHint.textContent =
-        "History ›";
-
-      header.append(
-        createGameBadge(score.game_id),
-        name,
-        historyHint
-      );
-
-      const resultText =
-        document.createElement("div");
-
-      resultText.className =
-        "activity-result-text";
-
-      resultText.textContent =
-        formatScore(score);
-
-      resultButton.append(header, resultText);
-
-      resultButton.addEventListener(
-        "click",
-        () => {
-          openGameHistory(score.game_id);
-        }
-      );
-
-      recentList.appendChild(resultButton);
-    }
+    renderActivityGames(allScores, datesByGame);
 
     activityLoaded = true;
     setStatus(activityStatus, "");

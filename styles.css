@@ -2376,7 +2376,7 @@ body.signed-out #usernameModal {
 
 .calendar {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(16, minmax(0, 1fr));
   gap: 3px;
   margin-bottom: 6px;
 }
@@ -2415,14 +2415,6 @@ body.signed-out #usernameModal {
 
 .calendar-cell.future {
   visibility: hidden;
-}
-
-.calendar-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
 }
 
 .calendar-legend {
@@ -2527,3 +2519,114 @@ body.signed-out #usernameModal {
   }
 }
 
+
+/* Activity: Your Games table */
+
+.activity-games-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.activity-games {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.activity-games th {
+  padding: 4px 4px 8px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.activity-games th:first-child,
+.activity-games td:first-child {
+  text-align: left;
+}
+
+.activity-games td {
+  padding: 10px 4px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+  border-top: 1px solid var(--divider);
+}
+
+.activity-games td:first-child {
+  max-width: 0;
+  width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-games tbody tr {
+  cursor: pointer;
+}
+
+.activity-games tbody tr:hover td,
+.activity-games tbody tr:focus-visible td {
+  background: var(--panel-light);
+}
+
+.activity-streak-cell {
+  color: var(--streak);
+}
+
+.muted-cell {
+  color: var(--muted);
+}
+
+#activityGamesToggle {
+  margin-top: 10px;
+}
+
+body.signed-out #activitySection .activity-games-head {
+  display: none !important;
+}
+
+/* Activity: compact layout so the tab fits on one screen */
+
+#activitySection .activity-stats {
+  margin-top: 0;
+}
+
+#activitySection .stat-tile {
+  padding: 10px;
+}
+
+#activitySection .stat-value {
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+#activitySection h3 {
+  margin: 14px 0 6px;
+  font-size: 16px;
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.calendar-note {
+  margin: 4px 0 0;
+}
+
+.activity-games td {
+  padding: 7px 4px;
+}
+
+body.signed-out #activitySection .calendar-head,
+body.signed-out #activitySection .calendar-note {
+  display: none !important;
+}
