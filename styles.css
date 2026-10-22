@@ -2700,6 +2700,16 @@ body.signed-out #activitySection .calendar-note {
   gap: 12px;
 }
 
+.card-head .icon-button {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+}
+
+.card-head .icon-button + .icon-button {
+  margin-left: -6px;
+}
+
 .card-who {
   display: grid;
   flex: 1;

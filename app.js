@@ -12009,7 +12009,7 @@ function memberSinceText(timestamp) {
 
   return Number.isNaN(date.getTime())
     ? ""
-    : "Since " + date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    : "Since " + date.toLocaleDateString("en-US", { month: "short", year: "numeric" }).replace(" ", "\u00a0");
 }
 
 
