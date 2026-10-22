@@ -3443,7 +3443,13 @@ body:not(.signed-out) .footer {
 }
 
 .game-card:not(.popped):not(.expanded) .card-top {
-  display: block;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.game-card:not(.popped):not(.expanded) .card-top-actions {
+  width: 0;
 }
 
 .game-card:not(.popped):not(.expanded) .game-icon {

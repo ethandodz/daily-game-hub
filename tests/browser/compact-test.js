@@ -14,6 +14,8 @@ server.listen(0, async () => {
     if (scheme === 'light') {
       const boxes = await page.$$eval('.game-card', c => c.filter(x => x.style.display !== 'none').slice(0, 5).map(x => { const r = x.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
       assert(boxes.slice(0, 4).every(b => b[1] === boxes[0][1]) && boxes[4][1] > boxes[0][1], '4 icons per row: ' + JSON.stringify(boxes));
+      const offCenter = await page.$$eval('.game-card', c => c.filter(x => x.style.display !== 'none').map(x => { const r = x.getBoundingClientRect(), i = x.querySelector('.game-icon').getBoundingClientRect(), n = x.querySelector('h3').getBoundingClientRect(); return Math.max(Math.abs((i.left + i.right) / 2 - (r.left + r.right) / 2), Math.abs((n.left + n.right) / 2 - (r.left + r.right) / 2)); }));
+      assert(offCenter.every(d => d <= 1.5), 'icons and names centered in their column: ' + JSON.stringify(offCenter.map(Math.round)));
       assert(!(await page.isVisible('.game-card[data-id="connections"] .play-button')) && await page.isVisible('.game-card[data-id="connections"] h3'), 'grid shows only icon and name');
       const ring = id => page.$eval(`.game-card[data-id="${id}"] .game-icon`, i => getComputedStyle(i).boxShadow);
       assert((await ring('wordle')).includes(GREEN), 'green ring on a game played today');
