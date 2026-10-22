@@ -9383,6 +9383,16 @@ document
             return;
           }
 
+          if (needsUsername) {
+            setStatus(
+              scoreStatus,
+              USERNAME_FIRST_MESSAGE,
+              "error"
+            );
+
+            return;
+          }
+
           const resultTextValue =
             document
               .getElementById(
@@ -9507,7 +9517,9 @@ await loadStreaks();
           } catch (error) {
             setStatus(
               scoreStatus,
-              error.message,
+              error.message.includes("daily_scores_user_id_fkey")
+                ? USERNAME_FIRST_MESSAGE
+                : error.message,
               "error"
             );
           }
@@ -14800,7 +14812,21 @@ window.addEventListener(
     }
 
 
+    /*
+     * Saved results must belong to a profile (daily_scores.user_id
+     * references it), and the profile is created with the username.
+     */
+    let needsUsername =
+      false;
+
+    const USERNAME_FIRST_MESSAGE =
+      "Choose a username in the Account tab first, then save your result.";
+
+
     function setAccountAttention(needed) {
+      needsUsername =
+        needed;
+
       document
         .querySelector('[data-tab-button="account"]')
         .classList
