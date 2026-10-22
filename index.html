@@ -2090,8 +2090,8 @@
 
     /* Social tab: server bar, panels, compact board */
 
-    body.signed-out [data-social-section="friends"] {
-      display: block !important;
+    body:not(.signed-out) #serversSignedOut {
+      display: none;
     }
 
     .server-bar {
@@ -2120,7 +2120,7 @@
 
     .social-segments {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 3px;
       margin: 12px 0;
       padding: 3px;
@@ -2436,7 +2436,7 @@
         type="button"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4"/><path d="M18 14.4c2.1.8 3.5 2.8 3.5 5.6"/></svg>
-        <span>Social</span>
+        <span>Servers</span>
       </button>
 
       <button
@@ -2643,6 +2643,28 @@
 
     <section
       class="section"
+      id="serversSignedOut"
+    >
+      <h2>
+        🏆 Servers
+      </h2>
+
+      <p class="intro">
+        Log in to create a server or join one with an invite code, then
+        compete with your group on the same daily games.
+      </p>
+
+      <button
+        class="button"
+        id="serversLoginButton"
+        type="button"
+      >
+        Log In / Create Account
+      </button>
+    </section>
+
+    <section
+      class="section"
       id="serversSection"
     >
       <div class="server-bar">
@@ -2710,7 +2732,7 @@
         <button class="social-segment" data-social-panel="today" type="button" role="tab">Today</button>
         <button class="social-segment" data-social-panel="stats" type="button" role="tab">Stats</button>
         <button class="social-segment" data-social-panel="members" type="button" role="tab">Members</button>
-        <button class="social-segment" data-social-panel="friends" type="button" role="tab">Friends</button>
+
       </div>
 
       <div
@@ -2889,7 +2911,11 @@
       ></p>
     </section>
 
-    <div data-social-section="friends">
+    <!-- Friends is retired in favour of Servers; kept hidden so it can be restored. -->
+    <div
+      class="hidden"
+      id="retiredFriends"
+    >
 
     <section
       class="section"
@@ -3879,7 +3905,7 @@
       </h2>
 
       <p class="status">
-        Friends and servers see you by this name, and you need one to save
+        Server members see you by this name, and you need one to save
         results. 3–24 lowercase letters, numbers or underscores.
       </p>
 
@@ -7217,7 +7243,6 @@ document.addEventListener(
             "Signed in";
 
        loadProfile();
-      loadFriends();
         loadDailyGameStatus();
       loadTodayScores();
       loadStreaks();
@@ -7634,8 +7659,6 @@ async function loadProfile() {
             );
 
             await loadProfile();
-            await loadFriends();
-
             return true;
  } catch (error) {
             const errorMessage =
@@ -10728,7 +10751,7 @@ resultButton.textContent =
             "friend-results-title";
 
           title.textContent =
-            "Friends Today";
+            "Others today";
 
           friendResults.appendChild(
             title
@@ -13401,15 +13424,19 @@ window.addEventListener(
 
 
     /*
-     * Social shows one panel at a time: Today, Stats, Members or
-     * Friends. Without any servers (or signed out) only Friends shows.
+     * The Servers tab shows one panel at a time: Today, Stats or
+     * Members.
      */
     function applySocialPanel() {
       const hasServers =
         Boolean(session) && myServers.length > 0;
 
+      if (!["today", "stats", "members"].includes(socialPanel)) {
+        socialPanel = "today";
+      }
+
       const panel =
-        hasServers ? socialPanel : "friends";
+        socialPanel;
 
       document
         .getElementById("socialSegments")
@@ -13496,6 +13523,15 @@ window.addEventListener(
           }
         );
     });
+
+    document
+      .getElementById("serversLoginButton")
+      .addEventListener(
+        "click",
+        () => {
+          document.getElementById("accountModal").classList.add("open");
+        }
+      );
 
     document
       .getElementById("openNewServerButton")
