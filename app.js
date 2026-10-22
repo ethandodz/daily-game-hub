@@ -9436,6 +9436,12 @@ function refreshLiveViews(force) {
     return;
   }
 
+  // After midnight, reload onto the new day instead of refreshing old data.
+  if (new Date().toLocaleDateString("en-CA") !== TODAY) {
+    location.reload();
+    return;
+  }
+
   if (
     currentTab === "social" &&
     socialPanel === "today" &&
