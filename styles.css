@@ -3688,3 +3688,16 @@ body.card-popped .tab-bar {
   right: 56px;
   left: auto;
 }
+
+/* Test copy of the app: an orange TEST label by the title. */
+.test-badge {
+  margin-left: 8px;
+  padding: 3px 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+  border-radius: 999px;
+  background: #ea580c;
+}

@@ -1,0 +1,9 @@
+// Cloudflare Worker "dgh-test": serves the test copy of the app.
+// Static files only (no server code). The real app is on GitHub Pages.
+{
+  "name": "dgh-test",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "."
+  }
+}

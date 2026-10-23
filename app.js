@@ -1,10 +1,44 @@
 // Daily Game Hub app script (moved from index.html)
 
+/*
+ * The test copy of the app (the Cloudflare project "dgh-test" and
+ * its preview links, on workers.dev or pages.dev) uses a separate
+ * test database, so trying out changes never touches real scores,
+ * coins or Servers.
+ */
+const IS_TEST_APP =
+  /(^|[.-])dgh-test\.([a-z0-9-]+\.workers\.dev|pages\.dev)$/.test(location.hostname);
+
 const SUPABASE_URL =
-  "https://ibffwmegxjymmulfgoqu.supabase.co";
+  IS_TEST_APP
+    ? "https://npjppwydmhwympqsyfrl.supabase.co"
+    : "https://ibffwmegxjymmulfgoqu.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_v-YaLSlXnipQLhgN5-lHcw_ovmUbwvU";
+  IS_TEST_APP
+    ? "sb_publishable_nhPCfDKTpJADJtGs75wcRw_kKHdkWKe"
+    : "sb_publishable_v-YaLSlXnipQLhgN5-lHcw_ovmUbwvU";
+
+if (IS_TEST_APP) {
+  document.title =
+    "TEST · Daily Game Hub";
+
+  document
+    .querySelector('meta[name="apple-mobile-web-app-title"]')
+    ?.setAttribute("content", "DGH Test");
+
+  const badge =
+    document.createElement("span");
+
+  badge.className =
+    "test-badge";
+
+  badge.textContent =
+    "TEST";
+
+  document.querySelector("h1.logo")?.appendChild(badge);
+  document.body.classList.add("test-app");
+}
 
 const TODAY =
   new Date().toLocaleDateString("en-CA");
