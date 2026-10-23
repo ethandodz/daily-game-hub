@@ -1,12 +1,13 @@
 // Daily Game Hub app script (moved from index.html)
 
 /*
- * The test copy of the app (dgh-test.pages.dev and its preview
- * links) uses a separate test database, so trying out changes
- * never touches real scores, coins or Servers.
+ * The test copy of the app (the Cloudflare project "dgh-test" and
+ * its preview links, on workers.dev or pages.dev) uses a separate
+ * test database, so trying out changes never touches real scores,
+ * coins or Servers.
  */
 const IS_TEST_APP =
-  /(^|\.)dgh-test\.pages\.dev$/.test(location.hostname);
+  /(^|[.-])dgh-test\.([a-z0-9-]+\.workers\.dev|pages\.dev)$/.test(location.hostname);
 
 const SUPABASE_URL =
   IS_TEST_APP

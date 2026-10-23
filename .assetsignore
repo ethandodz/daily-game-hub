@@ -1,0 +1,10 @@
+# Files the test website doesn't need to serve
+.git
+.github
+tests
+supabase
+tools
+docs
+*.md
+wrangler.jsonc
+.assetsignore
