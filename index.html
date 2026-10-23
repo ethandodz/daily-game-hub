@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.23.5">
+  <meta name="app-version" content="2026.10.23.6">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.23.5">
+  <link rel="stylesheet" href="styles.css?v=2026.10.23.6">
 </head>
 
 <body>
@@ -1882,23 +1882,26 @@
       ></canvas>
     </div>
 
-    <div class="tile-well">
+    <div
+      class="tile-well"
+      id="tileWell"
+    >
+      <div
+        class="tile-hint hidden"
+        id="tileHint"
+        aria-hidden="true"
+      >
+        <b class="tile-hint-title">How to play</b>
+        <span><i>◀</i>Tap<br>left</span>
+        <span><i>▼</i>Tap<br>down 1</span>
+        <span><i>▶</i>Tap<br>right</span>
+      </div>
+
       <div class="tile-board">
         <canvas
           id="tileCanvas"
           aria-label="Tile Drop board"
         ></canvas>
-
-        <div
-          class="tile-hint hidden"
-          id="tileHint"
-          aria-hidden="true"
-        >
-          <b class="tile-hint-title">How to play</b>
-          <span><i>◀</i>Tap<br>left</span>
-          <span><i>▼</i>Tap<br>down 1</span>
-          <span><i>▶</i>Tap<br>right</span>
-        </div>
 
         <div
           class="tile-over hidden"
@@ -2908,9 +2911,9 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.23.5"></script>
-  <script src="tiledrop.js?v=2026.10.23.5"></script>
-  <script src="play.js?v=2026.10.23.5"></script>
+  <script src="app.js?v=2026.10.23.6"></script>
+  <script src="tiledrop.js?v=2026.10.23.6"></script>
+  <script src="play.js?v=2026.10.23.6"></script>
 </body>
 </html>
 

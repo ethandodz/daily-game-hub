@@ -3805,8 +3805,7 @@ body.card-popped .tab-bar {
 .friend-strip {
   display: flex;
   gap: 14px;
-  margin: 0 -16px;
-  padding: 2px 16px 6px;
+  padding: 2px 0 6px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -3993,6 +3992,7 @@ body.play-screen-open {
     calc(12px + env(safe-area-inset-right))
     calc(10px + env(safe-area-inset-bottom))
     calc(12px + env(safe-area-inset-left));
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--background);
 }
@@ -4225,11 +4225,21 @@ body.play-screen-open {
   background: var(--panel);
 }
 
+/* The whole width of the screen is the tap area, not just the board. */
 .tile-well {
+  position: relative;
   display: flex;
   flex: 1;
   justify-content: center;
   min-height: 0;
+  margin:
+    0
+    calc(-12px - env(safe-area-inset-right))
+    0
+    calc(-12px - env(safe-area-inset-left));
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Board shape (10 wide, 20 tall); the game-over panel covers just this. */
@@ -4261,10 +4271,10 @@ body.play-screen-open {
 .tile-hint {
   position: absolute;
   inset: 0;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   overflow: hidden;
-  border-radius: 10px;
   pointer-events: none;
   transition: opacity 0.4s ease;
 }

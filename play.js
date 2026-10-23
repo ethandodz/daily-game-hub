@@ -1191,14 +1191,15 @@ document
   });
 
 
-// Tap the board: left third moves left, right third moves right, the
-// middle moves down one row. Hold to keep going. A quick swipe down drops.
+// Tap anywhere across the screen (not just the board): left third moves
+// left, right third moves right, the middle moves down one row. Hold to
+// keep going. A quick swipe down drops.
 const TILE_HINT_KEY =
   "dailyGameHubTileHintSeen";
 
 (() => {
-  const canvas =
-    document.getElementById("tileCanvas");
+  const area =
+    document.getElementById("tileWell");
 
   let start = null;
   let repeat = null;
@@ -1209,12 +1210,16 @@ const TILE_HINT_KEY =
     repeat = null;
   };
 
-  canvas.addEventListener("pointerdown", event => {
+  area.addEventListener("pointerdown", event => {
+    if (event.target.closest("#tileOver")) {
+      return;
+    }
+
     event.preventDefault();
     hideTileHint();
 
     const box =
-      canvas.getBoundingClientRect();
+      area.getBoundingClientRect();
 
     const third =
       (event.clientX - box.left) / box.width * 3;
@@ -1223,7 +1228,7 @@ const TILE_HINT_KEY =
       third < 1 ? "left" : third >= 2 ? "right" : "down";
 
     start = { y: event.clientY, time: Date.now() };
-    canvas.setPointerCapture?.(event.pointerId);
+    area.setPointerCapture?.(event.pointerId);
 
     tileGame?.act(move);
 
@@ -1233,7 +1238,7 @@ const TILE_HINT_KEY =
     }, 200);
   });
 
-  canvas.addEventListener("pointerup", event => {
+  area.addEventListener("pointerup", event => {
     stopRepeat();
 
     if (start && event.clientY - start.y > 60 && Date.now() - start.time < 400) {
@@ -1243,7 +1248,7 @@ const TILE_HINT_KEY =
     start = null;
   });
 
-  canvas.addEventListener("pointercancel", () => {
+  area.addEventListener("pointercancel", () => {
     stopRepeat();
     start = null;
   });

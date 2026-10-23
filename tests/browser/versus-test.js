@@ -20,6 +20,7 @@ m.server.listen(0, async () => {
 
   await page.click('[data-tab-button="play"]'); await page.waitForTimeout(800);
   assert(await page.isVisible('#playView .play-title'), 'Play header shows');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && innerWidth === 390), 'Play tab does not scroll sideways');
   assert((await page.textContent('#playOnline')).trim() === '1 online', 'live pill counts online friends');
   const chips = await page.$$eval('.friend-chip', cs => cs.map(c => c.lastElementChild.textContent + ':' + Boolean(c.querySelector('.online-dot.on'))));
   assert(chips.join(',') === 'ethan:true,maya:false', 'friend strip lists online friends first with a green dot');
@@ -90,14 +91,15 @@ m.server.listen(0, async () => {
   assert(await page.isVisible('#tileHint'), 'tap guide shows when the game starts');
   await page.screenshot({ path: out + '-hint.png' });
   assert(await page.$$eval('.tile-controls button', bs => bs.map(b => b.dataset.tile).join(',')) === 'rotate,drop', 'only Rotate and Drop buttons');
-  const box = await page.$eval('#tileCanvas', c => { const r = c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });
+  const box = await page.$eval('#tileWell', c => { const r = c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });
   const pieceAt = () => page.evaluate(() => ({ x: tileGame.state.piece.x, y: tileGame.state.piece.y }));
-  const tapBoard = async part => { await page.mouse.click(box.x + box.w * part, box.y + box.h * 0.5); await page.waitForTimeout(50); };
-  let before = await pieceAt(); await tapBoard(0.15);
+  const tapBoard = async part => { await page.mouse.click(Math.min(Math.max(box.x + box.w * part, 1), box.x + box.w - 1), box.y + box.h * 0.5); await page.waitForTimeout(50); };
+  assert(box.x <= 0 && box.x + box.w >= await page.evaluate(() => innerWidth), 'tap area reaches both edges of the screen');
+  let before = await pieceAt(); await tapBoard(0);
   assert((await pieceAt()).x === before.x - 1, 'tapping the left side moves left');
   await page.waitForTimeout(600);
   assert(!(await page.isVisible('#tileHint')), 'guide fades after the first tap');
-  before = await pieceAt(); await tapBoard(0.85);
+  before = await pieceAt(); await tapBoard(1);
   assert((await pieceAt()).x === before.x + 1, 'tapping the right side moves right');
   await page.evaluate(() => tileGame.pause());
   before = await pieceAt(); await page.evaluate(() => tileGame.resume()); await tapBoard(0.5);
