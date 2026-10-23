@@ -59,7 +59,11 @@ server.listen(0, async () => {
     assert(card.includes('@ethan') && card.includes('purple group first, always') && card.includes('Fav: Connections') && card.includes('188played'), 'their card: ' + card);
     assert(card.includes('Head to head in your servers: you 31 · ethan 24'), 'head to head shown');
     await page.screenshot({ path: out + '-' + scheme + '-player.png' });
-    await page.click('[data-close="playerCardModal"]');
+    await page.waitForTimeout(350);
+    const fit = await page.evaluate(() => { const c = document.querySelector('#playerCardModal .modal-card').getBoundingClientRect(), a = document.querySelector('#playerCardBody .avatar').getBoundingClientRect(), n = document.querySelector('#playerCardBody .card-name').getBoundingClientRect(); return { inside: c.top >= 0 && c.left >= 0 && c.bottom <= innerHeight && c.right <= innerWidth, iconBesideName: a.right <= n.left && Math.abs(a.top - n.top) < 40, round: getComputedStyle(document.querySelector('#playerCardModal .modal-card')).borderBottomLeftRadius, coinsUnderName: Math.abs(document.querySelector('#playerCardBody .coins-pill').getBoundingClientRect().left - n.left) <= 1 }; });
+    assert(fit.inside && fit.iconBesideName && fit.round === '22px' && fit.coinsUnderName, 'their whole card fits on screen, laid out like yours ' + JSON.stringify(fit));
+    await page.mouse.click(8, 8); await page.waitForTimeout(200);
+    assert(!(await page.isVisible('#playerCardModal')), 'tapping outside closes their card');
     // board row: tapping a name opens the card without opening the row
     await page.click('[data-social-panel="today"]'); await page.waitForTimeout(300);
     if (!(await page.locator('#serverBoard .board-row:visible').count())) { await page.click('#serverBoard .board-game-header'); await page.waitForTimeout(200); }

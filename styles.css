@@ -3632,3 +3632,59 @@ body.card-popped::before {
 body.card-popped .tab-bar {
   z-index: 26;
 }
+
+
+/* Someone else's card floats in the middle with its whole border
+   showing, laid out like your own card. */
+.player-card-modal {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.player-card-modal .modal-card {
+  position: relative;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 16px;
+  border-radius: 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+}
+
+.player-card-modal .modal-top {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  right: 14px;
+}
+
+.player-card-modal .close-button {
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.player-card-modal #playerCardBody {
+  gap: 12px;
+  margin-top: 0;
+  text-align: left;
+}
+
+.player-card-modal .card-who {
+  padding-right: 40px;
+}
+
+.player-card-modal #playerCardBody .coins-pill {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+.player-card-modal .card-versus {
+  text-align: center;
+}
+
+/* Keep the crown frame's 👑 inside the card. */
+.player-card-window.player-tint[data-frame="crown"]::after {
+  top: 8px;
+  right: 56px;
+  left: auto;
+}
