@@ -13,7 +13,7 @@ server.listen(0, async () => {
       // My card
       assert(await text('#accountName') === '@laur', 'card shows username');
       assert(await text('#myCardIcon') === 'L', 'no card yet: first letter as icon');
-      assert(await text('#myCardStats') === '214played👑 31wins🔥 12best streak', 'card stats: ' + await text('#myCardStats'));
+      assert(await text('#myCardStats') === '214played👑 31wins🔥 12best day streak', 'card stats: ' + await text('#myCardStats'));
       assert((await text('#myCardMeta')).includes('Since Jun 2026'), 'member since: ' + await text('#myCardMeta'));
       assert(!(await page.isVisible('#usernameInput')) && !(await page.isVisible('#signOutButton')), 'settings tucked away');
       // Settings sheet
