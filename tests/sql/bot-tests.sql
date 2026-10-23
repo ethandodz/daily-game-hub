@@ -96,3 +96,4 @@ select public.duel_state(:'di') as s \gset
 select public.check('bot dial in: guesses, then gives the next clue', (:'s'::json->'dial'->'rounds'->0->>'guess') is not null
   and (:'s'::json->'dial'->'rounds'->1->>'clue') is not null and (:'s'::json->'dial'->>'round') = '2', :'s');
 reset role;
+select public.check('bot: no errors logged during all those games', (select count(*) from public.dgh_bot_log) = 0, (select string_agg(error, ' | ') from public.dgh_bot_log));

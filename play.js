@@ -142,6 +142,19 @@ document.addEventListener("visibilitychange", sendHeartbeat);
 
 /* ---------- Play tab ---------- */
 
+// What to say when the Play tab can't load: the database files if
+// they're missing, otherwise the actual problem.
+function playLoadError(error) {
+  const message =
+    String(error?.message || error || "");
+
+  if (/could not find the function|schema cache|does not exist/i.test(message)) {
+    return "The Play tab isn't set up yet. Run the files in supabase/play first.";
+  }
+
+  return "Couldn't load your games: " + (message || "unknown problem") + ". It'll try again in a moment.";
+}
+
 async function loadPlayTab() {
   const signedIn =
     Boolean(session);
@@ -160,34 +173,37 @@ async function loadPlayTab() {
 
   sendHeartbeat();
 
-  try {
-    const [friends, duels] =
-      await Promise.all([
-        playRpc("server_friends"),
-        playRpc("my_duels")
-      ]);
+  // Friends and games load separately, so one problem doesn't hide both.
+  const [friends, duels] =
+    await Promise.allSettled([
+      playRpc("server_friends"),
+      playRpc("my_duels")
+    ]);
 
+  if (friends.status === "fulfilled") {
     playFriends =
-      Array.isArray(friends) ? friends : [];
-
-    playDuels =
-      Array.isArray(duels) ? duels : [];
+      Array.isArray(friends.value) ? friends.value : [];
 
     for (const friend of playFriends) {
       knownProfiles.set(friend.user_id, { user_id: friend.user_id, username: friend.username });
     }
 
     await loadPlayerCards(playFriends.map(friend => friend.user_id));
+  }
 
+  if (duels.status === "fulfilled") {
+    playDuels =
+      Array.isArray(duels.value) ? duels.value : [];
+  }
+
+  const failed =
+    [friends, duels].find(result => result.status === "rejected");
+
+  if (failed) {
+    console.warn("Play tab failed to load:", failed.reason);
+    setStatus(status, playLoadError(failed.reason), "error");
+  } else {
     setStatus(status, "");
-  } catch (error) {
-    console.warn("Play tab failed to load:", error);
-
-    setStatus(
-      status,
-      "The Play tab isn't set up yet. Run the files in supabase/play first.",
-      "error"
-    );
   }
 
   renderPlayOnline();

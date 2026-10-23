@@ -576,7 +576,16 @@ as $$
 begin
   if to_regprocedure('public.dgh_bot_play(uuid)') is not null
      and coalesce(current_setting('dgh.bot_busy', true), '') <> '1' then
-    execute 'select public.dgh_bot_play($1)' using p_duel;
+    -- A problem with the bot never stops you seeing or playing games.
+    begin
+      execute 'select public.dgh_bot_play($1)' using p_duel;
+    exception when others then
+      raise warning 'Bot skipped: %', sqlerrm;
+
+      if to_regclass('public.dgh_bot_log') is not null then
+        execute 'insert into public.dgh_bot_log (duel_id, error) values ($1, $2)' using p_duel, sqlerrm;
+      end if;
+    end;
   end if;
 end;
 $$;

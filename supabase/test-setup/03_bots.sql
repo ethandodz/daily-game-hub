@@ -21,6 +21,18 @@ create table if not exists public.dgh_bots (
 alter table public.dgh_bots enable row level security;
 revoke all on public.dgh_bots from anon, authenticated;
 
+-- Anything that went wrong when the bot tried to move. To check:
+--   select * from public.dgh_bot_log order by happened_at desc limit 10;
+create table if not exists public.dgh_bot_log (
+  id bigint generated always as identity primary key,
+  duel_id uuid,
+  error text not null,
+  happened_at timestamptz not null default now()
+);
+
+alter table public.dgh_bot_log enable row level security;
+revoke all on public.dgh_bot_log from anon, authenticated;
+
 
 -- The bot's account (no password, so nobody can log in as it), profile,
 -- player card, presence and Server memberships.
@@ -417,6 +429,7 @@ begin
     end if;
   exception when others then
     raise warning 'Bot move failed: %', sqlerrm;
+    insert into public.dgh_bot_log (duel_id, error) values (p_duel, sqlerrm);
   end;
 
   perform set_config('request.jwt.claim.sub', coalesce(signed_in, ''), true);
