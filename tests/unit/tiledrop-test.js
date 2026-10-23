@@ -32,7 +32,7 @@ t('four full rows clear at once', R.clearLines(full) === 4);
 t('rows above fall down after a clear', full[19][4] === 2 && full[18].every(v => !v));
 t('scoring: 100 / 300 / 500 / 800 times the level', [1, 2, 3, 4].map(n => R.pointsFor(n, 2)).join() === '200,600,1000,1600');
 t('level goes up every 10 lines', R.levelFor(0) === 1 && R.levelFor(9) === 1 && R.levelFor(10) === 2 && R.levelFor(25) === 3);
-t('gets faster each level, never below 90 ms', R.gravityFor(1) === 800 && R.gravityFor(2) < 800 && R.gravityFor(50) === 90);
+t('gets about 15% faster each level, never below 80 ms', R.gravityFor(1) === 700 && R.gravityFor(2) === 595 && R.gravityFor(5) === 365 && R.gravityFor(50) === 80);
 
 // a game: dropping pieces straight down ends the game and adds drop points
 let result = null;

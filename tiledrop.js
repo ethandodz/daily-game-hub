@@ -211,9 +211,10 @@
   }
 
 
-  // Milliseconds between automatic drops at a level.
+  // Milliseconds between automatic drops at a level: about 15%
+  // faster each level, topping out around level 15.
   function gravityFor(level) {
-    return Math.max(90, 800 - (level - 1) * 65);
+    return Math.max(80, Math.round(700 * 0.85 ** (level - 1)));
   }
 
 

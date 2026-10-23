@@ -1026,6 +1026,8 @@ function openTileDrop() {
     },
     onGameOver: finishTileDrop
   });
+
+  showTileHint();
 }
 
 
@@ -1189,54 +1191,101 @@ document
   });
 
 
-// Swipe on the board: sideways moves, a quick swipe down drops,
-// a tap rotates.
+// Tap the board: left third moves left, right third moves right, the
+// middle moves down one row. Hold to keep going. A quick swipe down drops.
+const TILE_HINT_KEY =
+  "dailyGameHubTileHintSeen";
+
 (() => {
   const canvas =
     document.getElementById("tileCanvas");
 
   let start = null;
+  let repeat = null;
+
+  const stopRepeat = () => {
+    clearTimeout(repeat);
+    clearInterval(repeat);
+    repeat = null;
+  };
 
   canvas.addEventListener("pointerdown", event => {
-    start = { x: event.clientX, y: event.clientY, moved: 0, time: Date.now() };
+    event.preventDefault();
+    hideTileHint();
+
+    const box =
+      canvas.getBoundingClientRect();
+
+    const third =
+      (event.clientX - box.left) / box.width * 3;
+
+    const move =
+      third < 1 ? "left" : third >= 2 ? "right" : "down";
+
+    start = { y: event.clientY, time: Date.now() };
     canvas.setPointerCapture?.(event.pointerId);
-  });
 
-  canvas.addEventListener("pointermove", event => {
-    if (!start) {
-      return;
-    }
+    tileGame?.act(move);
 
-    const steps =
-      Math.trunc((event.clientX - start.x) / 28) - start.moved;
-
-    for (let i = 0; i < Math.abs(steps); i += 1) {
-      tileGame?.act(steps > 0 ? "right" : "left");
-    }
-
-    start.moved += steps;
+    stopRepeat();
+    repeat = setTimeout(() => {
+      repeat = setInterval(() => tileGame?.act(move), move === "down" ? 50 : 70);
+    }, 200);
   });
 
   canvas.addEventListener("pointerup", event => {
-    if (!start) {
-      return;
-    }
+    stopRepeat();
 
-    const dx =
-      event.clientX - start.x;
-
-    const dy =
-      event.clientY - start.y;
-
-    if (dy > 60 && Math.abs(dy) > Math.abs(dx) && Date.now() - start.time < 400) {
+    if (start && event.clientY - start.y > 60 && Date.now() - start.time < 400) {
       tileGame?.act("drop");
-    } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-      tileGame?.act("rotate");
     }
 
     start = null;
   });
+
+  canvas.addEventListener("pointercancel", () => {
+    stopRepeat();
+    start = null;
+  });
 })();
+
+
+// The guide shows for your first few games, then fades.
+function showTileHint() {
+  const hint =
+    document.getElementById("tileHint");
+
+  let seen = 0;
+
+  try {
+    seen = Number(localStorage.getItem(TILE_HINT_KEY)) || 0;
+    localStorage.setItem(TILE_HINT_KEY, String(seen + 1));
+  } catch (error) {}
+
+  if (seen >= 3) {
+    return;
+  }
+
+  hint.classList.remove("hidden", "fading");
+
+  clearTimeout(showTileHint.timer);
+  showTileHint.timer = setTimeout(hideTileHint, 2500);
+}
+
+
+function hideTileHint() {
+  const hint =
+    document.getElementById("tileHint");
+
+  if (hint.classList.contains("hidden") || hint.classList.contains("fading")) {
+    return;
+  }
+
+  clearTimeout(showTileHint.timer);
+  hint.classList.add("fading");
+
+  setTimeout(() => hint.classList.add("hidden"), 400);
+}
 
 document.addEventListener("keydown", event => {
   if (!tileGame || document.getElementById("tileDropScreen").classList.contains("hidden")) {
