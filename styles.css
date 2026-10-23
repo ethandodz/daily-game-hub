@@ -4197,7 +4197,8 @@ body.play-screen-open {
   display: flex;
   flex: 1;
   justify-content: center;
-  gap: 18px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .tile-stats span {
@@ -4218,7 +4219,7 @@ body.play-screen-open {
   font-variant-numeric: tabular-nums;
 }
 
-.tile-sound {
+.tile-icon-button {
   flex: 0 0 auto;
   width: 40px;
   height: 40px;
@@ -4369,6 +4370,28 @@ body.play-screen-open {
 
 .tile-over.hidden {
   display: none;
+}
+
+/* Covers the board while paused, so nobody plans moves meanwhile. */
+.tile-paused {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.tile-paused.hidden {
+  display: none;
+}
+
+.tile-paused b {
+  font-size: 26px;
 }
 
 .tile-over b {

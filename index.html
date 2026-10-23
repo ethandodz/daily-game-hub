@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.23.11">
+  <meta name="app-version" content="2026.10.23.12">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.23.11">
+  <link rel="stylesheet" href="styles.css?v=2026.10.23.12">
 </head>
 
 <body>
@@ -1911,7 +1911,16 @@
       </div>
 
       <button
-        class="tile-sound"
+        class="tile-icon-button"
+        id="tilePauseButton"
+        type="button"
+        aria-label="Pause"
+      >
+        ⏸
+      </button>
+
+      <button
+        class="tile-icon-button tile-sound"
         id="tileSoundButton"
         type="button"
         aria-label="Turn sound off"
@@ -1947,6 +1956,20 @@
           id="tileCanvas"
           aria-label="Tile Drop board"
         ></canvas>
+
+        <div
+          class="tile-paused hidden"
+          id="tilePaused"
+        >
+          <b>Paused</b>
+          <button
+            class="play-go big"
+            id="tileResumeButton"
+            type="button"
+          >
+            ▶ Resume
+          </button>
+        </div>
 
         <div
           class="tile-over hidden"
@@ -2956,12 +2979,12 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.23.11"></script>
-  <script src="tiledrop.js?v=2026.10.23.11"></script>
-  <script src="tilesound.js?v=2026.10.23.11"></script>
-  <script src="play.js?v=2026.10.23.11"></script>
-  <script src="versus.js?v=2026.10.23.11"></script>
-  <script src="dial.js?v=2026.10.23.11"></script>
+  <script src="app.js?v=2026.10.23.12"></script>
+  <script src="tiledrop.js?v=2026.10.23.12"></script>
+  <script src="tilesound.js?v=2026.10.23.12"></script>
+  <script src="play.js?v=2026.10.23.12"></script>
+  <script src="versus.js?v=2026.10.23.12"></script>
+  <script src="dial.js?v=2026.10.23.12"></script>
 </body>
 </html>
 

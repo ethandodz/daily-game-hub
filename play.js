@@ -1238,6 +1238,7 @@ function openTileDrop() {
 
   tileGame?.stop();
   TileSound.stopMusic(true);
+  showTilePaused(false);
 
   tileGame = TileDrop.createGame({
     seed: tileSeed(),
@@ -1280,6 +1281,7 @@ function closeTileDrop() {
 
 async function finishTileDrop({ score, lines }) {
   TileSound.gameOver();
+  showTilePaused(false);
 
   const over =
     document.getElementById("tileOver");
@@ -1449,7 +1451,7 @@ const TILE_HINT_KEY =
   };
 
   area.addEventListener("pointerdown", event => {
-    if (event.target.closest("#tileOver")) {
+    if (event.target.closest("#tileOver, #tilePaused")) {
       return;
     }
 
@@ -1543,7 +1545,9 @@ document.addEventListener("keydown", event => {
     " ": "drop"
   };
 
-  if (moves[event.key]) {
+  if (event.key === "p" || event.key === "P") {
+    document.getElementById("tilePauseButton").click();
+  } else if (moves[event.key]) {
     event.preventDefault();
     tileGame.act(moves[event.key]);
   } else if (event.key === "Escape") {
@@ -1551,16 +1555,58 @@ document.addEventListener("keydown", event => {
   }
 });
 
+// Pause: stops the game and music and covers the board. Leaving the
+// app pauses too, and waits for Resume.
+function showTilePaused(paused) {
+  document.getElementById("tilePaused").classList.toggle("hidden", !paused);
+
+  const button =
+    document.getElementById("tilePauseButton");
+
+  button.textContent = paused ? "▶" : "⏸";
+  button.setAttribute("aria-label", paused ? "Resume" : "Pause");
+}
+
+
+function pauseTileDrop() {
+  if (!tileGame || tileGame.state.over || tileGame.state.paused) {
+    return;
+  }
+
+  tileGame.pause();
+  TileSound.stopMusic();
+  showTilePaused(true);
+}
+
+
+function resumeTileDrop() {
+  if (!tileGame || tileGame.state.over || !tileGame.state.paused) {
+    return;
+  }
+
+  showTilePaused(false);
+  tileGame.resume();
+  TileSound.startMusic(tileGame.state.level);
+}
+
+
+document
+  .getElementById("tilePauseButton")
+  .addEventListener("click", () => {
+    if (tileGame?.state.paused) {
+      resumeTileDrop();
+    } else {
+      pauseTileDrop();
+    }
+  });
+
+document
+  .getElementById("tileResumeButton")
+  .addEventListener("click", resumeTileDrop);
+
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") {
-    tileGame?.pause();
-    TileSound.stopMusic();
-  } else {
-    tileGame?.resume();
-
-    if (tileGame && !tileGame.state.over) {
-      TileSound.startMusic(tileGame.state.level);
-    }
+    pauseTileDrop();
   }
 });
 
@@ -1584,7 +1630,7 @@ document
     const on =
       TileSound.toggle();
 
-    if (on && tileGame && !tileGame.state.over) {
+    if (on && tileGame && !tileGame.state.over && !tileGame.state.paused) {
       TileSound.startMusic(tileGame.state.level);
     }
 
