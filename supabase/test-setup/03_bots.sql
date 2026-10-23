@@ -4,7 +4,15 @@
 -- without a second person. It joins every Server (old and new), always
 -- shows as online, accepts challenges straight away, and takes its turns
 -- whenever the app checks in on a game. Safe to run again.
--- Needs the servers, cards and play files first.
+-- Needs the servers, cards and play files first (all of play/01 to 03).
+
+do $$
+begin
+  if to_regprocedure('public.dgh_bot_hook(uuid)') is null then
+    raise exception 'Run supabase/play/03_versus_games.sql (the latest version) first, then this file again.';
+  end if;
+end;
+$$;
 
 create table if not exists public.dgh_bots (
   user_id uuid primary key references auth.users (id) on delete cascade
@@ -104,31 +112,44 @@ declare
   guesses integer;
   last_at timestamptz;
   solved boolean;
+  other_done boolean;
   pick text;
 begin
-  select count(*), max(created_at), coalesce(bool_or(pattern = 'GGGGG'), false)
-  into guesses, last_at, solved
-  from public.duel_guesses where duel_id = d.id and user_id = bot;
+  loop
+    select status into d.status from public.duels where id = d.id;
+    exit when d.status <> 'active';
 
-  if solved or guesses >= 6 or last_at > now() - interval '4 seconds' then
-    return;
-  end if;
+    select count(*), max(created_at), coalesce(bool_or(pattern = 'GGGGG'), false)
+    into guesses, last_at, solved
+    from public.duel_guesses where duel_id = d.id and user_id = bot;
 
-  if guesses = 0 then
-    pick := (array['slate', 'crane', 'trace', 'stare', 'raise', 'arise', 'later', 'alert'])[1 + floor(random() * 8)::integer];
-  else
-    select w.word into pick
-    from public.duel_words w
-    where not exists (
-      select 1 from public.duel_guesses x
-      where x.duel_id = d.id and x.user_id = bot
-        and (x.guess = w.word or public.dgh_wordle_pattern(x.guess, w.word) <> x.pattern)
-    )
-    order by random()
-    limit 1;
-  end if;
+    exit when solved or guesses >= 6;
 
-  perform public.duel_guess(d.id, pick);
+    -- Once you're done, it plays the rest straight away; until then,
+    -- a guess every few seconds.
+    select coalesce(bool_or(pattern = 'GGGGG'), false) or count(*) >= 6 into other_done
+    from public.duel_guesses where duel_id = d.id and user_id <> bot;
+
+    exit when not other_done and last_at > now() - interval '3 seconds';
+
+    if guesses = 0 then
+      pick := (array['slate', 'crane', 'trace', 'stare', 'raise', 'arise', 'later', 'alert'])[1 + floor(random() * 8)::integer];
+    else
+      select w.word into pick
+      from public.duel_words w
+      where not exists (
+        select 1 from public.duel_guesses x
+        where x.duel_id = d.id and x.user_id = bot
+          and (x.guess = w.word or public.dgh_wordle_pattern(x.guess, w.word) <> x.pattern)
+      )
+      order by random()
+      limit 1;
+    end if;
+
+    perform public.duel_guess(d.id, pick);
+
+    exit when not other_done;
+  end loop;
 end;
 $$;
 
@@ -410,6 +431,58 @@ revoke all on function public.dgh_bot_higher_lower(public.duels, uuid) from publ
 revoke all on function public.dgh_bot_mind_meld(public.duels, uuid) from public, anon, authenticated;
 revoke all on function public.dgh_bot_dial_in(public.duels, uuid) from public, anon, authenticated;
 revoke all on function public.dgh_bot_play(uuid) from public, anon, authenticated;
+
+-- Challenges to the bot are accepted the moment they're sent, and the
+-- bot makes its first move then too.
+create or replace function public.dgh_bot_accept()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.status = 'pending' and exists (select 1 from public.dgh_bots where user_id = new.opponent) then
+    new.status := 'active';
+    new.accepted_at := now();
+  end if;
+
+  return new;
+end;
+$$;
+
+create or replace function public.dgh_bot_first_move()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if exists (select 1 from public.dgh_bots where user_id in (new.challenger, new.opponent)) then
+    perform public.dgh_bot_play(new.id);
+  end if;
+
+  return null;
+end;
+$$;
+
+revoke all on function public.dgh_bot_accept() from public, anon, authenticated;
+revoke all on function public.dgh_bot_first_move() from public, anon, authenticated;
+
+drop trigger if exists duels_bot_accept on public.duels;
+create trigger duels_bot_accept
+  before insert on public.duels
+  for each row execute function public.dgh_bot_accept();
+
+drop trigger if exists duels_bot_first_move on public.duels;
+create trigger duels_bot_first_move
+  after insert on public.duels
+  for each row execute function public.dgh_bot_first_move();
+
+-- Challenges already waiting on the bot: accept them now.
+update public.duels
+set status = 'active', accepted_at = now()
+where status = 'pending' and opponent in (select user_id from public.dgh_bots);
+
 
 -- Check: the bot is set up and in your Servers.
 select 'bot' as item, (select username from public.profiles where user_id = '0b0b0b0b-0000-4000-8000-000000000001') as value

@@ -20,6 +20,7 @@ select public.check('bot: shows as an online friend', exists (
 
 -- Wordle Duel: accepts and guesses, a few seconds apart
 select public.create_duel(:'BOT') as wd \gset
+select public.check('bot: accepts the moment you challenge it', (select public.duel_state(:'wd') ->> 'status') = 'active');
 select public.duel_state(:'wd') as s \gset
 select public.check('bot wordle: accepts and makes a first guess', (:'s'::json->>'status') = 'active' and json_array_length(:'s'::json->'their_patterns') = 1, :'s');
 select public.duel_state(:'wd') as s \gset
@@ -38,8 +39,21 @@ select set_config('request.jwt.claim.sub', :'A', false);
 select public.duel_guess(:'wd', 'zzzzz');
 select public.check('bot is back to being signed out of your session', auth.uid() = :'A'::uuid);
 
+reset role;
+insert into duel_guesses (duel_id, user_id, n, guess, pattern)
+select :'wd', :'A', n, 'qqqqq', 'BBBBB' from generate_series(2, 6) n;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.duel_state(:'wd') as s \gset
+select public.check('bot wordle: plays out the rest at once when you are done', (:'s'::json->>'status') = 'finished'
+  or (:'s'::json->'their_patterns')::text like '%GGGGG%', :'s');
+
 -- Word Race, Trivia, Higher or Lower: the bot plays its whole turn
 select public.create_versus(:'BOT', 'word_race') as w \gset
+reset role;
+select public.check('bot word race: plays its turn the moment you challenge it', exists (select 1 from versus_plays where duel_id = :'w' and user_id = :'BOT' and finished_at is not null));
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
 select public.duel_state(:'w') as s \gset
 select public.check('bot word race: plays its turn at once', (:'s'::json->'them'->>'finished')::boolean and (:'s'::json->>'status') = 'active', :'s');
 select public.versus_start(:'w');
