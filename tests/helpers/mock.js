@@ -33,7 +33,7 @@ const tables = {
   friendships: [{id:1,requester_id:ME,addressee_id:FRIEND,status:'accepted'}], profiles, feedback: [],
 };
 const server = http.createServer((req,res)=>{ const f = path.join(dir, decodeURIComponent(req.url.split('?')[0]) === '/' ? 'index.html' : req.url.split('?')[0]);
-  fs.readFile(f,(e,b)=>{ if(e){res.writeHead(404);return res.end();} const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'}; res.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'}); res.end(b); }); });
+  fs.readFile(f,(e,b)=>{ if(e){res.writeHead(404);return res.end();} const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json','.txt':'text/plain; charset=utf-8'}; res.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'}); res.end(b); }); });
 
 const requests = [];
 const serverState = { servers: [{ id: 'srv-ethan', name: 'Work Crew', owner_id: FRIEND, invite_code: 'JOIN42', start_date: today, created_at: '2026-10-01' }],
@@ -53,9 +53,28 @@ const serverState = { servers: [{ id: 'srv-ethan', name: 'Work Crew', owner_id: 
   achievementList: [['winner', 'Winner', '👑', 'Days won in your servers', [1, 10, 50, 100]], ['on_fire', 'On Fire', '🔥', 'Days in a row with a result', [7, 30, 100, 365]],
     ['sharpshooter', 'Sharpshooter', '🎯', 'Wordle in 2 guesses or fewer', [1, 5, 25]], ['krillionaire', 'Krillionaire', '💎', 'Krillion answer (💎) in Krillion', [1, 5, 20]], ['founder', 'Founder', '🏰', 'Create a server', [1]]],
   achievementProgress: { [ME]: { winner: 31, on_fire: 12, sharpshooter: 3, krillionaire: 0, founder: 1 }, [FRIEND]: { winner: 24, on_fire: 40, krillionaire: 6 } },
+  friends: [{ user_id: FRIEND, username: 'ethan', last_seen: new Date().toISOString() }, { user_id: F2, username: 'maya', last_seen: new Date(Date.now() - 3 * 3600e3).toISOString() }],
+  duels: [], arcade: [{ user_id: FRIEND, score: 4200 }, { user_id: F2, score: 900 }],
   cardStats: { [ME]: { played: 214, wins: 31, best_streak: 12, member_since: '2026-06-01T00:00:00Z', my_wins: 0, their_wins: 0 },
     [FRIEND]: { played: 188, wins: 24, best_streak: 40, member_since: '2026-07-01T00:00:00Z', my_wins: 31, their_wins: 24 } } };
 const directions = { wordle: 'lower', connections: 'lower', worldle: 'lower', framed: 'lower', krillion: 'higher', immaculate: 'none' };
+function duelPattern(guess, answer) {
+  const out = Array(5).fill('B'), left = {};
+  [...answer].forEach((c, i) => { if (guess[i] === c) out[i] = 'G'; else left[c] = (left[c] || 0) + 1; });
+  [...guess].forEach((c, i) => { if (out[i] !== 'G' && left[c]) { out[i] = 'Y'; left[c] -= 1; } });
+  return out.join('');
+}
+// Same rules as duel_guess: fewest guesses wins, finish once it can't change.
+function duelSettle(d) {
+  const [a, b] = [d.challenger, d.opponent].map(u => d.guesses[u]);
+  const solvedIn = g => { const i = g.indexOf(d.answer); return i < 0 ? null : i + 1; };
+  const done = g => solvedIn(g) || g.length >= 6;
+  const sa = solvedIn(a), sb = solvedIn(b);
+  const finish = winner => { d.status = 'finished'; d.winner = winner; d.finished_at = new Date().toISOString(); };
+  if (done(a) && done(b)) return finish(sa && (!sb || sa < sb) ? d.challenger : sb && (!sa || sb < sa) ? d.opponent : null);
+  if (sa && !done(b) && b.length >= sa) return finish(d.challenger);
+  if (sb && !done(a) && a.length >= sb) return finish(d.opponent);
+}
 function serverRoute(method, u, body) {
   if (u.pathname.startsWith('/auth/v1/')) {
     const a = u.pathname.slice('/auth/v1/'.length);
@@ -132,6 +151,29 @@ function serverRoute(method, u, body) {
     return { status: 201, body: null };
   }
   if (t === 'profiles' && (p.get('user_id') || '').startsWith('in.')) { const ids = p.get('user_id').slice(4, -1).split(','); return { status: 200, body: profiles.filter(x => ids.includes(x.user_id)) }; }
+  // Play tab: Wordle Duel (answer is always "crane" here) and Tile Drop scores.
+  if (t === 'rpc/heartbeat') return { status: 204, body: null };
+  if (t === 'rpc/server_friends') return { status: 200, body: serverState.friends };
+  const duelView = d => { const me = d.challenger === ME; const other = me ? d.opponent : d.challenger;
+    return { id: d.id, game: 'wordle_duel', status: d.status, is_challenger: me, opponent: other, winner: d.winner, created_at: d.created_at, finished_at: d.finished_at,
+      my_guesses: d.guesses[ME].map(guess => ({ guess, pattern: duelPattern(guess, d.answer) })), their_patterns: d.guesses[other].map(g => duelPattern(g, d.answer)),
+      last_move_at: d.created_at, answer: d.status === 'finished' ? d.answer : null }; };
+  const findDuel = id => serverState.duels.find(d => d.id === id);
+  if (t === 'rpc/create_duel') { if (!serverState.friends.some(f => f.user_id === body.p_opponent)) return err('You can only challenge people in your servers.');
+    const d = { id: 'duel-' + (serverState.duels.length + 1), challenger: ME, opponent: body.p_opponent, answer: 'crane', status: 'pending', winner: null, created_at: new Date().toISOString(), finished_at: null, guesses: { [ME]: [], [body.p_opponent]: [] } };
+    serverState.duels.push(d); return { status: 200, body: d.id }; }
+  if (t === 'rpc/my_duels') return { status: 200, body: serverState.duels.map(duelView).reverse() };
+  if (t === 'rpc/duel_state') { const d = findDuel(body.p_duel); return d ? { status: 200, body: duelView(d) } : err('Duel not found.'); }
+  if (t === 'rpc/respond_duel') { const d = findDuel(body.p_duel); d.status = body.p_accept ? 'active' : 'declined'; return { status: 200, body: duelView(d) }; }
+  if (t === 'rpc/cancel_duel') { const d = findDuel(body.p_duel); const other = d.challenger === ME ? d.opponent : d.challenger;
+    if (d.status === 'pending') d.status = d.challenger === ME ? 'cancelled' : 'declined'; else { d.status = 'finished'; d.winner = other; }
+    return { status: 200, body: duelView(d) }; }
+  if (t === 'rpc/duel_guess') { const d = findDuel(body.p_duel); d.guesses[ME].push(body.p_guess); duelSettle(d); return { status: 200, body: duelView(d) }; }
+  if (t === 'rpc/submit_arcade_score') { serverState.arcade.push({ user_id: ME, score: body.p_score });
+    return { status: 200, body: { best_today: Math.max(...serverState.arcade.filter(r => r.user_id === ME).map(r => r.score)) } }; }
+  if (t === 'rpc/arcade_leaderboard') { const best = new Map(); serverState.arcade.forEach(r => best.set(r.user_id, Math.max(best.get(r.user_id) || 0, r.score)));
+    const rows = [...best].sort((a, b) => b[1] - a[1]).map(([user_id, score], i) => ({ rank: i + 1, user_id, username: (profiles.find(x => x.user_id === user_id) || {}).username, score, is_me: user_id === ME }));
+    const me = rows.find(r => r.is_me); return { status: 200, body: { rows, me: me ? { rank: me.rank, score: me.score } : null } }; }
   return null;
 }
 async function setup(browser, opts, signedIn=true) {

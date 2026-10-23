@@ -8,7 +8,7 @@ server.listen(0, async () => {
     const { ctx, page, errors } = await setup(browser, { ...devices['iPhone 13'], colorScheme: scheme });
     await page.goto(url); await page.waitForTimeout(2000);
     const visibleView = () => page.evaluate(() => [...document.querySelectorAll('[data-tab-view]')].filter(v => !v.classList.contains('hidden')).map(v => v.dataset.tabView).join(','));
-    for (const tab of ['games', 'social', 'activity', 'account']) {
+    for (const tab of ['games', 'social', 'play', 'activity', 'account']) {
       await page.click(`[data-tab-button="${tab}"]`); await page.waitForTimeout(300);
       if (scheme === 'light') assert(await visibleView() === tab, `${tab} tab shows only its view`);
       await page.screenshot({ path: `${out}-${scheme}-${tab}.png` });

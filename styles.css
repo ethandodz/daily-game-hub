@@ -1206,7 +1206,7 @@ body {
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   padding:
     6px
     calc(8px + env(safe-area-inset-right))
@@ -3700,4 +3700,681 @@ body.card-popped .tab-bar {
   vertical-align: middle;
   border-radius: 999px;
   background: #ea580c;
+}
+
+
+/* ---------- Play tab ---------- */
+
+.play-tab-logo {
+  width: 34px;
+  height: 34px;
+  margin: -12px 0 -2px;
+  border-radius: 10px;
+  filter: drop-shadow(0 4px 10px var(--glow-purple));
+  transition: transform 0.15s ease;
+}
+
+.play-tab-button.active .play-tab-logo {
+  transform: scale(1.08);
+  filter: drop-shadow(0 4px 14px rgba(124, 58, 237, 0.55));
+}
+
+.play-head {
+  margin: 4px 0 16px;
+}
+
+.play-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.play-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.play-sub {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 5px 10px;
+  color: var(--success-text);
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  background: var(--selected-bg);
+}
+
+.live-pill i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: live-pulse 1.8s ease-out infinite;
+}
+
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+  100% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.play-section-title {
+  margin: 20px 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#playStatus:empty {
+  display: none;
+}
+
+.avatar-friend {
+  position: relative;
+}
+
+.online-dot {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 13px;
+  height: 13px;
+  border: 3px solid var(--background);
+  border-radius: 50%;
+  background: var(--icon-dim);
+}
+
+.online-dot.on {
+  background: var(--green);
+}
+
+.friend-strip {
+  display: flex;
+  gap: 14px;
+  margin: 0 -16px;
+  padding: 2px 16px 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.friend-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.friend-chip {
+  display: flex;
+  flex: 0 0 64px;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  border: 0;
+  background: transparent;
+}
+
+.friend-chip .avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 17px;
+  font-size: 28px;
+}
+
+.friend-chip > span:last-child {
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duel-list {
+  display: grid;
+  gap: 8px;
+}
+
+.duel-row,
+.play-game,
+.challenge-row,
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+}
+
+.duel-row.open {
+  border-color: var(--purple-soft);
+  background:
+    linear-gradient(135deg, var(--glow-purple), transparent 70%),
+    var(--panel);
+}
+
+.duel-row-text,
+.play-game-text,
+.challenge-row > div {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.duel-row-text b,
+.play-game-text b {
+  font-size: 15px;
+}
+
+.duel-row-text span,
+.play-game-text > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.duel-row-actions,
+.play-game-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.play-games {
+  display: grid;
+  gap: 10px;
+}
+
+.play-game-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  font-size: 26px;
+}
+
+.play-tag {
+  margin-left: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  vertical-align: 2px;
+  border-radius: 6px;
+}
+
+.play-tag.versus {
+  color: #fecaca;
+  background: rgba(220, 38, 38, 0.35);
+}
+
+.play-tag.arcade {
+  color: #ddd6fe;
+  background: rgba(124, 58, 237, 0.4);
+}
+
+@media (prefers-color-scheme: light) {
+  .play-tag.versus { color: #b91c1c; background: #fee2e2; }
+  .play-tag.arcade { color: #6d28d9; background: #ede9fe; }
+}
+
+.play-go {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 14px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  border: 0;
+  border-radius: 12px;
+  background: var(--purple);
+}
+
+.play-go.secondary {
+  color: var(--text);
+  background: var(--control);
+}
+
+.play-go:disabled {
+  opacity: 0.5;
+}
+
+.challenge-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.challenge-row {
+  width: 100%;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.challenge-row > div span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+
+/* Full-screen game screens (above the tab bar) */
+
+body.play-screen-open {
+  overflow: hidden;
+}
+
+.play-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding:
+    calc(10px + env(safe-area-inset-top))
+    calc(12px + env(safe-area-inset-right))
+    calc(10px + env(safe-area-inset-bottom))
+    calc(12px + env(safe-area-inset-left));
+  overflow-y: auto;
+  background: var(--background);
+}
+
+.play-screen.hidden {
+  display: none;
+}
+
+.play-screen-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+
+.play-screen-top > b {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.play-screen-top .close-button {
+  position: static;
+  flex: 0 0 auto;
+}
+
+
+/* Wordle Duel */
+
+.duel-opponent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+}
+
+.duel-opponent-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.duel-opponent-text span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.duel-mini {
+  display: grid;
+  gap: 2px;
+}
+
+/* Shrinks on short screens so the keyboard always fits. */
+.duel-board {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 300px, (100vh - 400px) * 0.83);
+  width: min(100%, 300px, (100dvh - 400px) * 0.83);
+  margin: 0 auto;
+}
+
+.duel-row-squares {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.duel-mini .duel-row-squares {
+  grid-template-columns: repeat(5, 9px);
+  gap: 2px;
+}
+
+.duel-square {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  color: var(--text);
+  font-size: clamp(18px, 6vw, 26px);
+  font-weight: 900;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+}
+
+.duel-square.small {
+  width: 9px;
+  height: 9px;
+  border-width: 1px;
+  border-radius: 2px;
+}
+
+.duel-square.typed {
+  border-color: var(--border-strong);
+  animation: duel-pop 0.1s ease-out;
+}
+
+@keyframes duel-pop {
+  50% { transform: scale(1.08); }
+}
+
+.duel-square[data-mark],
+.duel-key[data-mark] {
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.duel-square[data-mark="G"],
+.duel-key[data-mark="G"] {
+  background: #16a34a;
+}
+
+.duel-square[data-mark="Y"],
+.duel-key[data-mark="Y"] {
+  background: #ca8a04;
+}
+
+.duel-square[data-mark="B"],
+.duel-key[data-mark="B"] {
+  background: #475569;
+}
+
+.duel-message {
+  min-height: 20px;
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.duel-message:empty {
+  display: none;
+}
+
+.duel-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.duel-result b {
+  font-size: 20px;
+}
+
+.duel-result span {
+  color: var(--muted);
+}
+
+.duel-result.hidden,
+.duel-keyboard.hidden {
+  display: none;
+}
+
+.duel-keyboard {
+  display: grid;
+  gap: 7px;
+  margin-top: auto;
+}
+
+.duel-key-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.duel-key {
+  flex: 1;
+  max-width: 42px;
+  height: 52px;
+  padding: 0;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+  border: 0;
+  border-radius: 8px;
+  background: var(--control);
+  touch-action: manipulation;
+}
+
+.duel-key.wide {
+  flex: 1.6;
+  max-width: 66px;
+  font-size: 13px;
+}
+
+
+/* Tile Drop */
+
+.tile-stats {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 18px;
+}
+
+.tile-stats span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tile-stats small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tile-stats b {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-next {
+  width: 52px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.tile-well {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* Board shape (10 wide, 20 tall); the game-over panel covers just this. */
+.tile-board {
+  position: relative;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1 / 2;
+}
+
+#tileCanvas {
+  --well: rgba(255, 255, 255, 0.04);
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  touch-action: none;
+}
+
+@media (prefers-color-scheme: light) {
+  #tileCanvas {
+    --well: rgba(18, 16, 28, 0.05);
+  }
+}
+
+.tile-over {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  text-align: center;
+}
+
+.tile-over.hidden {
+  display: none;
+}
+
+.tile-over b {
+  font-size: 22px;
+}
+
+.tile-over-score {
+  font-size: 40px;
+  font-weight: 900;
+}
+
+.tile-over span {
+  color: var(--text-soft);
+}
+
+.tile-over div {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tile-controls {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.tile-controls button {
+  height: 58px;
+  color: var(--text);
+  font-size: 22px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--control);
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.tile-controls button[data-tile="drop"] {
+  color: #ffffff;
+  background: var(--purple);
+}
+
+
+/* Leaderboard */
+
+/* Can open from the Tile Drop game-over screen, so it sits above it. */
+#leaderboardModal {
+  z-index: 50;
+}
+
+.leaderboard-periods,
+.leaderboard-scopes {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.leaderboard-row {
+  padding: 10px 12px;
+}
+
+.leaderboard-row.me {
+  border-color: var(--purple-soft);
+  background: var(--selected-bg);
+}
+
+.leaderboard-rank {
+  width: 32px;
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+}
+
+.leaderboard-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 900px) {
+  .play-tab-logo {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border-radius: 6px;
+  }
+
+  .play-screen {
+    right: 50%;
+    left: 50%;
+    width: min(480px, 100%);
+    transform: translateX(-50%);
+  }
 }

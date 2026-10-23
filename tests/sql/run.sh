@@ -14,13 +14,14 @@ trap 'psql -q -d postgres -c "drop database if exists $db" >/dev/null' EXIT
 
 psql -v ON_ERROR_STOP=1 -q -d "$db" -f "$here/stand-in.sql"
 for pass in 1 2; do   # every file must be safe to run twice
-  for file in "$root"/supabase/servers/0*.sql "$root"/supabase/cards/0*.sql; do
+  for file in "$root"/supabase/servers/0*.sql "$root"/supabase/cards/0*.sql "$root"/supabase/play/0*.sql; do
     psql -v ON_ERROR_STOP=1 -q -d "$db" -f "$file" >/dev/null
   done
 done
 
 psql -q -d "$db" -f "$here/server-tests.sql" >/dev/null
 psql -q -d "$db" -f "$here/card-tests.sql" >/dev/null
+psql -q -d "$db" -f "$here/play-tests.sql" >/dev/null
 psql -At -d "$db" -c "select (case when ok then 'PASS ' else 'FAIL ' end) || label || case when ok then '' else '  -- ' || detail end from public.test_results order by n"
 failed=$(psql -At -d "$db" -c "select count(*) from public.test_results where not ok")
 total=$(psql -At -d "$db" -c "select count(*) from public.test_results")
