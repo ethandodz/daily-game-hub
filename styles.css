@@ -4870,3 +4870,113 @@ body.play-screen-open {
   color: #ffffff;
   background: #16a34a;
 }
+
+
+/* Mind Meld */
+
+.play-tag.together {
+  color: #065f46;
+  background: #a7f3d0;
+}
+
+.meld-head,
+.meld-round {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.meld-head {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.meld-head b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meld-rounds {
+  display: grid;
+  gap: 6px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.meld-num {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.meld-word {
+  padding: 10px 8px;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.meld-round.match .meld-word {
+  color: #ffffff;
+  background: #16a34a;
+}
+
+.meld-round.fresh .meld-word {
+  animation: meld-reveal 0.5s ease-out both;
+}
+
+.meld-round.fresh .meld-word + .meld-word {
+  animation-delay: 0.15s;
+}
+
+@keyframes meld-reveal {
+  from { opacity: 0; transform: rotateX(90deg); }
+  to { opacity: 1; transform: none; }
+}
+
+.meld-prompt {
+  margin: 6px 0 0;
+  font-size: 17px;
+  text-align: center;
+}
+
+.meld-prompt b {
+  color: var(--tab-active);
+}
+
+.meld-form {
+  display: flex;
+  gap: 8px;
+}
+
+.meld-form.hidden,
+#meldDone.hidden {
+  display: none;
+}
+
+.meld-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  color: var(--text);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.meld-input:focus {
+  outline: none;
+  border-color: var(--purple-soft);
+}

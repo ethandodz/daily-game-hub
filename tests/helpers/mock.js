@@ -61,6 +61,9 @@ const directions = { wordle: 'lower', connections: 'lower', worldle: 'lower', fr
 const HL_PAIRS = [[['United States', 340e6], ['India', 1428e6]], [['Japan', 124e6], ['Canada', 39e6]], [['Iceland', 380e3], ['Ireland', 5.1e6]]];
 function turnView(d, uid, showScore) { const p = (d.plays || {})[uid];
   return { started: !!p, finished: !!(p && p.finished), score: p && (showScore || p.finished) ? p.score : (uid === ME ? 0 : null), correct: p ? p.correct : 0, time_ms: p ? p.time_ms : 0 }; }
+function meldView(d, other) { const w = d.words || {}; const mine = w[ME] || [], theirs = w[other] || []; const done = Math.min(mine.length, theirs.length);
+  return { rounds: Array.from({ length: done }, (_, i) => ({ mine: mine[i], theirs: theirs[i] })), round: done + 1, my_word: mine[done] || null, they_ready: theirs.length > done,
+    matched: d.status === 'finished' && d.answer ? d.answer : null }; }
 function versusMine(d) { const p = d.plays[ME] || {};
   return { duel: duelViewFor(d), letters: d.game === 'word_race' && p.started ? 'rgadsener' : null, seconds_left: d.game === 'word_race' && !p.finished ? 120 : null,
     words: d.game === 'word_race' ? (p.moves || []) : null, answered: (p.moves || []).filter(m => m.choice !== undefined).length }; }
@@ -170,7 +173,8 @@ function serverRoute(method, u, body) {
     return { id: d.id, game: d.game || 'wordle_duel', status: d.status, is_challenger: me, opponent: other, winner: d.winner, created_at: d.created_at, finished_at: d.finished_at,
       my_guesses: d.guesses[ME].map(guess => ({ guess, pattern: duelPattern(guess, d.answer) })), their_patterns: d.guesses[other].map(g => duelPattern(g, d.answer)),
       last_move_at: d.created_at, answer: d.status === 'finished' ? d.answer : null,
-      ...(d.game && d.game !== 'wordle_duel' ? { me: turnView(d, ME, true), them: turnView(d, other, d.status === 'finished') } : {}) }; };
+      ...(d.game && d.game !== 'wordle_duel' ? { me: turnView(d, ME, true), them: turnView(d, other, d.status === 'finished') } : {}),
+      ...(d.game === 'mind_meld' ? { meld: meldView(d, other) } : {}) }; };
   const findDuel = id => serverState.duels.find(d => d.id === id);
   duelViewFor = duelView;
   if (t === 'rpc/create_duel') { if (!serverState.friends.some(f => f.user_id === body.p_opponent)) return err('You can only challenge people in your servers.');
@@ -181,6 +185,13 @@ function serverRoute(method, u, body) {
     const d = { id: 'vs-' + (serverState.duels.length + 1), game: body.p_game, challenger: ME, opponent: body.p_opponent, answer: body.p_game === 'word_race' ? 'gardeners' : '', status: 'pending', winner: null,
       created_at: new Date().toISOString(), finished_at: null, guesses: { [ME]: [], [body.p_opponent]: [] }, plays: {} };
     serverState.duels.push(d); return { status: 200, body: d.id }; }
+  if (t === 'rpc/mind_meld_say') { const d = findDuel(body.p_duel); const other = d.challenger === ME ? d.opponent : d.challenger; d.words = d.words || { [ME]: [], [other]: [] };
+    const word = body.p_word.trim().toLowerCase(); const round = Math.min(d.words[ME].length, d.words[other].length) + 1;
+    if (d.words[ME].length >= round) return err('You already said a word this round.');
+    if ([...d.words[ME], ...d.words[other]].slice(0, 2 * (round - 1)).includes(word)) return err('That word was already said. Try another.');
+    d.words[ME].push(word);
+    if (d.status === 'active' && d.words[other][round - 1] === word) { d.status = 'finished'; d.finished_at = new Date().toISOString(); d.answer = word; }
+    return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/versus_start') { const d = findDuel(body.p_duel); if (!d.plays[ME]) d.plays[ME] = { started: Date.now(), finished: false, score: 0, correct: 0, time_ms: 0, moves: [] };
     return { status: 200, body: versusMine(d) }; }
   if (t === 'rpc/word_race_word') { const d = findDuel(body.p_duel); const pl = d.plays[ME]; const w = body.p_word;
@@ -210,7 +221,7 @@ function serverRoute(method, u, body) {
   if (t === 'rpc/duel_state') { const d = findDuel(body.p_duel); if (d && d.plays) versusSettle(d); return d ? { status: 200, body: duelView(d) } : err('Duel not found.'); }
   if (t === 'rpc/respond_duel') { const d = findDuel(body.p_duel); d.status = body.p_accept ? 'active' : 'declined'; if (d.plays) versusSettle(d); return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/cancel_duel') { const d = findDuel(body.p_duel); const other = d.challenger === ME ? d.opponent : d.challenger;
-    if (d.status === 'pending') d.status = d.challenger === ME ? 'cancelled' : 'declined'; else { d.status = 'finished'; d.winner = other; }
+    if (d.status === 'pending') d.status = d.challenger === ME ? 'cancelled' : 'declined'; else { d.status = 'finished'; d.winner = d.game === 'mind_meld' ? null : other; if (d.game === 'mind_meld') d.answer = ''; }
     return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/duel_guess') { const d = findDuel(body.p_duel); d.guesses[ME].push(body.p_guess); duelSettle(d); return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/submit_arcade_score') { serverState.arcade.push({ user_id: ME, score: body.p_score });

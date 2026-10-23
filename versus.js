@@ -1,5 +1,5 @@
 /*
- * Play tab: Word Race, Trivia Showdown and Higher or Lower.
+ * Play tab: Word Race, Trivia Showdown, Higher or Lower and Mind Meld.
  *
  * Like Wordle Duel, each player takes their own turn (the challenger
  * can go first, before the challenge is accepted). The database keeps
@@ -20,6 +20,11 @@ const VERSUS_RULES = {
     "Two things appear. Tap the one with the bigger number.",
     "10 seconds a pick. One miss and your turn is over.",
     "Longest streak wins. A tie goes to whoever was quicker."
+  ],
+  mind_meld: [
+    "You both say any word. Then you see each other's words.",
+    "Next, each say a word that links those two, trying to say the same one.",
+    "Keep going until you match. Fewer rounds is better. You win together."
   ]
 };
 
@@ -94,6 +99,10 @@ function versusSummary(duel) {
 
   const them =
     duel.them || {};
+
+  if (duel.game === "mind_meld") {
+    return meldSummary(duel);
+  }
 
   const theirStatus =
     them.finished
@@ -224,11 +233,15 @@ function versusStage(duel = versusDuel) {
   }
 
   if (duel.status === "finished") {
-    return "result";
+    return duel.game === "mind_meld" ? "meld" : "result";
   }
 
   if (duel.status === "declined" || duel.status === "cancelled") {
     return "closed";
+  }
+
+  if (duel.game === "mind_meld") {
+    return duel.status === "pending" && !duel.is_challenger ? "intro" : "meld";
   }
 
   if (duel.me?.finished) {
@@ -250,7 +263,7 @@ function renderVersusHeader() {
     playFriends.find(entry => entry.user_id === duel.opponent);
 
   document.getElementById("versusTitle").textContent =
-    info.name + " vs " + friendName(duel.opponent);
+    info.name + (info.tag === "together" ? " with " : " vs ") + friendName(duel.opponent);
 
   document.getElementById("versusOpponentAvatar")
     .replaceChildren(friendAvatar(duel.opponent, isOnline(opponentFriend)));
@@ -261,9 +274,18 @@ function renderVersusHeader() {
   const them =
     duel.them || {};
 
+  const meld =
+    duel.meld;
+
   let status;
 
-  if (duel.status === "finished" || them.finished) {
+  if (meld && duel.status === "finished") {
+    status = meld.matched ? "You matched!" : "Game over";
+  } else if (meld && duel.status === "pending" && duel.is_challenger) {
+    status = "Hasn't accepted yet";
+  } else if (meld) {
+    status = meld.they_ready ? "Ready ✓" : "Thinking…";
+  } else if (duel.status === "finished" || them.finished) {
     status = them.started ? "Done · " + versusScoreText(duel.game, them, duel.status === "finished") : "Didn't play";
   } else if (them.started) {
     status = "Playing now";
@@ -277,7 +299,8 @@ function renderVersusHeader() {
     status;
 
   document.getElementById("versusScore").textContent =
-    duel.me?.started ? versusScoreText(duel.game, duel.me, duel.status === "finished") : "";
+    meld ? "Round " + (duel.status === "finished" ? Math.max(1, meld.rounds.length) : meld.round)
+      : duel.me?.started ? versusScoreText(duel.game, duel.me, duel.status === "finished") : "";
 
   const giveUp =
     document.getElementById("versusGiveUpButton");
@@ -288,7 +311,7 @@ function renderVersusHeader() {
   giveUp.classList.toggle("hidden", !open);
 
   giveUp.textContent =
-    duel.status === "pending" ? "Call off" : "Give up";
+    duel.status === "pending" ? "Call off" : meld ? "End game" : "Give up";
 }
 
 
@@ -310,6 +333,8 @@ function showVersusStage() {
     startVersusTurn();
   } else if (stage === "waiting") {
     renderVersusWaiting();
+  } else if (stage === "meld") {
+    renderMeld();
   } else if (stage === "result") {
     renderVersusResult();
   } else {
@@ -567,7 +592,9 @@ document
     const question =
       versusDuel.status === "pending"
         ? "Call off this challenge?"
-        : "Give up? " + friendName(versusDuel.opponent) + " will win.";
+        : versusDuel.game === "mind_meld"
+          ? "End this game for both of you?"
+          : "Give up? " + friendName(versusDuel.opponent) + " will win.";
 
     if (!confirm(question)) {
       return;
@@ -1306,4 +1333,322 @@ function renderHigherLowerResult(details, result) {
     versusEl("p", "versus-note", line("You", result.mine)),
     versusEl("p", "versus-note", line(friendName(versusDuel.opponent), result.theirs))
   );
+}
+
+
+
+/* ---------- Mind Meld ---------- */
+
+function meldRoundsText(count) {
+  return count + (count === 1 ? " round" : " rounds");
+}
+
+
+// Short text for the Play tab list.
+function meldSummary(duel) {
+  const name =
+    friendName(duel.opponent);
+
+  const meld =
+    duel.meld || { rounds: [], round: 1 };
+
+  const rounds =
+    meld.rounds.length;
+
+  if (duel.status === "pending" && !duel.is_challenger) {
+    return { title: name + " wants to Mind Meld", sub: "Mind Meld · say the same word", action: "accept" };
+  }
+
+  if (duel.status === "pending") {
+    return { title: "Waiting for " + name, sub: "Mind Meld · they haven't accepted", button: "Open" };
+  }
+
+  if (duel.status === "active") {
+    return meld.my_word
+      ? { title: "Waiting for " + name, sub: "Mind Meld · round " + meld.round, button: "Open" }
+      : {
+        title: "Your turn with " + name,
+        sub: "Mind Meld · round " + meld.round + (meld.they_ready ? " · they're ready" : ""),
+        button: "Play"
+      };
+  }
+
+  if (duel.status === "finished") {
+    return meld.matched
+      ? { title: "🧠 Mind meld with " + name, sub: "You both said " + meld.matched.toUpperCase() + " in " + meldRoundsText(rounds), button: "See", secondary: true }
+      : { title: "Mind Meld with " + name, sub: "Ended after " + meldRoundsText(rounds), button: "See", secondary: true };
+  }
+
+  return { title: duelOutcomeText(duel), sub: "Mind Meld", button: "See", secondary: true };
+}
+
+
+// Built once per game; refreshMeld fills it in so typing isn't lost
+// when the screen updates.
+function renderMeld() {
+  const body =
+    versusBody();
+
+  body.replaceChildren();
+
+  const head =
+    versusEl("div", "meld-head");
+
+  head.append(versusEl("span", "", ""), versusEl("b", "", "You"), versusEl("b", "", friendName(versusDuel.opponent)));
+
+  const rounds =
+    versusEl("div", "meld-rounds");
+
+  rounds.id = "meldRounds";
+
+  const prompt =
+    versusEl("p", "meld-prompt");
+
+  prompt.id = "meldPrompt";
+
+  const form =
+    versusEl("form", "meld-form");
+
+  form.id = "meldForm";
+
+  const input =
+    versusEl("input", "meld-input");
+
+  input.id = "meldInput";
+  input.type = "text";
+  input.maxLength = 30;
+  input.autocomplete = "off";
+  input.autocapitalize = "off";
+  input.spellcheck = false;
+  input.enterKeyHint = "send";
+  input.placeholder = "Your word";
+  input.setAttribute("aria-label", "Your word");
+
+  const send =
+    versusEl("button", "play-go", "Say it");
+
+  send.type = "submit";
+  form.append(input, send);
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    sayMeldWord();
+  });
+
+  const status =
+    versusEl("p", "duel-message", "");
+
+  status.id = "meldStatus";
+
+  const done =
+    versusEl("div", "duel-result versus-result hidden");
+
+  done.id = "meldDone";
+
+  body.append(head, rounds, prompt, form, status, done);
+
+  versusRound = { shownRounds: -1 };
+  refreshMeld();
+
+  if (versusDuel.status !== "finished") {
+    versusPollTimer = setInterval(pollMeld, 2500);
+  }
+}
+
+
+function refreshMeld() {
+  const duel =
+    versusDuel;
+
+  const meld =
+    duel.meld || { rounds: [], round: 1 };
+
+  const rounds =
+    document.getElementById("meldRounds");
+
+  if (!rounds) {
+    return;
+  }
+
+  const finished =
+    duel.status === "finished";
+
+  // Add rounds that are new since last time, with a little reveal.
+  if (versusRound.shownRounds !== meld.rounds.length) {
+    const fresh =
+      versusRound.shownRounds >= 0;
+
+    rounds.replaceChildren(...meld.rounds.map((round, i) => {
+      const row =
+        versusEl("div", "meld-round" + (round.mine === round.theirs ? " match" : "") + (fresh && i >= versusRound.shownRounds ? " fresh" : ""));
+
+      row.append(
+        versusEl("span", "meld-num", String(i + 1)),
+        versusEl("span", "meld-word", round.mine.toUpperCase()),
+        versusEl("span", "meld-word", round.theirs.toUpperCase())
+      );
+
+      return row;
+    }));
+
+    if (fresh) {
+      document.getElementById("meldInput").value = "";
+    }
+
+    versusRound.shownRounds = meld.rounds.length;
+    rounds.lastElementChild?.scrollIntoView({ block: "nearest" });
+  }
+
+  const last =
+    meld.rounds[meld.rounds.length - 1];
+
+  const prompt =
+    document.getElementById("meldPrompt");
+
+  prompt.replaceChildren();
+
+  if (!finished && !last) {
+    prompt.append("Round 1: say any word to start.");
+  } else if (!finished) {
+    prompt.append("Round " + meld.round + ": say a word that links ");
+    prompt.append(versusEl("b", "", last.mine.toUpperCase()), " and ", versusEl("b", "", last.theirs.toUpperCase()));
+  }
+
+  const form =
+    document.getElementById("meldForm");
+
+  const waiting =
+    Boolean(meld.my_word);
+
+  form.classList.toggle("hidden", finished || waiting);
+
+  const status =
+    document.getElementById("meldStatus");
+
+  if (!finished && waiting) {
+    status.textContent = "You said " + meld.my_word.toUpperCase() + ". Waiting for " + friendName(duel.opponent) + "…";
+    status.dataset.tone = "";
+  } else if (!finished && meld.they_ready && (!status.dataset.tone || !versusRound.theyReady)) {
+    status.textContent = friendName(duel.opponent) + " is ready ✓";
+    status.dataset.tone = "";
+  } else if (!finished && !meld.they_ready && !status.dataset.tone) {
+    status.textContent = "";
+  } else if (finished) {
+    status.textContent = "";
+  }
+
+  versusRound.theyReady =
+    Boolean(meld.they_ready);
+
+  const done =
+    document.getElementById("meldDone");
+
+  done.classList.toggle("hidden", !finished);
+
+  if (finished && !done.childElementCount) {
+    const count =
+      meld.rounds.length;
+
+    done.append(
+      versusEl("b", "", meld.matched ? "🧠 Mind meld!" : "Game over"),
+      versusEl("span", "", meld.matched
+        ? "You both said " + meld.matched.toUpperCase() + " in " + meldRoundsText(count) + "."
+        : "No match after " + meldRoundsText(count) + ".")
+    );
+
+    const again =
+      versusEl("button", "play-go", "Play again");
+
+    again.type = "button";
+    again.id = "versusRematchButton";
+    again.addEventListener("click", () => {
+      const opponent = duel.opponent;
+      closeVersusScreen(true);
+      challengeFriend(opponent, "mind_meld");
+    });
+
+    done.appendChild(again);
+  }
+
+  renderVersusHeader();
+}
+
+
+async function sayMeldWord() {
+  const input =
+    document.getElementById("meldInput");
+
+  const status =
+    document.getElementById("meldStatus");
+
+  const word =
+    input.value.trim().toLowerCase().replace(/\s+/g, " ");
+
+  if (!word) {
+    return;
+  }
+
+  if (!/^[a-z]+([ '-][a-z]+)*$/.test(word)) {
+    status.textContent = "Use a word (letters only).";
+    status.dataset.tone = "bad";
+    return;
+  }
+
+  const said =
+    (versusDuel.meld?.rounds || []).flatMap(round => [round.mine, round.theirs]);
+
+  if (said.includes(word)) {
+    status.textContent = word.toUpperCase() + " was already said. Try another.";
+    status.dataset.tone = "bad";
+    return;
+  }
+
+  try {
+    versusDuel =
+      await playRpc("mind_meld_say", { p_duel: versusDuel.id, p_word: word });
+
+    status.dataset.tone = "";
+    input.blur();
+    refreshMeld();
+
+    if (versusDuel.status === "finished") {
+      stopVersusTimers();
+    }
+  } catch (error) {
+    status.textContent = error.message || "That word didn't go through.";
+    status.dataset.tone = "bad";
+  }
+}
+
+
+async function pollMeld() {
+  const duel =
+    versusDuel;
+
+  if (!duel || duel.game !== "mind_meld") {
+    return;
+  }
+
+  try {
+    const fresh =
+      await playRpc("duel_state", { p_duel: duel.id });
+
+    if (versusDuel?.id !== fresh.id) {
+      return;
+    }
+
+    versusDuel = fresh;
+
+    if (fresh.status === "declined" || fresh.status === "cancelled") {
+      showVersusStage();
+      return;
+    }
+
+    refreshMeld();
+
+    if (fresh.status === "finished") {
+      stopVersusTimers();
+    }
+  } catch (error) {
+    // Try again next time.
+  }
 }

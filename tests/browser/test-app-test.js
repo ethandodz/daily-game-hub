@@ -26,7 +26,7 @@ server.listen(0, async () => {
       assert(r.url === 'https://npjppwydmhwympqsyfrl.supabase.co' && r.key.startsWith('sb_publishable_nhPC'), host + ': uses the test database');
       assert(r.badge === 'TEST' && r.title.startsWith('TEST') && r.homeName === 'DGH Test', host + ': TEST label, title and Home Screen name ' + JSON.stringify(r));
       assert(hits.every(h => h === 'npjppwydmhwympqsyfrl.supabase.co'), host + ': never contacts the real database ' + JSON.stringify(hits));
-      assert(versusRows === 4, host + ': shows the games still being tested');
+      assert(versusRows === 5, host + ': shows the games still being tested');
       if (host.includes('workers.dev')) await page.screenshot({ path: out + '-test.png' });
     } else {
       assert(versusRows === 1, host + ': only released games (Wordle Duel) ' + versusRows);

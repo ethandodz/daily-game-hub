@@ -190,3 +190,57 @@ select public.create_duel(:'B') as wd \gset
 select public.duel_guess(:'wd', 'slate') as g \gset
 select public.check('versus: Wordle Duel unchanged', json_array_length(:'g'::json->'my_guesses') = 1 and (:'g'::json->>'game') = 'wordle_duel', :'g');
 reset role;
+
+
+-- ---------- Mind Meld ----------
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.create_versus(:'B', 'mind_meld') as mm \gset
+select public.mind_meld_say(:'mm', '  Ocean ') as s \gset
+select public.check('mind meld: you can say your first word before they accept', (:'s'::json->'meld'->>'my_word') = 'ocean' and (:'s'::json->'meld'->>'round') = '1', :'s');
+select public.expect_error('mind meld: one word per round', format('select public.mind_meld_say(%L, %L)', :'mm', 'sea'), 'already said a word');
+select public.expect_error('mind meld: words only', format('select public.mind_meld_say(%L, %L)', :'mm', '42!'), 'letters only');
+
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.duel_state(:'mm') as s \gset
+select public.check('mind meld: their word stays hidden until you both say one', (:'s'::text) not like '%ocean%' and (:'s'::json->'meld'->>'they_ready')::boolean, :'s');
+select public.expect_error('mind meld: accept first', format('select public.mind_meld_say(%L, %L)', :'mm', 'beach'), 'not open');
+select public.respond_duel(:'mm', true);
+select public.mind_meld_say(:'mm', 'beach') as s \gset
+select public.check('mind meld: both words shown after round 1', (:'s'::json->'meld'->'rounds'->0->>'mine') = 'beach' and (:'s'::json->'meld'->'rounds'->0->>'theirs') = 'ocean' and (:'s'::json->'meld'->>'round') = '2', :'s');
+select public.expect_error('mind meld: no repeating a word already said', format('select public.mind_meld_say(%L, %L)', :'mm', 'ocean'), 'already said');
+select public.mind_meld_say(:'mm', 'sand');
+
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.mind_meld_say(:'mm', 'Sand') as s \gset
+select public.check('mind meld: same word ends it together (no winner)', (:'s'::json->>'status') = 'finished' and (:'s'::json->>'winner') is null
+  and (:'s'::json->'meld'->>'matched') = 'sand' and json_array_length(:'s'::json->'meld'->'rounds') = 2, :'s');
+select public.expect_error('mind meld: nothing after a match', format('select public.mind_meld_say(%L, %L)', :'mm', 'shore'), 'not open');
+
+-- Giving up ends it with no winner
+select public.create_versus(:'B', 'mind_meld') as mm2 \gset
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.respond_duel(:'mm2', true);
+select public.cancel_duel(:'mm2');
+select public.duel_state(:'mm2') as s \gset
+select public.check('mind meld: stopping early has no winner', (:'s'::json->>'status') = 'finished' and (:'s'::json->>'winner') is null and (:'s'::json->'meld'->>'matched') is null, :'s');
+
+-- 20 rounds without matching ends the game
+select public.create_versus(:'A', 'mind_meld') as mm3 \gset
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.respond_duel(:'mm3', true);
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.mind_meld_say(:'mm3', 'b' || repeat('x', n)) from generate_series(1, 1) n;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.mind_meld_say(:'mm3', 'a' || repeat('y', 1));
+reset role;
+insert into mind_meld_words (duel_id, user_id, round, word)
+select :'mm3', u, r, case when u = :'A'::uuid then 'a' else 'b' end || repeat('z', r)
+from generate_series(2, 19) r, (values (:'A'::uuid), (:'B'::uuid)) v(u);
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.mind_meld_say(:'mm3', 'apple');
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.mind_meld_say(:'mm3', 'banana') as s \gset
+select public.check('mind meld: stops after 20 rounds', (:'s'::json->>'status') = 'finished' and json_array_length(:'s'::json->'meld'->'rounds') = 20 and (:'s'::json->'meld'->>'matched') is null, :'s');
+reset role;

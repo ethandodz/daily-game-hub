@@ -1,5 +1,6 @@
--- Play tab, step 3: more versus games (Word Race, Trivia Showdown,
--- Higher or Lower). Safe to run again. Needs 01_wordle_duel.sql first.
+-- Play tab, step 3: more games with friends (Word Race, Trivia Showdown,
+-- Higher or Lower, and Mind Meld). Safe to run again. Needs
+-- 01_wordle_duel.sql first.
 -- If you ever run 01 again, run this file again after it.
 --
 -- Same idea as Wordle Duel: you each play your own turn (the challenger
@@ -13,7 +14,7 @@
 -- Let duels hold the new games and their private setup.
 alter table public.duels drop constraint if exists duels_game_check;
 alter table public.duels add constraint duels_game_check
-  check (game in ('wordle_duel', 'word_race', 'trivia', 'higher_lower'));
+  check (game in ('wordle_duel', 'word_race', 'trivia', 'higher_lower', 'mind_meld'));
 alter table public.duels add column if not exists setup jsonb;
 
 -- Each player's turn in a game.
@@ -39,6 +40,19 @@ create table if not exists public.versus_moves (
   points integer not null default 0,
   primary key (duel_id, user_id, n)
 );
+
+-- Mind Meld: the word each player said in each round.
+create table if not exists public.mind_meld_words (
+  duel_id uuid not null references public.duels (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  round integer not null check (round between 1 and 20),
+  word text not null,
+  created_at timestamptz not null default now(),
+  primary key (duel_id, user_id, round)
+);
+
+alter table public.mind_meld_words enable row level security;
+revoke all on public.mind_meld_words from anon, authenticated;
 
 create table if not exists public.word_race_seeds (
   word text primary key check (word ~ '^[a-z]{9}$')
@@ -958,6 +972,10 @@ begin
     ));
   end if;
 
+  if p_game = 'mind_meld' then
+    return '{}'::jsonb;
+  end if;
+
   if p_game = 'higher_lower' then
     -- 40 pairs from the same category, at least 25% apart.
     for i in 1..40 loop
@@ -1030,7 +1048,7 @@ declare
 begin
   select * into d from public.duels where id = p_duel for update;
 
-  if not found or d.game = 'wordle_duel' then
+  if not found or d.game in ('wordle_duel', 'mind_meld') then
     return;
   end if;
 
@@ -1122,6 +1140,41 @@ $$;
 revoke all on function public.dgh_versus_turn(public.duels, uuid) from public, anon, authenticated;
 
 
+-- Mind Meld as one player sees it: the rounds you've both revealed,
+-- your word for this round (theirs stays hidden until you've both
+-- said one), and the word you matched on.
+create or replace function public.dgh_meld_view(d public.duels, me uuid)
+returns json
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with mine as (
+    select round, word from public.mind_meld_words where duel_id = d.id and user_id = me
+  ),
+  theirs as (
+    select round, word from public.mind_meld_words where duel_id = d.id and user_id <> me
+  ),
+  done as (
+    select m.round, m.word as mine, t.word as theirs
+    from mine m join theirs t using (round)
+  ),
+  now_round as (
+    select coalesce(max(round), 0) + 1 as round from done
+  )
+  select json_build_object(
+    'rounds', coalesce((select json_agg(json_build_object('mine', mine, 'theirs', theirs) order by round) from done), '[]'::json),
+    'round', (select round from now_round),
+    'my_word', (select word from mine where round = (select round from now_round)),
+    'they_ready', exists (select 1 from theirs where round = (select round from now_round)),
+    'matched', case when d.status = 'finished' then nullif(d.answer, '') end
+  );
+$$;
+
+revoke all on function public.dgh_meld_view(public.duels, uuid) from public, anon, authenticated;
+
+
 -- Everything one player may see about a duel (all games). Replaces the
 -- Wordle-only version from step 1; Wordle Duel fields stay the same.
 create or replace function public.dgh_duel_view(d public.duels, me uuid)
@@ -1155,6 +1208,7 @@ as $$
     'their_patterns', coalesce((select json_agg(pattern order by n) from theirs), '[]'::json),
     'last_move_at', (select max(created_at) from public.duel_guesses where duel_id = d.id),
     'answer', case when d.status = 'finished' then d.answer end,
+    'meld', case when d.game = 'mind_meld' then public.dgh_meld_view(d, me) end,
     'me', case when d.game <> 'wordle_duel' then public.dgh_versus_turn(d, me) end,
     -- Their score shows once they're done.
     'them', case when d.game <> 'wordle_duel' then (
@@ -1260,7 +1314,7 @@ begin
     raise exception 'Log in first';
   end if;
 
-  if p_game not in ('word_race', 'trivia', 'higher_lower') then
+  if p_game not in ('word_race', 'trivia', 'higher_lower', 'mind_meld') then
     raise exception 'Unknown game.';
   end if;
 
@@ -1651,6 +1705,119 @@ end;
 $$;
 
 
+-- Mind Meld: say your word for this round. When you've both said one,
+-- they're shown to both of you; the same word means you matched.
+-- A word can't be used again once it's been said. Ends after 20 rounds.
+create or replace function public.mind_meld_say(p_duel uuid, p_word text)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+  d public.duels;
+  said text := lower(regexp_replace(trim(p_word), '\s+', ' ', 'g'));
+  this_round integer;
+  their_word text;
+begin
+  select * into d from public.duels where id = p_duel for update;
+
+  if not found or me not in (d.challenger, d.opponent) or d.game <> 'mind_meld' then
+    raise exception 'That game was not found.';
+  end if;
+
+  if not (d.status = 'active' or (d.status = 'pending' and me = d.challenger)) then
+    raise exception 'This game is not open.';
+  end if;
+
+  if said !~ '^[a-z]+([ ''-][a-z]+)*$' or length(said) > 30 then
+    raise exception 'Use a word (letters only).';
+  end if;
+
+  -- The round you're both on: one past the last one you both answered.
+  select coalesce(max(m.round), 0) + 1 into this_round
+  from public.mind_meld_words m
+  join public.mind_meld_words t on t.duel_id = m.duel_id and t.round = m.round and t.user_id <> m.user_id
+  where m.duel_id = d.id and m.user_id = me;
+
+  if exists (select 1 from public.mind_meld_words where duel_id = d.id and user_id = me and round = this_round) then
+    raise exception 'You already said a word this round.';
+  end if;
+
+  if exists (
+    select 1 from public.mind_meld_words
+    where duel_id = d.id and round < this_round and word = said
+  ) then
+    raise exception 'That word was already said. Try another.';
+  end if;
+
+  insert into public.mind_meld_words (duel_id, user_id, round, word)
+  values (d.id, me, this_round, said);
+
+  select m.word into their_word
+  from public.mind_meld_words m
+  where m.duel_id = d.id and m.user_id <> me and m.round = this_round;
+
+  if d.status = 'active' and their_word is not null and (their_word = said or this_round >= 20) then
+    update public.duels
+    set status = 'finished',
+        finished_at = now(),
+        winner = null,
+        answer = case when their_word = said then said else '' end
+    where id = d.id
+    returning * into d;
+  end if;
+
+  return public.dgh_duel_view(d, me);
+end;
+$$;
+
+
+-- Same as step 1, except ending Mind Meld early has no winner
+-- (you play it together).
+create or replace function public.cancel_duel(p_duel uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+  d public.duels;
+begin
+  select * into d from public.duels where id = p_duel for update;
+
+  if not found or me not in (d.challenger, d.opponent) then
+    raise exception 'That game was not found.';
+  end if;
+
+  if d.status = 'pending' and me = d.challenger then
+    update public.duels set status = 'cancelled', finished_at = now() where id = p_duel;
+  elsif d.status = 'pending' and me = d.opponent then
+    update public.duels set status = 'declined', finished_at = now() where id = p_duel;
+  elsif d.status = 'active' then
+    update public.duels
+    set status = 'finished',
+        finished_at = now(),
+        answer = case when d.game = 'mind_meld' then '' else d.answer end,
+        winner = case
+          when d.game = 'mind_meld' then null
+          when me = d.challenger then d.opponent
+          else d.challenger
+        end
+    where id = p_duel;
+  else
+    raise exception 'That game is already over.';
+  end if;
+end;
+$$;
+
+
+revoke all on function public.mind_meld_say(uuid, text) from public, anon;
+grant execute on function public.mind_meld_say(uuid, text) to authenticated;
+revoke all on function public.cancel_duel(uuid) from public, anon;
+grant execute on function public.cancel_duel(uuid) to authenticated;
 revoke all on function public.create_versus(uuid, text) from public, anon;
 revoke all on function public.versus_start(uuid) from public, anon;
 revoke all on function public.word_race_word(uuid, text) from public, anon;

@@ -19,14 +19,14 @@ m.server.listen(0, async () => {
   assert((await rows()).join(',') === 'Wordle Duel', 'real app: new games stay hidden until released');
   // Act like the test app
   await page.evaluate(() => { playableGames = () => VERSUS_GAMES; renderPlayGames(); });
-  assert((await rows()).join(',') === 'Wordle Duel,Word Race,Trivia Showdown,Higher or Lower', 'test app: all four versus games listed');
-  assert(await page.$$eval('#versusGames .play-tag.testing', t => t.length) === 3, 'unreleased games are marked TESTING');
+  assert((await rows()).join(',') === 'Wordle Duel,Word Race,Trivia Showdown,Higher or Lower,Mind Meld', 'test app: all the new games listed');
+  assert(await page.$$eval('#versusGames .play-tag.testing', t => t.length) === 4, 'unreleased games are marked TESTING');
   await page.screenshot({ path: out + '-list.png' });
 
   // ---------- Word Race (from a friend's face) ----------
   await page.click(`.friend-chip[data-friend="${FRIEND}"]`); await page.waitForTimeout(300);
   assert((await page.textContent('#challengeTitle')).includes('@ethan'), 'tapping a friend asks which game');
-  assert(await page.$$eval('#challengeList .challenge-row', r => r.length) === 4, 'game picker lists the four games');
+  assert(await page.$$eval('#challengeList .challenge-row', r => r.length) === 5, 'game picker lists the games');
   await page.click('#challengeList .challenge-row[data-game="word_race"]'); await page.waitForTimeout(700);
   assert(await page.isVisible('#versusScreen') && (await page.textContent('#versusTitle')) === 'Word Race vs @ethan', 'Word Race screen opens');
   assert((await page.textContent('#versusStartButton')).includes('2:00'), 'rules first, then Start');

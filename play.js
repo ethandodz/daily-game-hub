@@ -12,7 +12,8 @@ const VERSUS_GAMES = [
   { id: "wordle_duel", name: "Wordle Duel", icon: "🟩", color: "#16a34a", blurb: "Same word. Fewest guesses wins.", released: true },
   { id: "word_race", name: "Word Race", icon: "🔤", color: "#2563eb", blurb: "Same 9 letters, 2 minutes. Longer words score more.", released: false },
   { id: "trivia", name: "Trivia Showdown", icon: "🧠", color: "#d55181", blurb: "10 questions. Fastest right answer gets the point.", released: false },
-  { id: "higher_lower", name: "Higher or Lower", icon: "📈", color: "#d95926", blurb: "Pick the bigger number. Longest streak wins.", released: false }
+  { id: "higher_lower", name: "Higher or Lower", icon: "📈", color: "#d95926", blurb: "Pick the bigger number. Longest streak wins.", released: false },
+  { id: "mind_meld", name: "Mind Meld", icon: "🔮", color: "#7c3aed", blurb: "Say a word at the same time. Keep going until you both say the same one.", tag: "together", released: false }
 ];
 
 
@@ -660,10 +661,10 @@ function renderPlayGames() {
       document.createElement("span");
 
     tag.className =
-      "play-tag versus";
+      "play-tag " + (game.tag || "versus");
 
     tag.textContent =
-      "VERSUS";
+      (game.tag || "versus").toUpperCase();
 
     name.appendChild(tag);
 
