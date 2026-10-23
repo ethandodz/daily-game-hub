@@ -21,6 +21,11 @@ const VERSUS_RULES = {
     "10 seconds a pick. One miss and your turn is over.",
     "Longest streak wins. A tie goes to whoever was quicker."
   ],
+  dial_in: [
+    "Each round has a scale between two opposites, like Cold ↔ Hot, and a hidden target on it.",
+    "The clue-giver sees the target and gives a clue. The other player slides the dial to guess where it is.",
+    "Closer is more points: 4, 3 or 2. Six rounds, taking turns. You score together."
+  ],
   mind_meld: [
     "You both say any word. Then you see each other's words.",
     "Next, each say a word that links those two, trying to say the same one.",
@@ -102,6 +107,10 @@ function versusSummary(duel) {
 
   if (duel.game === "mind_meld") {
     return meldSummary(duel);
+  }
+
+  if (duel.game === "dial_in") {
+    return dialSummary(duel);
   }
 
   const theirStatus =
@@ -233,15 +242,17 @@ function versusStage(duel = versusDuel) {
   }
 
   if (duel.status === "finished") {
-    return duel.game === "mind_meld" ? "meld" : "result";
+    return duel.game === "mind_meld" ? "meld" : duel.game === "dial_in" ? "dial" : "result";
   }
 
   if (duel.status === "declined" || duel.status === "cancelled") {
     return "closed";
   }
 
-  if (duel.game === "mind_meld") {
-    return duel.status === "pending" && !duel.is_challenger ? "intro" : "meld";
+  if (duel.game === "mind_meld" || duel.game === "dial_in") {
+    return duel.status === "pending" && !duel.is_challenger
+      ? "intro"
+      : duel.game === "mind_meld" ? "meld" : "dial";
   }
 
   if (duel.me?.finished) {
@@ -279,7 +290,9 @@ function renderVersusHeader() {
 
   let status;
 
-  if (meld && duel.status === "finished") {
+  if (duel.game === "dial_in") {
+    status = dialOpponentStatus(duel);
+  } else if (meld && duel.status === "finished") {
     status = meld.matched ? "You matched!" : "Game over";
   } else if (meld && duel.status === "pending" && duel.is_challenger) {
     status = "Hasn't accepted yet";
@@ -299,7 +312,8 @@ function renderVersusHeader() {
     status;
 
   document.getElementById("versusScore").textContent =
-    meld ? "Round " + (duel.status === "finished" ? Math.max(1, meld.rounds.length) : meld.round)
+    duel.game === "dial_in" ? dialState(duel).total + " pts"
+      : meld ? "Round " + (duel.status === "finished" ? Math.max(1, meld.rounds.length) : meld.round)
       : duel.me?.started ? versusScoreText(duel.game, duel.me, duel.status === "finished") : "";
 
   const giveUp =
@@ -311,7 +325,7 @@ function renderVersusHeader() {
   giveUp.classList.toggle("hidden", !open);
 
   giveUp.textContent =
-    duel.status === "pending" ? "Call off" : meld ? "End game" : "Give up";
+    duel.status === "pending" ? "Call off" : info.tag === "together" ? "End game" : "Give up";
 }
 
 
@@ -335,6 +349,8 @@ function showVersusStage() {
     renderVersusWaiting();
   } else if (stage === "meld") {
     renderMeld();
+  } else if (stage === "dial") {
+    renderDial();
   } else if (stage === "result") {
     renderVersusResult();
   } else {
@@ -592,7 +608,7 @@ document
     const question =
       versusDuel.status === "pending"
         ? "Call off this challenge?"
-        : versusDuel.game === "mind_meld"
+        : versusGame().tag === "together"
           ? "End this game for both of you?"
           : "Give up? " + friendName(versusDuel.opponent) + " will win.";
 

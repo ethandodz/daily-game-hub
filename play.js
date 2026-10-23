@@ -13,6 +13,7 @@ const VERSUS_GAMES = [
   { id: "word_race", name: "Word Race", icon: "🔤", color: "#2563eb", blurb: "Same 9 letters, 2 minutes. Longer words score more.", released: false },
   { id: "trivia", name: "Trivia Showdown", icon: "🧠", color: "#d55181", blurb: "10 questions. Fastest right answer gets the point.", released: false },
   { id: "higher_lower", name: "Higher or Lower", icon: "📈", color: "#d95926", blurb: "Pick the bigger number. Longest streak wins.", released: false },
+  { id: "dial_in", name: "Dial In", icon: "🎯", color: "#14b8a6", blurb: "One gives a clue, the other finds the spot. Like Wavelength.", tag: "together", released: false },
   { id: "mind_meld", name: "Mind Meld", icon: "🔮", color: "#7c3aed", blurb: "Say a word at the same time. Keep going until you both say the same one.", tag: "together", released: false }
 ];
 

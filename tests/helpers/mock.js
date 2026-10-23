@@ -64,6 +64,15 @@ function turnView(d, uid, showScore) { const p = (d.plays || {})[uid];
 function meldView(d, other) { const w = d.words || {}; const mine = w[ME] || [], theirs = w[other] || []; const done = Math.min(mine.length, theirs.length);
   return { rounds: Array.from({ length: done }, (_, i) => ({ mine: mine[i], theirs: theirs[i] })), round: done + 1, my_word: mine[done] || null, they_ready: theirs.length > done,
     matched: d.status === 'finished' && d.answer ? d.answer : null }; }
+// Dial In: scale ends and targets for the 6 rounds
+const DIAL_PLAN = [['Cold', 'Hot', 50], ['Bad', 'Good', 10], ['Useless', 'Useful', 90], ['Quiet', 'Loud', 50], ['Tiny', 'Huge', 50], ['Slow', 'Fast', 50]];
+const dialPoints = (g, t) => Math.abs(g - t) <= 4 ? 4 : Math.abs(g - t) <= 12 ? 3 : Math.abs(g - t) <= 20 ? 2 : 0;
+function dialData(d) { d.dialPlay = d.dialPlay || { played: [] }; return d.dialPlay; }
+function dialView(d) { const played = dialData(d).played; let round = played.findIndex(p => !p || p.guess === null || p.guess === undefined) + 1; if (round === 0) round = played.length + 1;
+  const rows = DIAL_PLAN.slice(0, Math.min(round, 6)).map(([left, right, target], i) => { const p = played[i] || {}; const myClue = ((i + 1) % 2 === 1) === (d.challenger === ME);
+    const guessed = p.guess !== null && p.guess !== undefined;
+    return { round: i + 1, left, right, my_clue: myClue, clue: p.clue || null, guess: guessed ? p.guess : null, points: guessed ? p.points : null, target: guessed || myClue ? target : null }; });
+  return { round, total: played.reduce((sum, p) => sum + ((p && p.points) || 0), 0), rounds: rows }; }
 function versusMine(d) { const p = d.plays[ME] || {};
   return { duel: duelViewFor(d), letters: d.game === 'word_race' && p.started ? 'rgadsener' : null, seconds_left: d.game === 'word_race' && !p.finished ? 120 : null,
     words: d.game === 'word_race' ? (p.moves || []) : null, answered: (p.moves || []).filter(m => m.choice !== undefined).length }; }
@@ -174,7 +183,8 @@ function serverRoute(method, u, body) {
       my_guesses: d.guesses[ME].map(guess => ({ guess, pattern: duelPattern(guess, d.answer) })), their_patterns: d.guesses[other].map(g => duelPattern(g, d.answer)),
       last_move_at: d.created_at, answer: d.status === 'finished' ? d.answer : null,
       ...(d.game && d.game !== 'wordle_duel' ? { me: turnView(d, ME, true), them: turnView(d, other, d.status === 'finished') } : {}),
-      ...(d.game === 'mind_meld' ? { meld: meldView(d, other) } : {}) }; };
+      ...(d.game === 'mind_meld' ? { meld: meldView(d, other) } : {}),
+      ...(d.game === 'dial_in' ? { dial: dialView(d) } : {}) }; };
   const findDuel = id => serverState.duels.find(d => d.id === id);
   duelViewFor = duelView;
   if (t === 'rpc/create_duel') { if (!serverState.friends.some(f => f.user_id === body.p_opponent)) return err('You can only challenge people in your servers.');
@@ -185,6 +195,14 @@ function serverRoute(method, u, body) {
     const d = { id: 'vs-' + (serverState.duels.length + 1), game: body.p_game, challenger: ME, opponent: body.p_opponent, answer: body.p_game === 'word_race' ? 'gardeners' : '', status: 'pending', winner: null,
       created_at: new Date().toISOString(), finished_at: null, guesses: { [ME]: [], [body.p_opponent]: [] }, plays: {} };
     serverState.duels.push(d); return { status: 200, body: d.id }; }
+  if (t === 'rpc/dial_clue') { const d = findDuel(body.p_duel); const v = dialView(d); const r = v.rounds[v.round - 1];
+    if (!r.my_clue) return err("It's their turn to give the clue."); if (r.clue) return err('You already gave a clue this round.');
+    dialData(d).played[v.round - 1] = { clue: body.p_clue.trim(), guess: null }; return { status: 200, body: duelView(d) }; }
+  if (t === 'rpc/dial_guess') { const d = findDuel(body.p_duel); const v = dialView(d); const r = v.rounds[v.round - 1];
+    if (r.my_clue) return err('You gave the clue this round, so they guess.'); if (!r.clue) return err('Wait for the clue first.');
+    const p = dialData(d).played[v.round - 1]; p.guess = body.p_guess; p.points = dialPoints(body.p_guess, DIAL_PLAN[v.round - 1][2]);
+    if (v.round >= 6) { d.status = 'finished'; d.finished_at = new Date().toISOString(); d.winner = null; }
+    return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/mind_meld_say') { const d = findDuel(body.p_duel); const other = d.challenger === ME ? d.opponent : d.challenger; d.words = d.words || { [ME]: [], [other]: [] };
     const word = body.p_word.trim().toLowerCase(); const round = Math.min(d.words[ME].length, d.words[other].length) + 1;
     if (d.words[ME].length >= round) return err('You already said a word this round.');
@@ -221,7 +239,7 @@ function serverRoute(method, u, body) {
   if (t === 'rpc/duel_state') { const d = findDuel(body.p_duel); if (d && d.plays) versusSettle(d); return d ? { status: 200, body: duelView(d) } : err('Duel not found.'); }
   if (t === 'rpc/respond_duel') { const d = findDuel(body.p_duel); d.status = body.p_accept ? 'active' : 'declined'; if (d.plays) versusSettle(d); return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/cancel_duel') { const d = findDuel(body.p_duel); const other = d.challenger === ME ? d.opponent : d.challenger;
-    if (d.status === 'pending') d.status = d.challenger === ME ? 'cancelled' : 'declined'; else { d.status = 'finished'; d.winner = d.game === 'mind_meld' ? null : other; if (d.game === 'mind_meld') d.answer = ''; }
+    if (d.status === 'pending') d.status = d.challenger === ME ? 'cancelled' : 'declined'; else { d.status = 'finished'; d.winner = d.game === 'mind_meld' || d.game === 'dial_in' ? null : other; if (d.game === 'mind_meld') d.answer = ''; }
     return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/duel_guess') { const d = findDuel(body.p_duel); d.guesses[ME].push(body.p_guess); duelSettle(d); return { status: 200, body: duelView(d) }; }
   if (t === 'rpc/submit_arcade_score') { serverState.arcade.push({ user_id: ME, score: body.p_score });

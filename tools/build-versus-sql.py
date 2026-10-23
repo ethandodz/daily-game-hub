@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Builds supabase/play/03_versus_games.sql from the files in
 supabase/play/source: the SQL template plus the Word Race starting words,
-trivia questions and Higher or Lower facts.
+trivia questions, Higher or Lower facts and Dial In scales.
 
 Edit the source files (one item per line, tab-separated), then run:
     python3 tools/build-versus-sql.py
@@ -30,6 +30,7 @@ def rows(name, columns):
 seeds = [row[0] for row in rows("word-race-starting-words.txt", 1)]
 questions = rows("trivia-questions.tsv", 6)
 facts = rows("higher-lower-facts.tsv", 3)
+scales = rows("dial-in-scales.tsv", 2)
 
 for number, row in enumerate(questions, 1):
     if len(set(row[2:])) != 4:
@@ -47,5 +48,9 @@ sql = sql.replace("{HL}", ",\n".join(
     for i, row in enumerate(facts, 1)
 ))
 
+sql = sql.replace("{DIAL}", ",\n".join(
+    f"  ({i}, {text(row[0])}, {text(row[1])})" for i, row in enumerate(scales, 1)
+))
+
 (root / "supabase" / "play" / "03_versus_games.sql").write_text(sql, encoding="utf-8")
-print(f"{len(seeds)} starting words, {len(questions)} questions, {len(facts)} facts")
+print(f"{len(seeds)} starting words, {len(questions)} questions, {len(facts)} facts, {len(scales)} scales")

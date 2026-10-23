@@ -244,3 +244,56 @@ select set_config('request.jwt.claim.sub', :'B', false);
 select public.mind_meld_say(:'mm3', 'banana') as s \gset
 select public.check('mind meld: stops after 20 rounds', (:'s'::json->>'status') = 'finished' and json_array_length(:'s'::json->'meld'->'rounds') = 20 and (:'s'::json->'meld'->>'matched') is null, :'s');
 reset role;
+
+
+-- ---------- Dial In ----------
+select public.check('dial in: points by closeness',
+  dgh_dial_points(50, 50) = 4 and dgh_dial_points(46, 50) = 4 and dgh_dial_points(62, 50) = 3 and dgh_dial_points(70, 50) = 2 and dgh_dial_points(71, 50) = 0);
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.create_versus(:'B', 'dial_in') as di \gset
+reset role;
+select public.check('dial in: 6 different scales with targets', (
+  select count(distinct r ->> 'scale') = 6 and bool_and((r ->> 'target')::integer between 3 and 97)
+  from duels, jsonb_array_elements(setup -> 'rounds') r where id = :'di'));
+-- Known targets: 50, 10, 90, 50, 50, 50
+update duels set setup = jsonb_build_object('rounds', (
+  select jsonb_agg(jsonb_build_object('scale', i, 'target', case i when 2 then 10 when 3 then 90 else 50 end) order by i)
+  from generate_series(1, 6) i)) where id = :'di';
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.duel_state(:'di') as s \gset
+select public.check('dial in: clue-giver sees the scale and target', (:'s'::json->'dial'->'rounds'->0->>'target') = '50'
+  and (:'s'::json->'dial'->'rounds'->0->>'left') = 'Cold' and (:'s'::json->'dial'->'rounds'->0->>'my_clue')::boolean, :'s');
+select public.expect_error('dial in: giver cannot guess', format('select public.dial_guess(%L, 50)', :'di'), 'not open');
+select public.dial_clue(:'di', '  Room   temperature ') as s \gset
+select public.check('dial in: clue saved before they accept', (:'s'::json->'dial'->'rounds'->0->>'clue') = 'Room temperature', :'s');
+select public.expect_error('dial in: one clue per round', format('select public.dial_clue(%L, %L)', :'di', 'soup'), 'already gave a clue');
+
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.duel_state(:'di') as s \gset
+select public.check('dial in: guesser sees the clue but not the target', (:'s'::json->'dial'->'rounds'->0->>'clue') = 'Room temperature'
+  and (:'s'::json->'dial'->'rounds'->0->>'target') is null and (:'s'::text) not like '%"target" : 50%', :'s');
+select public.respond_duel(:'di', true);
+select public.expect_error('dial in: guesser cannot give the clue', format('select public.dial_clue(%L, %L)', :'di', 'x'), 'their turn');
+select public.dial_guess(:'di', 55) as s \gset
+select public.check('dial in: close guess scores 3 and shows the target', (:'s'::json->'dial'->'rounds'->0->>'points') = '3'
+  and (:'s'::json->'dial'->'rounds'->0->>'target') = '50' and (:'s'::json->'dial'->>'round') = '2', :'s');
+select public.expect_error('dial in: round 2 needs a clue first', format('select public.dial_guess(%L, 10)', :'di'), 'gave the clue this round');
+select public.dial_clue(:'di', 'Ice');
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.dial_guess(:'di', 12);
+select public.dial_clue(:'di', 'Sun');
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.dial_guess(:'di', 0) as s \gset
+select public.check('dial in: far off scores 0', (:'s'::json->'dial'->'rounds'->2->>'points') = '0' and (:'s'::json->'dial'->>'total') = '7', :'s');
+select public.dial_clue(:'di', 'Meh');
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.dial_guess(:'di', 50); select public.dial_clue(:'di', 'Fine');
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.dial_guess(:'di', 50); select public.dial_clue(:'di', 'Okay');
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.dial_guess(:'di', 50) as s \gset
+select public.check('dial in: after 6 rounds it ends together with a team score', (:'s'::json->>'status') = 'finished' and (:'s'::json->>'winner') is null
+  and (:'s'::json->'dial'->>'total') = '19' and json_array_length(:'s'::json->'dial'->'rounds') = 6, :'s');
+reset role;

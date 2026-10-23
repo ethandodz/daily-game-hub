@@ -4980,3 +4980,121 @@ body.play-screen-open {
   outline: none;
   border-color: var(--purple-soft);
 }
+
+
+/* Dial In */
+
+.dial-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+}
+
+.dial-card.dial-now {
+  border-color: var(--purple-soft);
+}
+
+.dial-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.dial-result.p4 .dial-points {
+  color: var(--success-text);
+}
+
+.dial-clue {
+  font-size: 22px;
+  text-align: center;
+}
+
+.dial-tip {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14px;
+  text-align: center;
+}
+
+.dial-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.dial-track {
+  position: relative;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #2563eb, #7c3aed 50%, #e66767);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.dial-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.dial-band.p2 { background: #fde68a; }
+.dial-band.p3 { background: #fbbf24; }
+.dial-band.p4 { background: #10b981; }
+
+.dial-target {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.dial-needle {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 6px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px #111827, 0 2px 8px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.dial-slider {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dial-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.dial-ends span:last-child {
+  text-align: right;
+}
+
+.versus-result .versus-big {
+  color: var(--text);
+  font-size: 34px;
+  font-weight: 900;
+}

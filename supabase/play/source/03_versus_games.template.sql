@@ -1,5 +1,5 @@
 -- Play tab, step 3: more games with friends (Word Race, Trivia Showdown,
--- Higher or Lower, and Mind Meld). Safe to run again. Needs
+-- Higher or Lower, Mind Meld and Dial In). Safe to run again. Needs
 -- 01_wordle_duel.sql first.
 -- If you ever run 01 again, run this file again after it.
 --
@@ -14,7 +14,7 @@
 -- Let duels hold the new games and their private setup.
 alter table public.duels drop constraint if exists duels_game_check;
 alter table public.duels add constraint duels_game_check
-  check (game in ('wordle_duel', 'word_race', 'trivia', 'higher_lower', 'mind_meld'));
+  check (game in ('wordle_duel', 'word_race', 'trivia', 'higher_lower', 'mind_meld', 'dial_in'));
 alter table public.duels add column if not exists setup jsonb;
 
 -- Each player's turn in a game.
@@ -53,6 +53,29 @@ create table if not exists public.mind_meld_words (
 
 alter table public.mind_meld_words enable row level security;
 revoke all on public.mind_meld_words from anon, authenticated;
+
+-- Dial In: the scales (two opposite ends) and each round's clue and guess.
+create table if not exists public.dial_scales (
+  id integer primary key,
+  left_end text not null,
+  right_end text not null
+);
+
+create table if not exists public.dial_rounds (
+  duel_id uuid not null references public.duels (id) on delete cascade,
+  round integer not null check (round between 1 and 6),
+  clue text,
+  clue_at timestamptz,
+  guess integer check (guess between 0 and 100),
+  guessed_at timestamptz,
+  points integer,
+  primary key (duel_id, round)
+);
+
+alter table public.dial_scales enable row level security;
+alter table public.dial_rounds enable row level security;
+revoke all on public.dial_scales from anon, authenticated;
+revoke all on public.dial_rounds from anon, authenticated;
 
 create table if not exists public.word_race_seeds (
   word text primary key check (word ~ '^[a-z]{9}$')
@@ -102,6 +125,11 @@ insert into public.trivia_questions (id, category, question, choices) values
 {TRIVIA}
 on conflict (id) do update
 set category = excluded.category, question = excluded.question, choices = excluded.choices;
+
+insert into public.dial_scales (id, left_end, right_end) values
+{DIAL}
+on conflict (id) do update
+set left_end = excluded.left_end, right_end = excluded.right_end;
 
 insert into public.hl_categories (category, prompt, unit) values
   ('population', 'Which country has more people?', 'people'),
@@ -214,6 +242,14 @@ begin
     return '{}'::jsonb;
   end if;
 
+  if p_game = 'dial_in' then
+    -- 6 different scales, each with a hidden target from 3 to 97.
+    return jsonb_build_object('rounds', (
+      select jsonb_agg(jsonb_build_object('scale', id, 'target', 3 + floor(random() * 95)::integer))
+      from (select id from public.dial_scales order by random() limit 6) s
+    ));
+  end if;
+
   if p_game = 'higher_lower' then
     -- 40 pairs from the same category, at least 25% apart.
     for i in 1..40 loop
@@ -286,7 +322,7 @@ declare
 begin
   select * into d from public.duels where id = p_duel for update;
 
-  if not found or d.game in ('wordle_duel', 'mind_meld') then
+  if not found or d.game in ('wordle_duel', 'mind_meld', 'dial_in') then
     return;
   end if;
 
@@ -413,6 +449,70 @@ $$;
 revoke all on function public.dgh_meld_view(public.duels, uuid) from public, anon, authenticated;
 
 
+-- Dial In: points for how close the guess is to the target.
+create or replace function public.dgh_dial_points(p_guess integer, p_target integer)
+returns integer
+language sql
+immutable
+set search_path = ''
+as $$
+  select case
+    when abs(p_guess - p_target) <= 4 then 4
+    when abs(p_guess - p_target) <= 12 then 3
+    when abs(p_guess - p_target) <= 20 then 2
+    else 0
+  end;
+$$;
+
+
+-- Dial In as one player sees it. The challenger gives the clue in odd
+-- rounds, the other player in even rounds. You only see the target
+-- when you're the one giving the clue, or once the round is guessed.
+create or replace function public.dgh_dial_view(d public.duels, me uuid)
+returns json
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with plan as (
+    select (r.i)::integer as round,
+           (r.x ->> 'target')::integer as target,
+           sc.left_end, sc.right_end,
+           ((r.i % 2 = 1) = (d.challenger = me)) as my_clue
+    from jsonb_array_elements(d.setup -> 'rounds') with ordinality r(x, i)
+    join public.dial_scales sc on sc.id = (r.x ->> 'scale')::integer
+  ),
+  played as (
+    select p.*, dr.clue, dr.guess, dr.points
+    from plan p
+    left join public.dial_rounds dr on dr.duel_id = d.id and dr.round = p.round
+  ),
+  now_round as (
+    select coalesce(min(round) filter (where guess is null), 7) as round from played
+  )
+  select json_build_object(
+    'round', (select round from now_round),
+    'total', coalesce((select sum(points) from played), 0),
+    'rounds', coalesce((
+      select json_agg(json_build_object(
+        'round', round,
+        'left', left_end,
+        'right', right_end,
+        'my_clue', my_clue,
+        'clue', clue,
+        'guess', guess,
+        'points', points,
+        'target', case when guess is not null or my_clue then target end
+      ) order by round)
+      from played where round <= (select round from now_round)
+    ), '[]'::json)
+  );
+$$;
+
+revoke all on function public.dgh_dial_view(public.duels, uuid) from public, anon, authenticated;
+
+
 -- Everything one player may see about a duel (all games). Replaces the
 -- Wordle-only version from step 1; Wordle Duel fields stay the same.
 create or replace function public.dgh_duel_view(d public.duels, me uuid)
@@ -447,6 +547,7 @@ as $$
     'last_move_at', (select max(created_at) from public.duel_guesses where duel_id = d.id),
     'answer', case when d.status = 'finished' then d.answer end,
     'meld', case when d.game = 'mind_meld' then public.dgh_meld_view(d, me) end,
+    'dial', case when d.game = 'dial_in' then public.dgh_dial_view(d, me) end,
     'me', case when d.game <> 'wordle_duel' then public.dgh_versus_turn(d, me) end,
     -- Their score shows once they're done.
     'them', case when d.game <> 'wordle_duel' then (
@@ -552,7 +653,7 @@ begin
     raise exception 'Log in first';
   end if;
 
-  if p_game not in ('word_race', 'trivia', 'higher_lower', 'mind_meld') then
+  if p_game not in ('word_race', 'trivia', 'higher_lower', 'mind_meld', 'dial_in') then
     raise exception 'Unknown game.';
   end if;
 
@@ -1012,6 +1113,109 @@ end;
 $$;
 
 
+-- Dial In: the round's clue-giver sends a clue (a word or short phrase).
+create or replace function public.dial_clue(p_duel uuid, p_clue text)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+  d public.duels;
+  clue_text text := regexp_replace(trim(p_clue), '\s+', ' ', 'g');
+  this_round integer;
+begin
+  select * into d from public.duels where id = p_duel for update;
+
+  if not found or me not in (d.challenger, d.opponent) or d.game <> 'dial_in' then
+    raise exception 'That game was not found.';
+  end if;
+
+  this_round := (public.dgh_dial_view(d, me) ->> 'round')::integer;
+
+  if not (d.status = 'active' or (d.status = 'pending' and me = d.challenger and this_round = 1)) then
+    raise exception 'This game is not open.';
+  end if;
+
+  if (this_round % 2 = 1) <> (d.challenger = me) then
+    raise exception 'It''s their turn to give the clue.';
+  end if;
+
+  if clue_text = '' or length(clue_text) > 40 then
+    raise exception 'Clues are 1 to 40 characters.';
+  end if;
+
+  if exists (select 1 from public.dial_rounds where duel_id = d.id and round = this_round and clue is not null) then
+    raise exception 'You already gave a clue this round.';
+  end if;
+
+  insert into public.dial_rounds (duel_id, round, clue, clue_at)
+  values (d.id, this_round, clue_text, now());
+
+  return public.dgh_duel_view(d, me);
+end;
+$$;
+
+
+-- Dial In: the other player sets the dial (0 = left end, 100 = right).
+create or replace function public.dial_guess(p_duel uuid, p_guess integer)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+  d public.duels;
+  this_round integer;
+  target integer;
+  pts integer;
+begin
+  select * into d from public.duels where id = p_duel for update;
+
+  if not found or me not in (d.challenger, d.opponent) or d.game <> 'dial_in' then
+    raise exception 'That game was not found.';
+  end if;
+
+  if d.status <> 'active' then
+    raise exception 'This game is not open.';
+  end if;
+
+  if p_guess is null or p_guess not between 0 and 100 then
+    raise exception 'Set the dial first.';
+  end if;
+
+  this_round := (public.dgh_dial_view(d, me) ->> 'round')::integer;
+
+  if (this_round % 2 = 1) = (d.challenger = me) then
+    raise exception 'You gave the clue this round, so they guess.';
+  end if;
+
+  if not exists (select 1 from public.dial_rounds where duel_id = d.id and round = this_round and clue is not null) then
+    raise exception 'Wait for the clue first.';
+  end if;
+
+  target := (d.setup -> 'rounds' -> (this_round - 1) ->> 'target')::integer;
+  pts := public.dgh_dial_points(p_guess, target);
+
+  update public.dial_rounds
+  set guess = p_guess, guessed_at = now(), points = pts
+  where duel_id = d.id and round = this_round and guess is null;
+
+  if this_round >= 6 then
+    update public.duels
+    set status = 'finished', finished_at = now(), winner = null,
+        answer = (select sum(points)::text from public.dial_rounds where duel_id = d.id)
+    where id = d.id
+    returning * into d;
+  end if;
+
+  return public.dgh_duel_view(d, me);
+end;
+$$;
+
+
 -- Same as step 1, except ending Mind Meld early has no winner
 -- (you play it together).
 create or replace function public.cancel_duel(p_duel uuid)
@@ -1040,7 +1244,7 @@ begin
         finished_at = now(),
         answer = case when d.game = 'mind_meld' then '' else d.answer end,
         winner = case
-          when d.game = 'mind_meld' then null
+          when d.game in ('mind_meld', 'dial_in') then null
           when me = d.challenger then d.opponent
           else d.challenger
         end
@@ -1052,6 +1256,10 @@ end;
 $$;
 
 
+revoke all on function public.dial_clue(uuid, text) from public, anon;
+revoke all on function public.dial_guess(uuid, integer) from public, anon;
+grant execute on function public.dial_clue(uuid, text) to authenticated;
+grant execute on function public.dial_guess(uuid, integer) to authenticated;
 revoke all on function public.mind_meld_say(uuid, text) from public, anon;
 grant execute on function public.mind_meld_say(uuid, text) to authenticated;
 revoke all on function public.cancel_duel(uuid) from public, anon;
@@ -1078,4 +1286,6 @@ select 'Word Race starting words' as item, (select count(*) from public.word_rac
 union all
 select 'Trivia questions', (select count(*) from public.trivia_questions)::text
 union all
-select 'Higher or Lower facts', (select count(*) from public.hl_items)::text;
+select 'Higher or Lower facts', (select count(*) from public.hl_items)::text
+union all
+select 'Dial In scales', (select count(*) from public.dial_scales)::text;
