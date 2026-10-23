@@ -85,6 +85,12 @@ m.server.listen(0, async () => {
   // Tile Drop: hard-drop until the stack tops out, then the score is saved
   await page.click('#tileDropButton'); await page.waitForTimeout(400);
   assert(await page.isVisible('#tileDropScreen'), 'Tile Drop opens');
+  assert(await page.evaluate(() => TileSound.playing), 'music starts with the game');
+  await page.click('#tileSoundButton');
+  assert(!(await page.evaluate(() => TileSound.playing)) && (await page.textContent('#tileSoundButton')).trim() === '🔇', 'sound button turns the music off');
+  assert(await page.evaluate(() => localStorage.getItem('dailyGameHubTileSound')) === 'off', 'sound choice is remembered');
+  await page.click('#tileSoundButton');
+  assert(await page.evaluate(() => TileSound.playing) && (await page.textContent('#tileSoundButton')).trim() === '🔊', 'and back on');
   const well = await page.$eval('#tileCanvas', c => ({ w: c.clientWidth, h: c.clientHeight }));
   assert(await page.$eval('.tile-controls', c => c.getBoundingClientRect().bottom <= innerHeight), 'controls fit on screen');
   assert(well.w > 150 && Math.abs(well.h / well.w - 2) < 0.05, 'board is 1:2 and fills the screen');
@@ -107,6 +113,7 @@ m.server.listen(0, async () => {
   for (let i = 0; i < 40 && !(await page.isVisible('#tileOver')); i += 1) await page.click('[data-tile="drop"]');
   await page.waitForTimeout(600);
   assert(await page.isVisible('#tileOver'), 'game ends when the stack reaches the top');
+  assert(!(await page.evaluate(() => TileSound.playing)), 'music stops at game over');
   const saved = m.requests.filter(r => r.url.endsWith('/rpc/submit_arcade_score')).map(r => JSON.parse(r.body));
   assert(saved.length === 1 && saved[0].p_score > 0 && saved[0].p_game === 'tile_drop', 'score is submitted once');
   assert((await page.textContent('#tileOver')).includes('#'), 'game over shows your rank');

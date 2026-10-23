@@ -4218,6 +4218,20 @@ body.play-screen-open {
   font-variant-numeric: tabular-nums;
 }
 
+.tile-sound {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.tile-sound[aria-pressed="false"] {
+  opacity: 0.7;
+}
+
 .tile-next {
   width: 52px;
   height: 36px;

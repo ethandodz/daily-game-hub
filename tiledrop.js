@@ -222,7 +222,7 @@
    * A game in progress: state plus the moves a player can make.
    * Draws to a canvas when given one.
    */
-  function createGame({ seed, canvas, nextCanvas, onChange, onGameOver }) {
+  function createGame({ seed, canvas, nextCanvas, onChange, onGameOver, onLand }) {
     const next =
       pieceSequence(seed);
 
@@ -263,6 +263,8 @@
 
       const cleared =
         clearLines(state.board);
+
+      onLand && onLand({ cleared });
 
       if (cleared) {
         state.score += pointsFor(cleared, state.level);

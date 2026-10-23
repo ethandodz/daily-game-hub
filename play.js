@@ -1237,6 +1237,7 @@ function openTileDrop() {
   document.getElementById("tileOver").classList.add("hidden");
 
   tileGame?.stop();
+  TileSound.stopMusic(true);
 
   tileGame = TileDrop.createGame({
     seed: tileSeed(),
@@ -1246,9 +1247,20 @@ function openTileDrop() {
       document.getElementById("tileScore").textContent = score.toLocaleString("en-US");
       document.getElementById("tileLines").textContent = lines;
       document.getElementById("tileLevel").textContent = level;
+      TileSound.setLevel(level);
+    },
+    onLand: ({ cleared }) => {
+      if (cleared) {
+        TileSound.cleared(cleared);
+      } else {
+        TileSound.landed();
+      }
     },
     onGameOver: finishTileDrop
   });
+
+  TileSound.startMusic(1);
+  updateTileSoundButton();
 
   showTileHint();
 }
@@ -1257,6 +1269,7 @@ function openTileDrop() {
 function closeTileDrop() {
   tileGame?.stop();
   tileGame = null;
+  TileSound.stopMusic(true);
 
   document.getElementById("tileDropScreen").classList.add("hidden");
   document.body.classList.remove("play-screen-open");
@@ -1266,6 +1279,8 @@ function closeTileDrop() {
 
 
 async function finishTileDrop({ score, lines }) {
+  TileSound.gameOver();
+
   const over =
     document.getElementById("tileOver");
 
@@ -1539,10 +1554,44 @@ document.addEventListener("keydown", event => {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") {
     tileGame?.pause();
+    TileSound.stopMusic();
   } else {
     tileGame?.resume();
+
+    if (tileGame && !tileGame.state.over) {
+      TileSound.startMusic(tileGame.state.level);
+    }
   }
 });
+
+
+// Sound on/off (remembered on this device).
+function updateTileSoundButton() {
+  const button =
+    document.getElementById("tileSoundButton");
+
+  const on =
+    TileSound.isOn();
+
+  button.textContent = on ? "🔊" : "🔇";
+  button.setAttribute("aria-label", on ? "Turn sound off" : "Turn sound on");
+  button.setAttribute("aria-pressed", String(on));
+}
+
+document
+  .getElementById("tileSoundButton")
+  .addEventListener("click", () => {
+    const on =
+      TileSound.toggle();
+
+    if (on && tileGame && !tileGame.state.over) {
+      TileSound.startMusic(tileGame.state.level);
+    }
+
+    updateTileSoundButton();
+  });
+
+updateTileSoundButton();
 
 document
   .getElementById("tileDropButton")
@@ -1750,6 +1799,7 @@ function closeDuelScreenQuietly() {
 function closeTileDropQuietly() {
   tileGame?.stop();
   tileGame = null;
+  TileSound.stopMusic(true);
   document.getElementById("tileDropScreen").classList.add("hidden");
   document.body.classList.remove("play-screen-open");
 }
