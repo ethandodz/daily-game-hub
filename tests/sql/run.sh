@@ -22,6 +22,7 @@ done
 psql -q -d "$db" -f "$here/server-tests.sql" >/dev/null
 psql -q -d "$db" -f "$here/card-tests.sql" >/dev/null
 psql -q -d "$db" -f "$here/play-tests.sql" >/dev/null
+psql -q -d "$db" -f "$here/versus-tests.sql" >/dev/null
 psql -At -d "$db" -c "select (case when ok then 'PASS ' else 'FAIL ' end) || label || case when ok then '' else '  -- ' || detail end from public.test_results order by n"
 failed=$(psql -At -d "$db" -c "select count(*) from public.test_results where not ok")
 total=$(psql -At -d "$db" -c "select count(*) from public.test_results")

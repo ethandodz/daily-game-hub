@@ -1,0 +1,196 @@
+population	India	1428000000
+population	China	1425000000
+population	United States	340000000
+population	Indonesia	278000000
+population	Pakistan	240000000
+population	Nigeria	224000000
+population	Brazil	216000000
+population	Bangladesh	173000000
+population	Russia	144000000
+population	Mexico	128000000
+population	Japan	124000000
+population	Philippines	117000000
+population	Egypt	113000000
+population	Vietnam	99000000
+population	Germany	84000000
+population	Turkey	85000000
+population	Thailand	72000000
+population	United Kingdom	68000000
+population	France	65000000
+population	Italy	59000000
+population	South Africa	60000000
+population	South Korea	52000000
+population	Colombia	52000000
+population	Spain	48000000
+population	Argentina	46000000
+population	Canada	39000000
+population	Saudi Arabia	37000000
+population	Peru	34000000
+population	Australia	26600000
+population	Chile	19600000
+population	Netherlands	17600000
+population	Cuba	11200000
+population	Belgium	11700000
+population	Sweden	10600000
+population	Greece	10300000
+population	Portugal	10300000
+population	Switzerland	8800000
+population	Denmark	5900000
+population	Finland	5500000
+population	Norway	5500000
+population	New Zealand	5200000
+population	Ireland	5100000
+population	Jamaica	2800000
+population	Iceland	380000
+us_state	California	39500000
+us_state	Texas	29100000
+us_state	Florida	21500000
+us_state	New York	20200000
+us_state	Pennsylvania	13000000
+us_state	Illinois	12800000
+us_state	Ohio	11800000
+us_state	Georgia	10700000
+us_state	North Carolina	10400000
+us_state	Michigan	10100000
+us_state	New Jersey	9300000
+us_state	Virginia	8600000
+us_state	Washington	7700000
+us_state	Arizona	7200000
+us_state	Massachusetts	7000000
+us_state	Tennessee	6900000
+us_state	Colorado	5800000
+us_state	Minnesota	5700000
+us_state	Alabama	5000000
+us_state	Louisiana	4700000
+us_state	Oregon	4200000
+us_state	Oklahoma	4000000
+us_state	Utah	3300000
+us_state	Nevada	3100000
+us_state	Kansas	2900000
+us_state	New Mexico	2100000
+us_state	Nebraska	1960000
+us_state	Idaho	1840000
+us_state	Hawaii	1460000
+us_state	Maine	1360000
+us_state	Montana	1080000
+us_state	Delaware	990000
+us_state	South Dakota	890000
+us_state	Alaska	730000
+us_state	Vermont	640000
+us_state	Wyoming	580000
+box_office	Avatar	2920000000
+box_office	Avengers: Endgame	2800000000
+box_office	Avatar: The Way of Water	2320000000
+box_office	Titanic	2260000000
+box_office	Star Wars: The Force Awakens	2070000000
+box_office	Spider-Man: No Way Home	1920000000
+box_office	Jurassic World	1670000000
+box_office	The Lion King (2019)	1660000000
+box_office	The Avengers	1520000000
+box_office	Top Gun: Maverick	1500000000
+box_office	Frozen II	1450000000
+box_office	Barbie	1450000000
+box_office	The Super Mario Bros. Movie	1360000000
+box_office	Black Panther	1350000000
+box_office	Harry Potter and the Deathly Hallows – Part 2	1340000000
+box_office	Frozen	1280000000
+box_office	Incredibles 2	1240000000
+box_office	Minions	1160000000
+box_office	The Dark Knight Rises	1080000000
+box_office	Joker	1080000000
+box_office	Toy Story 4	1070000000
+box_office	Finding Dory	1030000000
+box_office	The Dark Knight	1010000000
+box_office	Oppenheimer	976000000
+box_office	Shrek 2	930000000
+box_office	Inception	837000000
+box_office	Coco	814000000
+box_office	E.T. the Extra-Terrestrial	797000000
+box_office	Deadpool	783000000
+box_office	Up	735000000
+box_office	Forrest Gump	678000000
+box_office	Jaws	476000000
+box_office	Home Alone	476000000
+box_office	The Matrix	467000000
+box_office	Gladiator	465000000
+box_office	Grease	396000000
+box_office	Toy Story	394000000
+box_office	Back to the Future	381000000
+box_office	Elf	223000000
+box_office	Pulp Fiction	214000000
+box_office	Fight Club	101000000
+box_office	Mean Girls	130000000
+box_office	Napoleon Dynamite	46000000
+nba_points	LeBron James	40474
+nba_points	Kareem Abdul-Jabbar	38387
+nba_points	Karl Malone	36928
+nba_points	Kobe Bryant	33643
+nba_points	Michael Jordan	32292
+nba_points	Dirk Nowitzki	31560
+nba_points	Wilt Chamberlain	31419
+nba_points	Shaquille O'Neal	28596
+nba_points	Hakeem Olajuwon	26946
+nba_points	Tim Duncan	26496
+nba_points	Allen Iverson	24368
+nba_points	Larry Bird	21791
+nba_points	Magic Johnson	17707
+nba_points	Yao Ming	9247
+nba_points	Dennis Rodman	6683
+mlb_home_runs	Barry Bonds	762
+mlb_home_runs	Hank Aaron	755
+mlb_home_runs	Babe Ruth	714
+mlb_home_runs	Albert Pujols	703
+mlb_home_runs	Willie Mays	660
+mlb_home_runs	Ken Griffey Jr.	630
+mlb_home_runs	Sammy Sosa	609
+mlb_home_runs	Mickey Mantle	536
+mlb_home_runs	David Ortiz	541
+mlb_home_runs	Ted Williams	521
+mlb_home_runs	Lou Gehrig	493
+mlb_home_runs	Cal Ripken Jr.	431
+mlb_home_runs	Mike Piazza	427
+mlb_home_runs	Joe DiMaggio	361
+mlb_home_runs	Rickey Henderson	297
+mlb_home_runs	Derek Jeter	260
+mlb_home_runs	Pete Rose	160
+mlb_home_runs	Jackie Robinson	137
+mlb_home_runs	Tony Gwynn	135
+mlb_home_runs	Ichiro Suzuki	117
+grand_slams	Novak Djokovic	24
+grand_slams	Serena Williams	23
+grand_slams	Rafael Nadal	22
+grand_slams	Steffi Graf	22
+grand_slams	Roger Federer	20
+grand_slams	Martina Navratilova	18
+grand_slams	Chris Evert	18
+grand_slams	Pete Sampras	14
+grand_slams	Björn Borg	11
+grand_slams	Rod Laver	11
+grand_slams	Andre Agassi	8
+grand_slams	Jimmy Connors	8
+grand_slams	Ivan Lendl	8
+grand_slams	Venus Williams	7
+grand_slams	John McEnroe	7
+grand_slams	Maria Sharapova	5
+grand_slams	Andy Murray	3
+mountain	Mount Everest	8849
+mountain	K2	8611
+mountain	Aconcagua	6961
+mountain	Denali	6190
+mountain	Kilimanjaro	5895
+mountain	Mount Elbrus	5642
+mountain	Mount Kenya	5199
+mountain	Mont Blanc	4806
+mountain	Matterhorn	4478
+mountain	Mount Whitney	4421
+mountain	Mount Rainier	4392
+mountain	Pikes Peak	4302
+mountain	Mount Fuji	3776
+mountain	Aoraki / Mount Cook	3724
+mountain	Mount Olympus (Greece)	2918
+mountain	Mount St. Helens	2549
+mountain	Mount Kosciuszko	2228
+mountain	Mount Washington	1917
+mountain	Ben Nevis	1345
+mountain	Mount Vesuvius	1281
+mountain	Table Mountain	1085

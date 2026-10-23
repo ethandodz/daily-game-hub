@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.23.6">
+  <meta name="app-version" content="2026.10.23.7">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.23.6">
+  <link rel="stylesheet" href="styles.css?v=2026.10.23.7">
 </head>
 
 <body>
@@ -778,25 +778,10 @@
         </h3>
 
         <div class="play-games">
-          <div class="play-game">
-            <span
-              class="play-game-icon"
-              style="background: #16a34a"
-            >🟩</span>
-
-            <div class="play-game-text">
-              <b>Wordle Duel <span class="play-tag versus">VERSUS</span></b>
-              <span>Same word. Fewest guesses wins.</span>
-            </div>
-
-            <button
-              class="play-go"
-              id="wordleDuelButton"
-              type="button"
-            >
-              Challenge
-            </button>
-          </div>
+          <div
+            class="play-games-versus"
+            id="versusGames"
+          ></div>
 
           <div class="play-game">
             <span
@@ -1719,7 +1704,7 @@
   >
     <div class="modal-card">
       <div class="modal-top">
-        <h2>
+        <h2 id="challengeTitle">
           Challenge to Wordle Duel
         </h2>
 
@@ -1733,7 +1718,10 @@
         </button>
       </div>
 
-      <p class="intro">
+      <p
+        class="intro"
+        id="challengeIntro"
+      >
         Pick a friend from your servers. You can start right away; they
         play when they accept.
       </p>
@@ -1854,6 +1842,53 @@
   </div>
 
 <div
+    class="play-screen hidden"
+    id="versusScreen"
+    role="dialog"
+    aria-label="Versus game"
+  >
+    <div class="play-screen-top">
+      <button
+        class="close-button"
+        id="versusCloseButton"
+        type="button"
+        aria-label="Close game"
+      >
+        ✕
+      </button>
+
+      <b id="versusTitle"></b>
+
+      <button
+        class="link-button"
+        id="versusGiveUpButton"
+        type="button"
+      >
+        Give up
+      </button>
+    </div>
+
+    <div class="duel-opponent">
+      <span id="versusOpponentAvatar"></span>
+
+      <div class="duel-opponent-text">
+        <b id="versusOpponentName"></b>
+        <span id="versusOpponentStatus"></span>
+      </div>
+
+      <b
+        class="versus-score"
+        id="versusScore"
+      ></b>
+    </div>
+
+    <div
+      class="versus-body"
+      id="versusBody"
+    ></div>
+  </div>
+
+  <div
     class="play-screen hidden"
     id="tileDropScreen"
     role="dialog"
@@ -2911,9 +2946,10 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.23.6"></script>
-  <script src="tiledrop.js?v=2026.10.23.6"></script>
-  <script src="play.js?v=2026.10.23.6"></script>
+  <script src="app.js?v=2026.10.23.7"></script>
+  <script src="tiledrop.js?v=2026.10.23.7"></script>
+  <script src="play.js?v=2026.10.23.7"></script>
+  <script src="versus.js?v=2026.10.23.7"></script>
 </body>
 </html>
 

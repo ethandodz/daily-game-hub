@@ -6,6 +6,26 @@
  * answer never reaches either phone. While a duel is open the app
  * checks for the other player's moves every couple of seconds.
  */
+// Versus games. New ones show only in the test app until released:
+// set released to true to put a game in the real app.
+const VERSUS_GAMES = [
+  { id: "wordle_duel", name: "Wordle Duel", icon: "🟩", color: "#16a34a", blurb: "Same word. Fewest guesses wins.", released: true },
+  { id: "word_race", name: "Word Race", icon: "🔤", color: "#2563eb", blurb: "Same 9 letters, 2 minutes. Longer words score more.", released: false },
+  { id: "trivia", name: "Trivia Showdown", icon: "🧠", color: "#d55181", blurb: "10 questions. Fastest right answer gets the point.", released: false },
+  { id: "higher_lower", name: "Higher or Lower", icon: "📈", color: "#d95926", blurb: "Pick the bigger number. Longest streak wins.", released: false }
+];
+
+
+function gameInfo(id) {
+  return VERSUS_GAMES.find(game => game.id === id) || VERSUS_GAMES[0];
+}
+
+
+function playableGames() {
+  return VERSUS_GAMES.filter(game => game.released || IS_TEST_APP);
+}
+
+
 const ONLINE_WINDOW_MS =
   2 * 60 * 1000;
 
@@ -251,7 +271,7 @@ function renderFriendStrip() {
 
     button.append(friendAvatar(friend.user_id, isOnline(friend)), name);
 
-    button.addEventListener("click", () => challengeFriend(friend.user_id));
+    button.addEventListener("click", () => openGamePicker(friend.user_id));
     strip.appendChild(button);
   }
 }
@@ -330,6 +350,9 @@ function renderDuelList() {
     row.dataset.duel =
       duel.id;
 
+    row.dataset.game =
+      duel.game;
+
     const text =
       document.createElement("div");
 
@@ -373,7 +396,20 @@ function renderDuelList() {
       actions.appendChild(button);
     };
 
-    if (duel.status === "pending" && !duel.is_challenger) {
+    if (duel.game !== "wordle_duel") {
+      const summary =
+        versusSummary(duel);
+
+      title.textContent = summary.title;
+      sub.textContent = summary.sub;
+
+      if (summary.action === "accept") {
+        addButton("Decline", "decline", true);
+        addButton("Accept", "accept");
+      } else {
+        addButton(summary.button, "open", summary.secondary);
+      }
+    } else if (duel.status === "pending" && !duel.is_challenger) {
       title.textContent = friendName(duel.opponent) + " challenged you";
       sub.textContent = "Wordle Duel";
       addButton("Decline", "decline", true);
@@ -411,8 +447,11 @@ document
         return;
       }
 
+      const row =
+        button.closest("[data-duel]");
+
       const id =
-        button.closest("[data-duel]").dataset.duel;
+        row.dataset.duel;
 
       const status =
         document.getElementById("playStatus");
@@ -420,11 +459,11 @@ document
       try {
         if (button.dataset.action === "accept") {
           await playRpc("respond_duel", { p_duel: id, p_accept: true });
-          await openDuelScreen(id);
+          await openGame(id, row.dataset.game);
         } else if (button.dataset.action === "decline") {
           await playRpc("respond_duel", { p_duel: id, p_accept: false });
         } else {
-          await openDuelScreen(id);
+          await openGame(id, row.dataset.game);
         }
       } catch (error) {
         setStatus(status, error.message || "That didn't work. Try again.", "error");
@@ -437,12 +476,23 @@ document
 
 /* ---------- Challenging someone ---------- */
 
-function openChallengePicker() {
+function setChallengeHeading(title, intro) {
+  document.getElementById("challengeTitle").textContent = title;
+  document.getElementById("challengeIntro").textContent = intro;
+}
+
+
+function openChallengePicker(gameId = "wordle_duel") {
   const list =
     document.getElementById("challengeList");
 
   list.innerHTML = "";
   setStatus(document.getElementById("challengeStatus"), "");
+
+  setChallengeHeading(
+    "Challenge to " + gameInfo(gameId).name,
+    "Pick a friend from your servers. You can start right away; they play when they accept."
+  );
 
   const friends =
     [...playFriends].sort((a, b) => isOnline(b) - isOnline(a));
@@ -494,7 +544,7 @@ function openChallengePicker() {
       "Challenge";
 
     row.append(friendAvatar(friend.user_id, isOnline(friend)), text, go);
-    row.addEventListener("click", () => challengeFriend(friend.user_id));
+    row.addEventListener("click", () => challengeFriend(friend.user_id, gameId));
     list.appendChild(row);
   }
 
@@ -502,16 +552,190 @@ function openChallengePicker() {
 }
 
 
-async function challengeFriend(userId) {
+// Tapped a friend: pick which game to challenge them to.
+function openGamePicker(userId) {
+  const games =
+    playableGames();
+
+  if (games.length === 1) {
+    challengeFriend(userId, games[0].id);
+    return;
+  }
+
+  const list =
+    document.getElementById("challengeList");
+
+  list.innerHTML = "";
+  setStatus(document.getElementById("challengeStatus"), "");
+  setChallengeHeading("Challenge " + friendName(userId), "Pick a game. You can start right away; they play when they accept.");
+
+  for (const game of games) {
+    const row =
+      document.createElement("button");
+
+    row.type =
+      "button";
+
+    row.className =
+      "challenge-row";
+
+    row.dataset.game =
+      game.id;
+
+    const icon =
+      document.createElement("span");
+
+    icon.className =
+      "play-game-icon";
+
+    icon.style.background =
+      game.color;
+
+    icon.textContent =
+      game.icon;
+
+    const text =
+      document.createElement("div");
+
+    const name =
+      document.createElement("b");
+
+    name.textContent =
+      game.name;
+
+    const blurb =
+      document.createElement("span");
+
+    blurb.textContent =
+      game.blurb;
+
+    text.append(name, blurb);
+    row.append(icon, text);
+    row.addEventListener("click", () => challengeFriend(userId, game.id));
+    list.appendChild(row);
+  }
+
+  document.getElementById("challengeModal").classList.add("open");
+}
+
+
+// The Games list: one row per versus game you can play here.
+function renderPlayGames() {
+  const list =
+    document.getElementById("versusGames");
+
+  list.innerHTML = "";
+
+  for (const game of playableGames()) {
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "play-game";
+
+    const icon =
+      document.createElement("span");
+
+    icon.className =
+      "play-game-icon";
+
+    icon.style.background =
+      game.color;
+
+    icon.textContent =
+      game.icon;
+
+    const text =
+      document.createElement("div");
+
+    text.className =
+      "play-game-text";
+
+    const name =
+      document.createElement("b");
+
+    name.append(game.name + " ");
+
+    const tag =
+      document.createElement("span");
+
+    tag.className =
+      "play-tag versus";
+
+    tag.textContent =
+      "VERSUS";
+
+    name.appendChild(tag);
+
+    if (!game.released) {
+      const testing =
+        document.createElement("span");
+
+      testing.className =
+        "play-tag testing";
+
+      testing.textContent =
+        "TESTING";
+
+      name.appendChild(testing);
+    }
+
+    const blurb =
+      document.createElement("span");
+
+    blurb.textContent =
+      game.blurb;
+
+    text.append(name, blurb);
+
+    const go =
+      document.createElement("button");
+
+    go.type =
+      "button";
+
+    go.className =
+      "play-go";
+
+    go.dataset.game =
+      game.id;
+
+    if (game.id === "wordle_duel") {
+      go.id = "wordleDuelButton";
+    }
+
+    go.textContent =
+      "Challenge";
+
+    go.addEventListener("click", () => openChallengePicker(game.id));
+
+    row.append(icon, text, go);
+    list.appendChild(row);
+  }
+}
+
+renderPlayGames();
+
+
+function openGame(id, game) {
+  return game && game !== "wordle_duel"
+    ? openVersusScreen(id)
+    : openDuelScreen(id);
+}
+
+
+async function challengeFriend(userId, gameId = "wordle_duel") {
   const status =
     document.getElementById("challengeStatus");
 
   try {
     const id =
-      await playRpc("create_duel", { p_opponent: userId });
+      gameId === "wordle_duel"
+        ? await playRpc("create_duel", { p_opponent: userId })
+        : await playRpc("create_versus", { p_opponent: userId, p_game: gameId });
 
     document.getElementById("challengeModal").classList.remove("open");
-    await openDuelScreen(id);
+    await openGame(id, gameId);
     loadPlayTab();
   } catch (error) {
     const message =
@@ -801,7 +1025,7 @@ function renderDuel() {
 
     again.addEventListener("click", () => {
       closeDuelScreen();
-      challengeFriend(duel.opponent);
+      challengeFriend(duel.opponent, "wordle_duel");
     });
 
     result.append(headline, word, again);
@@ -993,9 +1217,6 @@ document
     }
   });
 
-document
-  .getElementById("wordleDuelButton")
-  .addEventListener("click", openChallengePicker);
 
 
 /* ---------- Tile Drop ---------- */
@@ -1504,6 +1725,11 @@ document
 // Called from app.js on sign out.
 function resetPlay() {
   closeDuelScreenQuietly();
+
+  if (typeof closeVersusScreen === "function") {
+    closeVersusScreen(true);
+  }
+
   closeTileDropQuietly();
   playFriends = [];
   playDuels = [];
