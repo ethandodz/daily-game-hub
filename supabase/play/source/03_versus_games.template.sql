@@ -564,6 +564,26 @@ $$;
 revoke all on function public.dgh_duel_view(public.duels, uuid) from public, anon, authenticated;
 
 
+-- Lets a computer player take its turn, in the test database only:
+-- supabase/test-setup/03_bots.sql adds dgh_bot_play. Here (and in the
+-- real database) it does nothing.
+create or replace function public.dgh_bot_hook(p_duel uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if to_regprocedure('public.dgh_bot_play(uuid)') is not null
+     and coalesce(current_setting('dgh.bot_busy', true), '') <> '1' then
+    execute 'select public.dgh_bot_play($1)' using p_duel;
+  end if;
+end;
+$$;
+
+revoke all on function public.dgh_bot_hook(uuid) from public, anon, authenticated;
+
+
 -- Look up a duel you're in, after closing anything that timed out.
 create or replace function public.dgh_my_duel(p_duel uuid)
 returns public.duels
@@ -574,6 +594,7 @@ as $$
 declare
   d public.duels;
 begin
+  perform public.dgh_bot_hook(p_duel);
   perform public.dgh_versus_settle(p_duel);
 
   select * into d from public.duels where id = p_duel;
@@ -622,8 +643,8 @@ begin
     select id from public.duels
     where (select auth.uid()) in (challenger, opponent)
       and status in ('pending', 'active')
-      and game <> 'wordle_duel'
   loop
+    perform public.dgh_bot_hook(open_id);
     perform public.dgh_versus_settle(open_id);
   end loop;
 
