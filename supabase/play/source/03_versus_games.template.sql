@@ -513,6 +513,133 @@ $$;
 revoke all on function public.dgh_dial_view(public.duels, uuid) from public, anon, authenticated;
 
 
+-- Wordle Duel timing: your clock starts when the game opens to you
+-- (when you send the challenge, or when you accept one) and runs on the
+-- server, so leaving the app doesn't stop it. Null until you solve it.
+create or replace function public.dgh_wordle_ms(d public.duels, p_user uuid)
+returns integer
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (extract(epoch from (
+    min(g.created_at) - case when p_user = d.challenger then d.created_at else coalesce(d.accepted_at, d.created_at) end
+  )) * 1000)::integer
+  from public.duel_guesses g
+  where g.duel_id = d.id and g.user_id = p_user and g.pattern = 'GGGGG';
+$$;
+
+revoke all on function public.dgh_wordle_ms(public.duels, uuid) from public, anon, authenticated;
+
+
+-- Wordle Duel: finish once the result can't change. Fewest guesses
+-- wins; the same number goes to whoever solved it faster; if neither
+-- solves it, it's a draw.
+create or replace function public.dgh_wordle_settle(p_duel uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  d public.duels;
+  a_count integer;
+  a_solved integer;
+  b_count integer;
+  b_solved integer;
+  a_ms integer;
+  b_ms integer;
+  champ uuid;
+begin
+  select * into d from public.duels where id = p_duel for update;
+
+  if not found or d.game <> 'wordle_duel' or d.status <> 'active' then
+    return;
+  end if;
+
+  select count(*), min(n) filter (where pattern = 'GGGGG') into a_count, a_solved
+  from public.duel_guesses where duel_id = d.id and user_id = d.challenger;
+
+  select count(*), min(n) filter (where pattern = 'GGGGG') into b_count, b_solved
+  from public.duel_guesses where duel_id = d.id and user_id = d.opponent;
+
+  if not (
+    ((a_solved is not null or a_count >= 6) and (b_solved is not null or b_count >= 6))
+    or (a_solved is not null and b_solved is null and b_count >= a_solved)
+    or (b_solved is not null and a_solved is null and a_count >= b_solved)
+  ) then
+    return;
+  end if;
+
+  a_ms := public.dgh_wordle_ms(d, d.challenger);
+  b_ms := public.dgh_wordle_ms(d, d.opponent);
+
+  champ := case
+    when a_solved is not null and (b_solved is null or a_solved < b_solved) then d.challenger
+    when b_solved is not null and (a_solved is null or b_solved < a_solved) then d.opponent
+    when a_solved is not null and a_solved = b_solved and a_ms < b_ms then d.challenger
+    when a_solved is not null and a_solved = b_solved and b_ms < a_ms then d.opponent
+  end;
+
+  update public.duels
+  set status = 'finished', finished_at = now(), winner = champ
+  where id = d.id;
+end;
+$$;
+
+revoke all on function public.dgh_wordle_settle(uuid) from public, anon, authenticated;
+
+
+-- Make a guess (replaces the step 1 version: ties now go to the faster
+-- player).
+create or replace function public.duel_guess(p_duel uuid, p_guess text)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+  d public.duels;
+  guess text := lower(trim(p_guess));
+  my_count integer;
+  my_solved_at integer;
+begin
+  select * into d from public.duels where id = p_duel for update;
+
+  if not found or me not in (d.challenger, d.opponent) or d.game <> 'wordle_duel' then
+    raise exception 'That game was not found.';
+  end if;
+
+  if not (d.status = 'active' or (d.status = 'pending' and me = d.challenger)) then
+    raise exception 'This game is not open for guesses.';
+  end if;
+
+  if guess !~ '^[a-z]{5}$' then
+    raise exception 'Guesses are 5 letters.';
+  end if;
+
+  select count(*), min(n) filter (where pattern = 'GGGGG')
+  into my_count, my_solved_at
+  from public.duel_guesses where duel_id = d.id and user_id = me;
+
+  if my_solved_at is not null or my_count >= 6 then
+    raise exception 'You are already done with this game.';
+  end if;
+
+  insert into public.duel_guesses (duel_id, user_id, n, guess, pattern)
+  values (d.id, me, my_count + 1, guess, public.dgh_wordle_pattern(guess, d.answer));
+
+  perform public.dgh_wordle_settle(d.id);
+
+  select * into d from public.duels where id = p_duel;
+
+  return public.dgh_duel_view(d, me);
+end;
+$$;
+
+
 -- Everything one player may see about a duel (all games). Replaces the
 -- Wordle-only version from step 1; Wordle Duel fields stay the same.
 create or replace function public.dgh_duel_view(d public.duels, me uuid)
@@ -546,6 +673,11 @@ as $$
     'their_patterns', coalesce((select json_agg(pattern order by n) from theirs), '[]'::json),
     'last_move_at', (select max(created_at) from public.duel_guesses where duel_id = d.id),
     'answer', case when d.status = 'finished' then d.answer end,
+    'started_at', case when d.game = 'wordle_duel' then
+      case when d.challenger = me then d.created_at else d.accepted_at end end,
+    'my_ms', case when d.game = 'wordle_duel' then public.dgh_wordle_ms(d, me) end,
+    'their_ms', case when d.game = 'wordle_duel' and d.status = 'finished' then
+      public.dgh_wordle_ms(d, (select id from them)) end,
     'meld', case when d.game = 'mind_meld' then public.dgh_meld_view(d, me) end,
     'dial', case when d.game = 'dial_in' then public.dgh_dial_view(d, me) end,
     'me', case when d.game <> 'wordle_duel' then public.dgh_versus_turn(d, me) end,
@@ -637,7 +769,7 @@ end;
 $$;
 
 
--- Your duels: open ones, plus finished ones from the last 3 days.
+-- Your duels: open ones, plus the last 50 finished in the past 30 days.
 create or replace function public.my_duels()
 returns json
 language plpgsql
@@ -659,9 +791,18 @@ begin
 
   return (
     select coalesce(json_agg(public.dgh_duel_view(d, (select auth.uid())) order by d.created_at desc), '[]'::json)
-    from public.duels d
-    where (select auth.uid()) in (d.challenger, d.opponent)
-      and (d.status in ('pending', 'active') or d.finished_at > now() - interval '3 days')
+    from (
+      select * from public.duels x
+      where (select auth.uid()) in (x.challenger, x.opponent)
+        and x.status in ('pending', 'active')
+      union all
+      (select * from public.duels x
+       where (select auth.uid()) in (x.challenger, x.opponent)
+         and x.status not in ('pending', 'active')
+         and x.finished_at > now() - interval '30 days'
+       order by x.finished_at desc
+       limit 50)
+    ) d
   );
 end;
 $$;
@@ -1294,6 +1435,8 @@ revoke all on function public.mind_meld_say(uuid, text) from public, anon;
 grant execute on function public.mind_meld_say(uuid, text) to authenticated;
 revoke all on function public.cancel_duel(uuid) from public, anon;
 grant execute on function public.cancel_duel(uuid) to authenticated;
+revoke all on function public.duel_guess(uuid, text) from public, anon;
+grant execute on function public.duel_guess(uuid, text) to authenticated;
 revoke all on function public.create_versus(uuid, text) from public, anon;
 revoke all on function public.versus_start(uuid) from public, anon;
 revoke all on function public.word_race_word(uuid, text) from public, anon;

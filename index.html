@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-title" content="Game Hub">
 
   <!-- Keep in step with version.json (tools/bump-version.py does both) -->
-  <meta name="app-version" content="2026.10.23.13">
+  <meta name="app-version" content="2026.10.23.14">
 
-  <link rel="stylesheet" href="styles.css?v=2026.10.23.13">
+  <link rel="stylesheet" href="styles.css?v=2026.10.23.14">
 </head>
 
 <body>
@@ -813,6 +813,26 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <div
+          class="play-history hidden"
+          id="playHistory"
+        >
+          <h3 class="play-section-title">
+            History
+          </h3>
+
+          <div
+            class="duel-list"
+            id="duelHistory"
+          ></div>
+
+          <button
+            class="button secondary full-width hidden"
+            id="historyMoreButton"
+            type="button"
+          ></button>
         </div>
       </div>
     </div>
@@ -1823,6 +1843,11 @@
       class="duel-message"
       id="duelMessage"
       aria-live="polite"
+    ></p>
+
+    <p
+      class="duel-clock hidden"
+      id="duelClock"
     ></p>
 
     <div
@@ -2979,12 +3004,12 @@
   </div>
 </div>
 
-  <script src="app.js?v=2026.10.23.13"></script>
-  <script src="tiledrop.js?v=2026.10.23.13"></script>
-  <script src="tilesound.js?v=2026.10.23.13"></script>
-  <script src="play.js?v=2026.10.23.13"></script>
-  <script src="versus.js?v=2026.10.23.13"></script>
-  <script src="dial.js?v=2026.10.23.13"></script>
+  <script src="app.js?v=2026.10.23.14"></script>
+  <script src="tiledrop.js?v=2026.10.23.14"></script>
+  <script src="tilesound.js?v=2026.10.23.14"></script>
+  <script src="play.js?v=2026.10.23.14"></script>
+  <script src="versus.js?v=2026.10.23.14"></script>
+  <script src="dial.js?v=2026.10.23.14"></script>
 </body>
 </html>
 

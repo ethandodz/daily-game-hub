@@ -297,3 +297,26 @@ select public.dial_guess(:'di', 50) as s \gset
 select public.check('dial in: after 6 rounds it ends together with a team score', (:'s'::json->>'status') = 'finished' and (:'s'::json->>'winner') is null
   and (:'s'::json->'dial'->>'total') = '19' and json_array_length(:'s'::json->'dial'->'rounds') = 6, :'s');
 reset role;
+
+
+-- ---------- Wordle Duel: ties go to the faster player ----------
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.create_duel(:'B') as wt \gset
+reset role; update duels set answer = 'crane' where id = :'wt'; set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.duel_guess(:'wt', 'slate'), public.duel_guess(:'wt', 'crane');
+select public.duel_state(:'wt') as s \gset
+select public.check('wordle time: your clock starts when you challenge', (:'s'::json->>'started_at') is not null and (:'s'::json->>'my_ms') is not null, :'s');
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.respond_duel(:'wt', true);
+-- A took 90 seconds to solve; B is about to solve in the same 2 guesses, much faster.
+reset role; update duel_guesses set created_at = (select created_at from duels where id = :'wt') + interval '90 seconds' where duel_id = :'wt' and user_id = :'A' and n = 2; set role authenticated;
+select set_config('request.jwt.claim.sub', :'B', false);
+select public.duel_guess(:'wt', 'trace');
+select public.duel_guess(:'wt', 'crane') as s \gset
+select public.check('wordle time: same guesses, faster player wins', (:'s'::json->>'status') = 'finished' and (:'s'::json->>'winner') = :'B'
+  and (:'s'::json->>'their_ms')::integer >= 90000 and (:'s'::json->>'my_ms')::integer < 90000, :'s');
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.check('wordle time: history keeps finished games', exists (select 1 from json_array_elements(public.my_duels()) x where x ->> 'id' = :'wt'));
+reset role;

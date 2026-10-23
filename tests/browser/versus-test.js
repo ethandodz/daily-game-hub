@@ -36,6 +36,9 @@ m.server.listen(0, async () => {
   assert(await page.evaluate(() => { const r = document.getElementById('duelScreen').getBoundingClientRect(); const t = document.querySelector('.tab-bar').getBoundingClientRect();
     return document.elementFromPoint(t.left + 10, t.top + 10)?.closest('#duelScreen') !== null && r.height >= innerHeight - 1; }), 'duel screen covers the tab bar');
 
+  // The clock runs from the challenge
+  assert(/^⏱ 0:0\d$/.test((await page.textContent('#duelClock')).trim()), 'clock is running');
+
   // Typing and guessing
   await page.keyboard.type('cra');
   assert((await page.$$eval('#duelMyBoard .duel-square.typed', s => s.map(x => x.textContent).join(''))) === 'CRA', 'typed letters show');
@@ -65,12 +68,19 @@ m.server.listen(0, async () => {
   await page.keyboard.type('slate'); await page.keyboard.press('Enter'); await page.waitForTimeout(500);
   await page.keyboard.type('crane'); await page.keyboard.press('Enter'); await page.waitForTimeout(500);
   assert(await page.isVisible('#duelResult'), 'result shows when the duel ends');
-  assert((await page.textContent('#duelResult')).includes("It's a draw"), 'equal guesses is a draw');
+  assert((await page.textContent('#duelResult')).includes('You win!'), 'same number of guesses: the faster player wins');
+  assert(/Your time 0:\d\d · @ethan 0:30/.test(await page.textContent('#duelResult')), 'both times are shown at the end');
+  assert((await page.textContent('#duelClock')).includes('✓'), 'your clock stops when you solve it');
   assert((await page.textContent('#duelResult')).includes('CRANE'), 'answer is shown at the end');
   assert(!(await page.isVisible('#duelKeyboard')), 'keyboard hides at the end');
   await page.screenshot({ path: out + '-duel.png' });
   await page.click('#duelCloseButton'); await page.waitForTimeout(600);
-  assert((await page.textContent('#duelList')).includes('Draw with @ethan'), 'finished duel shows in the list');
+  assert((await page.textContent('#duelList')).includes('You beat @ethan'), 'finished duel shows at the top until you look at it');
+  assert(!(await page.isVisible('#playHistory')), 'no History yet');
+  await page.screenshot({ path: out + '-list-fresh.png', fullPage: true });
+  await page.click('#duelList .duel-row:has-text("You beat @ethan") [data-action="dismiss"]'); await page.waitForTimeout(200);
+  assert(!(await page.textContent('#duelList')).includes('You beat @ethan') && (await page.textContent('#duelHistory')).includes('You beat @ethan'), '✕ moves it to History');
+  assert(await page.evaluate(() => JSON.parse(localStorage.getItem('dailyGameHubSeenGames')).length === 1), 'remembered on this device');
 
   // Someone challenges me: accept from the banner
   m.serverState.duels.push({ id: 'duel-in', challenger: FRIEND, opponent: m.ME, answer: 'crane', status: 'pending', winner: null, created_at: new Date().toISOString(), finished_at: null, guesses: { [FRIEND]: ['crane'], [m.ME]: [] } });

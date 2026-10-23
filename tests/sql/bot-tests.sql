@@ -22,18 +22,25 @@ select public.check('bot: shows as an online friend', exists (
 select public.create_duel(:'BOT') as wd \gset
 select public.check('bot: accepts the moment you challenge it', (select public.duel_state(:'wd') ->> 'status') = 'active');
 select public.duel_state(:'wd') as s \gset
-select public.check('bot wordle: accepts and makes a first guess', (:'s'::json->>'status') = 'active' and json_array_length(:'s'::json->'their_patterns') = 1, :'s');
-select public.duel_state(:'wd') as s \gset
-select public.check('bot wordle: waits a few seconds between guesses', json_array_length(:'s'::json->'their_patterns') = 1, :'s');
-reset role; update duel_guesses set created_at = created_at - interval '10 seconds' where duel_id = :'wd'; set role authenticated;
+select public.check('bot wordle: thinks before its first guess (like a person)', json_array_length(:'s'::json->'their_patterns') = 0, :'s');
+reset role; update duels set created_at = created_at - interval '32 seconds', accepted_at = accepted_at - interval '32 seconds' where id = :'wd'; set role authenticated;
 select set_config('request.jwt.claim.sub', :'A', false);
 select public.duel_state(:'wd') as s \gset
-select public.check('bot wordle: next guess fits what it learned', json_array_length(:'s'::json->'their_patterns') = 2, :'s');
+select public.check('bot wordle: guesses once its time comes', json_array_length(:'s'::json->'their_patterns') between 1 and 2, :'s');
+reset role; update duels set created_at = created_at - interval '3 minutes', accepted_at = accepted_at - interval '3 minutes' where id = :'wd';
+update duel_guesses set created_at = created_at - interval '3 minutes' where duel_id = :'wd'; set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select public.duel_state(:'wd') as s \gset
+select public.check('bot wordle: keeps guessing over time', json_array_length(:'s'::json->'their_patterns') >= 2, :'s');
 reset role;
 select public.check('bot wordle: second guess fits the first one''s colors', (
-  select public.dgh_wordle_pattern(g1.guess, g2.guess) = g1.pattern or g2.pattern = 'GGGGG' or g1.pattern = 'GGGGG'
+  select public.dgh_wordle_pattern(g1.guess, g2.guess) = g1.pattern or g1.pattern = 'GGGGG'
   from duel_guesses g1 join duel_guesses g2 on g2.duel_id = g1.duel_id and g2.user_id = g1.user_id and g2.n = 2
   where g1.duel_id = :'wd' and g1.n = 1));
+select public.check('bot wordle: guesses 12 to 31 seconds apart', (
+  select bool_and(g2.created_at - g1.created_at between interval '12 seconds' and interval '31 seconds')
+  from duel_guesses g1 join duel_guesses g2 on g2.duel_id = g1.duel_id and g2.user_id = g1.user_id and g2.n = g1.n + 1
+  where g1.duel_id = :'wd'));
 set role authenticated;
 select set_config('request.jwt.claim.sub', :'A', false);
 select public.duel_guess(:'wd', 'zzzzz');

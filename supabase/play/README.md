@@ -8,7 +8,7 @@ Run in the Supabase **SQL Editor**, in order, after the Servers and player card 
 | 2 | `02_arcade.sql` | Arcade scores and leaderboards for Tile Drop: today, this week and all time, for each of your servers or everyone. Impossible scores are turned away. |
 | 3 | `03_versus_games.sql` | Word Race, Trivia Showdown, Higher or Lower, Mind Meld and Dial In: the 400 Word Race starting words, the trivia questions and the Higher or Lower facts, plus the rules. Like Wordle Duel, answers stay in the database. Ends with a check showing how many words, questions and facts loaded. If you ever run step 1 again, run this one again after it. |
 
-Wordle Duel rules: fewest guesses to solve wins, the same number is a draw, and the game ends as soon as the result can't change. You can challenge anyone who shares a server with you; the challenger can start playing right away.
+Wordle Duel rules: fewest guesses to solve wins; the same number goes to whoever solved it faster (your clock starts when the game opens to you and keeps running if you leave the app); if neither solves it, it's a draw. The game ends as soon as the result can't change. (Step 3 brings in the timing, so run it after step 1.) You can challenge anyone who shares a server with you; the challenger can start playing right away.
 
 ## The newer games
 

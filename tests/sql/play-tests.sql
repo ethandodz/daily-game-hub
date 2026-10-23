@@ -49,7 +49,7 @@ select public.check('duel: answer shown when finished', (:'g'::json->>'answer') 
 select set_config('request.jwt.claim.sub', :'A', false);
 select public.expect_error('duel: no guesses after it ends', format('select public.duel_guess(%L, %L)', :'d1', 'crane'), 'not open');
 
--- same number of guesses is a draw
+-- same number of guesses: the faster player wins
 select public.create_duel(:'B') as d2 \gset
 reset role; update public.duels set answer = 'crane' where id = :'d2'; set role authenticated;
 select set_config('request.jwt.claim.sub', :'A', false);
@@ -61,7 +61,8 @@ select public.respond_duel(:'d2', true);
 select public.duel_guess(:'d2', 'trace') as g \gset
 select public.check('duel: still open while a tie is possible', (:'g'::json->>'status') = 'active', :'g');
 select public.duel_guess(:'d2', 'crane') as g \gset
-select public.check('duel: same number of guesses is a draw', (:'g'::json->>'status') = 'finished' and (:'g'::json->>'winner') is null, :'g');
+select public.check('duel: same number of guesses goes to the faster player', (:'g'::json->>'status') = 'finished' and (:'g'::json->>'their_ms') is not null
+  and ((:'g'::json->>'winner') is not null or (:'g'::json->>'my_ms') = (:'g'::json->>'their_ms')), :'g');
 
 -- six misses each is a draw; playing on after the other solved
 select public.create_duel(:'A') as d3 \gset

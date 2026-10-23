@@ -3847,6 +3847,28 @@ body.card-popped .tab-bar {
   gap: 8px;
 }
 
+.duel-dismiss {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--control);
+}
+
+.play-history {
+  display: grid;
+  gap: 8px;
+}
+
+.play-history.hidden,
+#historyMoreButton.hidden {
+  display: none;
+}
+
 .duel-row,
 .play-game,
 .challenge-row,
@@ -4057,8 +4079,8 @@ body.play-screen-open {
 .duel-board {
   display: grid;
   gap: 6px;
-  width: min(100%, 300px, (100vh - 400px) * 0.83);
-  width: min(100%, 300px, (100dvh - 400px) * 0.83);
+  width: min(100%, 300px, (100vh - 440px) * 0.83);
+  width: min(100%, 300px, (100dvh - 440px) * 0.83);
   margin: 0 auto;
 }
 
@@ -4132,6 +4154,27 @@ body.play-screen-open {
 
 .duel-message:empty {
   display: none;
+}
+
+/* Wordle Duel clock: ties go to whoever solved it faster. */
+.duel-clock {
+  align-self: center;
+  margin: 0;
+  padding: 3px 12px;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  border-radius: 999px;
+  background: var(--panel);
+}
+
+.duel-clock.hidden {
+  display: none;
+}
+
+.duel-clock.done {
+  color: var(--success-text);
 }
 
 .duel-result {

@@ -52,6 +52,9 @@ let openDuel =
 let duelPollTimer =
   null;
 
+let duelClockTimer =
+  null;
+
 let duelTyping =
   "";
 
@@ -344,152 +347,256 @@ function duelOutcomeText(duel) {
 }
 
 
-function renderDuelList() {
-  const list =
-    document.getElementById("duelList");
+// Finished games you've opened or closed (✕) move to History. Kept on
+// this device.
+const SEEN_GAMES_KEY =
+  "dailyGameHubSeenGames";
 
-  list.innerHTML = "";
+let historyShowAll =
+  false;
 
-  const open =
-    playDuels.filter(duel => duel.status === "pending" || duel.status === "active");
 
-  const finished =
-    playDuels
-      .filter(duel => !open.includes(duel))
-      .slice(0, 3);
-
-  for (const duel of [...open, ...finished]) {
-    const row =
-      document.createElement("div");
-
-    row.className =
-      "duel-row" + (open.includes(duel) ? " open" : "");
-
-    row.dataset.duel =
-      duel.id;
-
-    row.dataset.game =
-      duel.game;
-
-    const text =
-      document.createElement("div");
-
-    text.className =
-      "duel-row-text";
-
-    const title =
-      document.createElement("b");
-
-    const sub =
-      document.createElement("span");
-
-    const mine =
-      myDuelProgress(duel);
-
-    const theirs =
-      theirDuelProgress(duel);
-
-    const actions =
-      document.createElement("div");
-
-    actions.className =
-      "duel-row-actions";
-
-    const addButton = (label, action, secondary) => {
-      const button =
-        document.createElement("button");
-
-      button.type =
-        "button";
-
-      button.className =
-        "play-go" + (secondary ? " secondary" : "");
-
-      button.dataset.action =
-        action;
-
-      button.textContent =
-        label;
-
-      actions.appendChild(button);
-    };
-
-    if (duel.game !== "wordle_duel") {
-      const summary =
-        versusSummary(duel);
-
-      title.textContent = summary.title;
-      sub.textContent = summary.sub;
-
-      if (summary.action === "accept") {
-        addButton("Decline", "decline", true);
-        addButton("Accept", "accept");
-      } else {
-        addButton(summary.button, "open", summary.secondary);
-      }
-    } else if (duel.status === "pending" && !duel.is_challenger) {
-      title.textContent = friendName(duel.opponent) + " challenged you";
-      sub.textContent = "Wordle Duel";
-      addButton("Decline", "decline", true);
-      addButton("Accept", "accept");
-    } else if (duel.status === "pending") {
-      title.textContent = "Waiting for " + friendName(duel.opponent);
-      sub.textContent = mine.done ? "You're done. They haven't accepted yet." : "You can start now · " + mine.count + "/6";
-      addButton(mine.done ? "See" : "Play", "open");
-    } else if (duel.status === "active") {
-      title.textContent = mine.done ? "Waiting for " + friendName(duel.opponent) : "Your turn vs " + friendName(duel.opponent);
-      sub.textContent = "Wordle Duel · you " + mine.count + "/6 · them " + theirs.count + "/6";
-      addButton(mine.done ? "See" : "Play", "open");
-    } else {
-      title.textContent = duelOutcomeText(duel);
-      sub.textContent = duel.answer ? "The word was " + duel.answer.toUpperCase() : "Wordle Duel";
-      addButton("See", "open", true);
-    }
-
-    text.append(title, sub);
-    row.append(friendAvatar(duel.opponent), text, actions);
-    list.appendChild(row);
+function seenGames() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(SEEN_GAMES_KEY) || "[]"));
+  } catch (error) {
+    return new Set();
   }
 }
 
 
-document
-  .getElementById("duelList")
-  .addEventListener(
-    "click",
-    async event => {
-      const button =
-        event.target.closest("[data-action]");
+function markGameSeen(id) {
+  const seen =
+    seenGames();
 
-      if (!button) {
-        return;
-      }
+  seen.add(id);
 
-      const row =
-        button.closest("[data-duel]");
+  try {
+    localStorage.setItem(SEEN_GAMES_KEY, JSON.stringify([...seen].slice(-300)));
+  } catch (error) {}
+}
 
-      const id =
-        row.dataset.duel;
 
-      const status =
-        document.getElementById("playStatus");
+function isOpenDuel(duel) {
+  return duel.status === "pending" || duel.status === "active";
+}
 
-      try {
-        if (button.dataset.action === "accept") {
-          await playRpc("respond_duel", { p_duel: id, p_accept: true });
-          await openGame(id, row.dataset.game);
-        } else if (button.dataset.action === "decline") {
-          await playRpc("respond_duel", { p_duel: id, p_accept: false });
-        } else {
-          await openGame(id, row.dataset.game);
-        }
-      } catch (error) {
-        setStatus(status, error.message || "That didn't work. Try again.", "error");
-      }
 
-      loadPlayTab();
-    }
+// Top: open games, plus finished ones you haven't looked at yet.
+// History (below the games list): the rest of your finished games.
+function renderDuelList() {
+  const list =
+    document.getElementById("duelList");
+
+  const historyList =
+    document.getElementById("duelHistory");
+
+  const seen =
+    seenGames();
+
+  const open =
+    playDuels.filter(isOpenDuel);
+
+  const finished =
+    playDuels.filter(duel => !isOpenDuel(duel));
+
+  const fresh =
+    finished.filter(duel => !seen.has(duel.id));
+
+  const past =
+    finished.filter(duel => seen.has(duel.id));
+
+  list.replaceChildren(
+    ...open.map(duel => buildDuelRow(duel, false)),
+    ...fresh.map(duel => buildDuelRow(duel, true))
   );
+
+  const shown =
+    historyShowAll ? past : past.slice(0, 5);
+
+  historyList.replaceChildren(...shown.map(duel => buildDuelRow(duel, false)));
+  document.getElementById("playHistory").classList.toggle("hidden", !past.length);
+
+  const more =
+    document.getElementById("historyMoreButton");
+
+  more.classList.toggle("hidden", past.length <= 5);
+  more.textContent = historyShowAll ? "Show fewer" : "Show all " + past.length;
+}
+
+
+function buildDuelRow(duel, dismissable) {
+  const isOpen =
+    isOpenDuel(duel);
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "duel-row" + (isOpen ? " open" : "");
+
+  row.dataset.duel =
+    duel.id;
+
+  row.dataset.game =
+    duel.game;
+
+  const text =
+    document.createElement("div");
+
+  text.className =
+    "duel-row-text";
+
+  const title =
+    document.createElement("b");
+
+  const sub =
+    document.createElement("span");
+
+  const mine =
+    myDuelProgress(duel);
+
+  const theirs =
+    theirDuelProgress(duel);
+
+  const actions =
+    document.createElement("div");
+
+  actions.className =
+    "duel-row-actions";
+
+  const addButton = (label, action, secondary) => {
+    const button =
+      document.createElement("button");
+
+    button.type =
+      "button";
+
+    button.className =
+      "play-go" + (secondary ? " secondary" : "");
+
+    button.dataset.action =
+      action;
+
+    button.textContent =
+      label;
+
+    actions.appendChild(button);
+  };
+
+  if (duel.game !== "wordle_duel") {
+    const summary =
+      versusSummary(duel);
+
+    title.textContent = summary.title;
+    sub.textContent = summary.sub;
+
+    if (summary.action === "accept") {
+      addButton("Decline", "decline", true);
+      addButton("Accept", "accept");
+    } else {
+      addButton(summary.button, "open", summary.secondary);
+    }
+  } else if (duel.status === "pending" && !duel.is_challenger) {
+    title.textContent = friendName(duel.opponent) + " challenged you";
+    sub.textContent = "Wordle Duel";
+    addButton("Decline", "decline", true);
+    addButton("Accept", "accept");
+  } else if (duel.status === "pending") {
+    title.textContent = "Waiting for " + friendName(duel.opponent);
+    sub.textContent = mine.done ? "You're done. They haven't accepted yet." : "You can start now · " + mine.count + "/6";
+    addButton(mine.done ? "See" : "Play", "open");
+  } else if (duel.status === "active") {
+    title.textContent = mine.done ? "Waiting for " + friendName(duel.opponent) : "Your turn vs " + friendName(duel.opponent);
+    sub.textContent = "Wordle Duel · you " + mine.count + "/6 · them " + theirs.count + "/6";
+    addButton(mine.done ? "See" : "Play", "open");
+  } else {
+    title.textContent = duelOutcomeText(duel);
+    sub.textContent = duel.answer ? "The word was " + duel.answer.toUpperCase() : "Wordle Duel";
+    addButton("See", "open", true);
+  }
+
+  if (dismissable) {
+    const dismiss =
+      document.createElement("button");
+
+    dismiss.type =
+      "button";
+
+    dismiss.className =
+      "duel-dismiss";
+
+    dismiss.dataset.action =
+      "dismiss";
+
+    dismiss.textContent =
+      "✕";
+
+    dismiss.setAttribute("aria-label", "Move to History");
+    actions.appendChild(dismiss);
+  }
+
+  text.append(title, sub);
+  row.append(friendAvatar(duel.opponent), text, actions);
+  return row;
+}
+
+
+async function duelListClick(event) {
+  const button =
+    event.target.closest("[data-action]");
+
+  if (!button) {
+    return;
+  }
+
+  const row =
+    button.closest("[data-duel]");
+
+  const id =
+    row.dataset.duel;
+
+  const duel =
+    playDuels.find(entry => entry.id === id);
+
+  if (button.dataset.action === "dismiss") {
+    markGameSeen(id);
+    renderDuelList();
+    return;
+  }
+
+  if (duel && !isOpenDuel(duel)) {
+    markGameSeen(id);
+  }
+
+  const status =
+    document.getElementById("playStatus");
+
+  try {
+    if (button.dataset.action === "accept") {
+      await playRpc("respond_duel", { p_duel: id, p_accept: true });
+      await openGame(id, row.dataset.game);
+    } else if (button.dataset.action === "decline") {
+      await playRpc("respond_duel", { p_duel: id, p_accept: false });
+    } else {
+      await openGame(id, row.dataset.game);
+    }
+  } catch (error) {
+    setStatus(status, error.message || "That didn't work. Try again.", "error");
+  }
+
+  loadPlayTab();
+}
+
+document.getElementById("duelList").addEventListener("click", duelListClick);
+document.getElementById("duelHistory").addEventListener("click", duelListClick);
+
+document
+  .getElementById("historyMoreButton")
+  .addEventListener("click", () => {
+    historyShowAll = !historyShowAll;
+    renderDuelList();
+  });
 
 
 /* ---------- Challenging someone ---------- */
@@ -807,11 +914,54 @@ async function openDuelScreen(id) {
 
   clearInterval(duelPollTimer);
   duelPollTimer = setInterval(pollDuel, DUEL_POLL_MS);
+
+  clearInterval(duelClockTimer);
+  duelClockTimer = setInterval(tickDuelClock, 500);
+}
+
+
+// "1:07" from milliseconds.
+function formatClock(ms) {
+  const seconds =
+    Math.max(0, Math.floor(ms / 1000));
+
+  return Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
+}
+
+
+// Your clock runs from when the game opened to you (the database keeps
+// the start time, so leaving the app doesn't stop it).
+function tickDuelClock() {
+  const clock =
+    document.getElementById("duelClock");
+
+  const duel =
+    openDuel;
+
+  if (!duel || !duel.started_at) {
+    clock.classList.add("hidden");
+    return;
+  }
+
+  const mine =
+    myDuelProgress(duel);
+
+  clock.classList.remove("hidden");
+  clock.classList.toggle("done", duel.my_ms !== null && duel.my_ms !== undefined);
+
+  if (duel.my_ms !== null && duel.my_ms !== undefined) {
+    clock.textContent = "⏱ " + formatClock(duel.my_ms) + " ✓";
+  } else if (mine.done || duel.status !== "active" && duel.status !== "pending") {
+    clock.classList.add("hidden");
+  } else {
+    clock.textContent = "⏱ " + formatClock(Date.now() - new Date(duel.started_at).getTime());
+  }
 }
 
 
 function closeDuelScreen() {
   clearInterval(duelPollTimer);
+  clearInterval(duelClockTimer);
   duelPollTimer = null;
   openDuel = null;
 
@@ -1046,7 +1196,18 @@ function renderDuel() {
       challengeFriend(duel.opponent, "wordle_duel");
     });
 
-    result.append(headline, word, again);
+    const times =
+      document.createElement("span");
+
+    times.className =
+      "duel-times";
+
+    if (duel.my_ms !== null && duel.my_ms !== undefined && duel.their_ms !== null && duel.their_ms !== undefined) {
+      times.textContent =
+        "Your time " + formatClock(duel.my_ms) + " · " + friendName(duel.opponent) + " " + formatClock(duel.their_ms);
+    }
+
+    result.append(headline, word, times, again);
   }
 
   const giveUp =
@@ -1058,6 +1219,7 @@ function renderDuel() {
     duel.status === "pending" ? "Call off" : "Give up";
 
   renderDuelKeyboard(!finished && !mine.done && (duel.status === "active" || duel.is_challenger));
+  tickDuelClock();
 }
 
 
@@ -1852,6 +2014,7 @@ function resetPlay() {
 
 function closeDuelScreenQuietly() {
   clearInterval(duelPollTimer);
+  clearInterval(duelClockTimer);
   openDuel = null;
   document.getElementById("duelScreen").classList.add("hidden");
   document.body.classList.remove("play-screen-open");

@@ -112,8 +112,11 @@ create trigger servers_add_bots
 
 -- ---------- How the bot plays each game ----------
 
--- Wordle Duel: a guess every few seconds, always one that fits what
--- its earlier guesses showed (so it usually solves in 3 to 5).
+-- Wordle Duel: guesses like a person would, 12 to 31 seconds apart
+-- (counted from when it accepted), always fitting what its earlier
+-- guesses showed, so it usually solves in 3 to 5. While you're playing
+-- its guesses appear as their time comes; once you're done it plays out
+-- the rest at once, keeping those same times.
 create or replace function public.dgh_bot_wordle(d public.duels, bot uuid)
 returns void
 language plpgsql
@@ -125,8 +128,12 @@ declare
   last_at timestamptz;
   solved boolean;
   other_done boolean;
+  next_at timestamptz;
   pick text;
 begin
+  -- Finish the game first if it's already decided.
+  perform public.dgh_wordle_settle(d.id);
+
   loop
     select status into d.status from public.duels where id = d.id;
     exit when d.status <> 'active';
@@ -137,12 +144,13 @@ begin
 
     exit when solved or guesses >= 6;
 
-    -- Once you're done, it plays the rest straight away; until then,
-    -- a guess every few seconds.
     select coalesce(bool_or(pattern = 'GGGGG'), false) or count(*) >= 6 into other_done
     from public.duel_guesses where duel_id = d.id and user_id <> bot;
 
-    exit when not other_done and last_at > now() - interval '3 seconds';
+    next_at := coalesce(last_at, coalesce(d.accepted_at, d.created_at))
+      + make_interval(secs => 12 + abs(hashtext(d.id::text || guesses::text)) % 20);
+
+    exit when not other_done and next_at > now();
 
     if guesses = 0 then
       pick := (array['slate', 'crane', 'trace', 'stare', 'raise', 'arise', 'later', 'alert'])[1 + floor(random() * 8)::integer];
@@ -158,9 +166,10 @@ begin
       limit 1;
     end if;
 
-    perform public.duel_guess(d.id, pick);
+    insert into public.duel_guesses (duel_id, user_id, n, guess, pattern, created_at)
+    values (d.id, bot, guesses + 1, pick, public.dgh_wordle_pattern(pick, d.answer), next_at);
 
-    exit when not other_done;
+    perform public.dgh_wordle_settle(d.id);
   end loop;
 end;
 $$;

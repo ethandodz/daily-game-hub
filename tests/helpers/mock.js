@@ -89,13 +89,22 @@ function duelPattern(guess, answer) {
   return out.join('');
 }
 // Same rules as duel_guess: fewest guesses wins, finish once it can't change.
+// Wordle Duel clock: real time for me, 30 seconds for the friend.
+function wordleMs(d, u) {
+  if (!d.guesses[u].includes(d.answer)) return null;
+  if (u !== ME) return 30000;
+  d.solvedAt = d.solvedAt || Date.now();
+  return d.solvedAt - new Date(d.created_at).getTime();
+}
 function duelSettle(d) {
   const [a, b] = [d.challenger, d.opponent].map(u => d.guesses[u]);
   const solvedIn = g => { const i = g.indexOf(d.answer); return i < 0 ? null : i + 1; };
   const done = g => solvedIn(g) || g.length >= 6;
   const sa = solvedIn(a), sb = solvedIn(b);
   const finish = winner => { d.status = 'finished'; d.winner = winner; d.finished_at = new Date().toISOString(); };
-  if (done(a) && done(b)) return finish(sa && (!sb || sa < sb) ? d.challenger : sb && (!sa || sb < sa) ? d.opponent : null);
+  const ms = u => wordleMs(d, u);
+  if (done(a) && done(b)) return finish(sa && (!sb || sa < sb) ? d.challenger : sb && (!sa || sb < sa) ? d.opponent
+    : sa && sa === sb ? (ms(d.challenger) < ms(d.opponent) ? d.challenger : ms(d.opponent) < ms(d.challenger) ? d.opponent : null) : null);
   if (sa && !done(b) && b.length >= sa) return finish(d.challenger);
   if (sb && !done(a) && a.length >= sb) return finish(d.opponent);
 }
@@ -182,6 +191,7 @@ function serverRoute(method, u, body) {
     return { id: d.id, game: d.game || 'wordle_duel', status: d.status, is_challenger: me, opponent: other, winner: d.winner, created_at: d.created_at, finished_at: d.finished_at,
       my_guesses: d.guesses[ME].map(guess => ({ guess, pattern: duelPattern(guess, d.answer) })), their_patterns: d.guesses[other].map(g => duelPattern(g, d.answer)),
       last_move_at: d.created_at, answer: d.status === 'finished' ? d.answer : null,
+      ...(!d.game || d.game === 'wordle_duel' ? { started_at: d.status === 'pending' && !me ? null : d.created_at, my_ms: wordleMs(d, ME), their_ms: d.status === 'finished' ? wordleMs(d, other) : null } : {}),
       ...(d.game && d.game !== 'wordle_duel' ? { me: turnView(d, ME, true), them: turnView(d, other, d.status === 'finished') } : {}),
       ...(d.game === 'mind_meld' ? { meld: meldView(d, other) } : {}),
       ...(d.game === 'dial_in' ? { dial: dialView(d) } : {}) }; };
