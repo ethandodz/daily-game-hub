@@ -32,6 +32,28 @@ server.listen(0, async () => {
       assert(await page.evaluate(() => document.getElementById('scoreModal').classList.contains('open')), 'Result opens from the popped card');
       await page.locator('[data-close="scoreModal"]').first().click(); await page.waitForTimeout(150);
       assert(await page.evaluate(() => document.querySelector('.game-card[data-id="connections"]').classList.contains('popped')), 'card stays open after closing the result window');
+      // saving results from an open card (twice) must not shift the grid
+      const order = () => page.$$eval('#gameGrid > *', c => c.filter(x => x.offsetParent || x.classList.contains('popped')).map(x => x.dataset.id || x.className));
+      await page.evaluate(() => closePoppedCard(true));
+      const startOrder = await order();
+      for (const text of ['Wordle 1,585 3/6', 'Wordle 1,585 2/6']) {
+        await openCard(page, 'wordle'); await page.click('.game-card[data-id="wordle"] .result-button'); await page.waitForTimeout(200);
+        await page.fill('#resultText', text); await page.click('#saveScoreButton'); await page.waitForTimeout(700);
+        await page.evaluate(() => document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open')));
+        await page.mouse.click(20, 780); await page.waitForFunction(() => !document.querySelector('.popped')); await page.waitForTimeout(100);
+      }
+      const endOrder = await order();
+      assert(await page.$$eval('.game-card-ghost', g => g.length) === 0 && JSON.stringify(endOrder) === JSON.stringify(startOrder), 'editing results leaves no gaps in the grid ' + JSON.stringify([startOrder, endOrder, await page.$$eval('.game-card-ghost', g => g.length)]));
+      // the grid re-sorting while a card is open (as saving can do) leaves no gap behind
+      await openCard(page, 'wordle');
+      await page.evaluate(() => { const g = document.getElementById('gameGrid'); g.appendChild(document.querySelector('.game-card[data-id="wordle"]')); });
+      await page.mouse.click(20, 780); await page.waitForFunction(() => !document.querySelector('.popped')); await page.waitForTimeout(100);
+      assert(await page.$$eval('.game-card-ghost', g => g.length) === 0, 'no leftover gap after the grid re-sorts');
+      await page.evaluate(() => { const g = document.getElementById('gameGrid'); g.prepend(document.querySelector('.game-card[data-id="wordle"]')); });
+      // a background sync doesn't close an open card
+      await openCard(page, 'connections');
+      await page.evaluate(() => syncUserGameLibrary()); await page.waitForTimeout(500);
+      assert(await page.evaluate(() => document.querySelector('.game-card[data-id="connections"]').classList.contains('popped')), 'open card stays open through a background sync');
       // tap outside: back to the grid
       await page.mouse.click(20, 780); await page.waitForFunction(() => !document.querySelector('.popped'));
       assert(await page.evaluate(() => !document.querySelector('.popped') && !document.body.classList.contains('card-popped') && !document.querySelector('.game-card-ghost')), 'tapping outside closes it');
