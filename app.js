@@ -12299,7 +12299,7 @@ function renderCardStats(container, stats) {
   const items = [
     ["played", stats ? stats.played : "–", ""],
     ["wins", stats ? stats.wins : "–", "👑 "],
-    ["best streak", stats ? stats.best_streak : "–", "🔥 "]
+    ["best day streak", stats ? stats.best_streak : "–", "🔥 "]
   ];
 
   for (const [label, value, icon] of items) {
