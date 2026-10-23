@@ -3627,3 +3627,8 @@ body.card-popped::before {
   }
 }
 
+/* The tab bar stays tappable over an open game card; switching
+   tabs closes the card. */
+body.card-popped .tab-bar {
+  z-index: 26;
+}

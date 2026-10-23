@@ -38,6 +38,7 @@ m.server.listen(0, async () => {
   await page.click('[data-close="scoreModal"]');
   // pasting a new result with a link
   await page.evaluate(t => navigator.clipboard.writeText(t), 'GuessList (October 22, 2026)\nScore: 120/490\n\n🟨🟨🟨🟥🟨\n\nBest Guess: #59\n\nPlay at: https://playguesslist.com');
+  await page.evaluate(() => closePoppedCard(true));
   await page.click('#pasteResultButton'); await page.waitForTimeout(400);
   const pasted = await page.inputValue('#resultText');
   const isOpen = await page.evaluate(() => document.getElementById('scoreModal').classList.contains('open') || document.getElementById('pasteModal').classList.contains('open'));

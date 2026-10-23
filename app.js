@@ -2230,8 +2230,6 @@ function currentSearchText() {
 
 
 function applyFilters() {
-  closePoppedCard(true);
-
   const searchValue =
     currentSearchText()
       .toLowerCase();
@@ -2314,6 +2312,12 @@ function applyFilters() {
       visible
         ? "flex"
         : "none";
+
+    // Background refreshes run this too; only close an open
+    // card if the filter now hides it.
+    if (!visible && card === poppedCard) {
+      closePoppedCard(true);
+    }
 
     if (visible) {
       visibleCount += 1;
@@ -7705,6 +7709,10 @@ document
 let poppedCard =
   null;
 
+// Placeholder keeping the open card's spot in the grid.
+let poppedGhost =
+  null;
+
 function reduceMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -7729,6 +7737,7 @@ function popCard(card) {
     card.offsetHeight + "px";
 
   card.after(ghost);
+  poppedGhost = ghost;
 
   card.classList.add("popped");
   document.body.classList.add("card-popped");
@@ -7779,10 +7788,12 @@ function closePoppedCard(instant = false) {
   poppedCard = null;
   document.body.classList.remove("card-popped");
 
+  // Saving a result can re-sort the grid, so the card and its
+  // placeholder may no longer sit side by side.
   const ghost =
-    card.nextElementSibling?.classList.contains("game-card-ghost")
-      ? card.nextElementSibling
-      : null;
+    poppedGhost;
+
+  poppedGhost = null;
 
   const finish = () => {
     card.classList.remove("popped");
@@ -7791,7 +7802,14 @@ function closePoppedCard(instant = false) {
     ghost?.remove();
   };
 
-  if (instant || !ghost || !card.isConnected || reduceMotion() || !card.animate) {
+  if (
+    instant ||
+    !ghost?.isConnected ||
+    ghost.previousElementSibling !== card ||
+    !card.isConnected ||
+    reduceMotion() ||
+    !card.animate
+  ) {
     finish();
     return;
   }
