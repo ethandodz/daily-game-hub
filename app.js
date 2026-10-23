@@ -12214,7 +12214,7 @@ function makePlayerLink(element, userId) {
     event => {
       event.preventDefault();
       event.stopPropagation();
-      openPlayerCard(userId);
+      openPlayerCard(userId, element);
     };
 
   element.addEventListener("click", open);
@@ -13410,7 +13410,62 @@ async function loadMyCard() {
 }
 
 
-async function openPlayerCard(userId) {
+/*
+ * Grow a floating card out of the element that was tapped
+ * (like opening a game).
+ */
+function growFrom(element, fromElement) {
+  if (!fromElement || !fromElement.isConnected || reduceMotion() || !element.animate) {
+    return;
+  }
+
+  const from =
+    fromElement.getBoundingClientRect();
+
+  const to =
+    element.getBoundingClientRect();
+
+  if (!to.width || !to.height) {
+    return;
+  }
+
+  element.animate(
+    [
+      {
+        transform:
+          "translate(" + (from.left - to.left) + "px, " + (from.top - to.top) + "px) " +
+          "scale(" + Math.max(from.width / to.width, 0.1) + ", " + Math.max(from.height / to.height, 0.05) + ")",
+        transformOrigin: "top left",
+        opacity: 0.3
+      },
+      {
+        transform: "none",
+        transformOrigin: "top left",
+        opacity: 1
+      }
+    ],
+    {
+      duration: 300,
+      easing: "cubic-bezier(0.2, 0.9, 0.25, 1.1)"
+    }
+  );
+}
+
+
+// Tapping the blurred area around a player's card closes it.
+document
+  .getElementById("playerCardModal")
+  .addEventListener(
+    "click",
+    event => {
+      if (event.target === event.currentTarget) {
+        event.currentTarget.classList.remove("open");
+      }
+    }
+  );
+
+
+async function openPlayerCard(userId, fromElement) {
   const body =
     document.getElementById("playerCardBody");
 
@@ -13495,16 +13550,29 @@ async function openPlayerCard(userId) {
     "card-badges hidden";
 
   const avatar =
-    playerAvatar(userId, "xl");
+    playerAvatar(userId, "lg");
 
   // The frame goes around the whole card instead.
   delete avatar.dataset.frame;
 
+  // Same layout as your own card: icon beside the name.
+  const head =
+    document.createElement("div");
+
+  head.className =
+    "card-head";
+
+  const who =
+    document.createElement("div");
+
+  who.className =
+    "card-who";
+
+  who.append(name, title, coins);
+  head.append(avatar, who);
+
   body.append(
-    avatar,
-    name,
-    title,
-    coins,
+    head,
     bio,
     meta,
     stats,
@@ -13515,7 +13583,12 @@ async function openPlayerCard(userId) {
   bio.classList.toggle("hidden", !card.bio);
   title.classList.toggle("hidden", !title.textContent);
 
-  document.getElementById("playerCardModal").classList.add("open");
+  const modal =
+    document.getElementById("playerCardModal");
+
+  modal.classList.add("open");
+
+  growFrom(modal.querySelector(".modal-card"), fromElement);
 
   const [loaded, achievements, coinTotal] =
     await Promise.all([
