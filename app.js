@@ -2967,6 +2967,10 @@ if (currentTab === "social") {
   loadServers();
 }
 
+if (currentTab === "play" && typeof loadPlayTab === "function") {
+  loadPlayTab();
+}
+
 if (currentTab === "activity") {
   loadActivity();
 }
@@ -3197,6 +3201,11 @@ document
       shopItems = null;
       myPurchases = new Set();
       playerCards.clear();
+      knownProfiles.clear();
+
+      if (typeof resetPlay === "function") {
+        resetPlay();
+      }
 
       document.getElementById("settingsModal").classList.remove("open");
 
@@ -12069,7 +12078,7 @@ const ACTIVE_TAB_KEY =
   "dailyGameHubActiveTab";
 
 const TABS =
-  ["games", "social", "activity", "account"];
+  ["games", "social", "play", "activity", "account"];
 
 let currentTab =
   TABS.includes(
@@ -12108,6 +12117,10 @@ const DEFAULT_CARD = {
 };
 
 const playerCards =
+  new Map();
+
+// Profiles of players seen outside the selected Server (Play tab friends).
+const knownProfiles =
   new Map();
 
 let myCardStats =
@@ -12175,7 +12188,11 @@ function profileFor(userId) {
     return myProfile;
   }
 
-  return selectedServerProfiles.get(userId) || null;
+  return (
+    selectedServerProfiles.get(userId) ||
+    knownProfiles.get(userId) ||
+    null
+  );
 }
 
 
@@ -13947,6 +13964,10 @@ function switchTab(tab) {
 
   if (tab === "social" && session) {
     loadServers();
+  }
+
+  if (tab === "play" && typeof loadPlayTab === "function") {
+    loadPlayTab();
   }
 }
 
