@@ -83,7 +83,9 @@ server.listen(0, async () => {
       assert((await page.textContent('#statsRange')).endsWith(finished + ' finished days'), 'all time = since server start: ' + await page.textContent('#statsRange'));
       assert((await page.textContent('#statsChartTitle')) === 'Wins over time', 'all games chart: wins over time');
       const xLabels = await page.$$eval('#statsChart text.chart-axis', t => t.map(x => x.textContent));
-      assert(xLabels.includes('Apr 2026') && xLabels.includes('Oct 2026'), 'all time buckets by month: ' + xLabels.join(','));
+      // Which months get a label depends on today's date, so check the format, not a fixed month
+      const monthLabels = xLabels.filter(x => /^[A-Z][a-z]{2} \d{4}$/.test(x));
+      assert(xLabels.includes('Apr 2026') && monthLabels.length >= 2, 'all time buckets by month: ' + xLabels.join(','));
       await page.click('[data-stats-period="year"]'); await page.waitForTimeout(300);
       await snap(page, out + '-all-clip.png');
     } else {
