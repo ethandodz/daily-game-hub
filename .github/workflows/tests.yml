@@ -9,7 +9,7 @@ on:
 jobs:
   app:
     name: Unit and browser tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: tests
@@ -46,7 +46,7 @@ jobs:
 
   database:
     name: Database rules
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
